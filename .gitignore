@@ -1,0 +1,47 @@
+# python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.ipynb_checkpoints/
+
+# node
+node_modules/
+dist/
+build/
+.next/
+*.tsbuildinfo
+
+# secrets
+.env
+.env.*
+
+*.log
+.DS_Store
+Thumbs.db
+
+# raw data: scraped rulings, customer ads, downloads
+data/raw/
+
+# media and model weights
+*.mp4
+*.mov
+*.m4v
+*.webm
+*.mkv
+*.avi
+*.wav
+*.mp3
+*.m4a
+*.flac
+*.pt
+*.pth
+*.safetensors
+*.onnx
+*.ckpt
+*.gguf
+*.bin

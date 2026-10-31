@@ -15,7 +15,7 @@ Costs are the measured usage multiplied by the published prices. The account's b
 | `sam-3.1` image | yes | Nothing returned for any text prompt; objects found | about 2 s | $0.0025 per image |
 | `sam-3.1` video | yes | One call returns stable object IDs across every frame | 18–22 s per 125-frame clip; first frame after 2–3 s | $0.20 per 1,000 frames |
 | `muse-image-1.0` generate and edit | yes | Both worked; no block on a supplement with a health claim | 8 s per image | $0.01 per image |
-| Muse Glimmer | no | Open weights only; not served by Model API | — | — |
+| Muse Glimmer | no | Open weights only; not served by Model API. Baseten's `GET /v1/models` listed no Glimmer model on 31 Oct (it lists `meta-models/muse-spark-open`) | — | — |
 
 `GET /v1/models` lists `muse-image-1.0`, `muse-spark-1.1`, `muse-spark-1.2`, `muse-spark-1.2-contributor`, `muse-spark-1.3`, `muse-spark-1.3-contributor`, `muse-voice-transcribe-1.0`, `muse-wonder-1.0` and `sam-3.1`.
 
@@ -39,12 +39,14 @@ Costs are the measured usage multiplied by the published prices. The account's b
 - **SAM does not find text as a concept.** "text overlay", "text", "caption", "subtitle", "words" and "banner" returned nothing on our ad frame, and "text" returned nothing on the product shot, whose label is covered in text. There was no error: the response is simply empty.
 - **SAM finds the visual shapes text sits on.** "black rectangle" returned the box behind the headline exactly (x 394–884, y 503–563). "label" returned the bottle's label, and "bottle" the bottle. Text without a background shape (our footnote) cannot be found this way.
 - **One video call tracks objects across frames.** On a 5-second, 125-frame clip, "bottle" kept ID 0 on all 125 frames and "gummy bear" kept 15 IDs stable throughout. This answers P25: one call per prompt per video, not per frame.
-- **Output** is one text line per frame, streamed as `response.output_text.delta`: `<Nf>` frame index, then for each object `id<|box;x1;y1;x2;y2;w;h|><|mask;...|>`. Masks are base85 and can reach about 20,000 characters per frame, so masks belong on disk, never in logs. `include_confidence` adds a score.
+- **Output** is one text line per frame, streamed as `response.output_text.delta`: `<Nf>` frame index, then each object as `id<|box;x1=..;y1=..;x2=..;y2=..;w=..;h=..;c=..|><|mask;x=..;y=..;c=..;data=...|>`, with objects on one line joined by commas. `w` and `h` are the frame size, not the box size, and `c` is the confidence, present when `include_confidence` is set. An image call returns a single `<0f>` frame. Checked on 31 Oct (P22) with two drawn rectangles in one frame. Masks can reach about 20,000 characters per frame and use characters outside plain base85, such as `{`, so masks belong on disk, never in logs.
+- `usage` reports `images_processed` or `video_frames_processed`. A 15-frame clip at 5 fps was billed 50 frames, the per-request minimum.
 - **Video is billed on every frame the server decodes.** Our 30-second clip at 25 fps was billed 750 frames ($0.15), and each request is billed at least 50 frames. Re-encoding at a lower frame rate before upload is the only way to cut this. The plan's estimate of 60 frames per 30-second ad assumed we chose the frames.
 - Accepted video: MP4 or MOV with H.264, H.265 or MPEG-4; up to 15,000 frames; up to 16 objects per frame.
 
 ## Muse Image
 
+- The `size` parameter is ignored: `256x256` returned a 1600x1600 image of about 2.6 MB (31 Oct, P22).
 - Generation returns WebP by default. The edit endpoint rejects a WebP declared as PNG, so request `output_format="png"` or declare the true type.
 - Generating a supplement bottle with "Supports Bone, Immune & Mood Health" on the label, and then adding "Boosts Immunity" by edit, were both allowed. A content block would return 400 with `code: content_policy_violation`. The docs list no rule on health products.
 - The model invents label text that wasn't asked for (dosage, flavour, "Supports Bone, Immune & Mood Health"). A reconstruction built with it must be checked so that it carries only the claims from the ruling's ad description (rule 8).

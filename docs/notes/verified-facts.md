@@ -133,7 +133,7 @@ The 27 rulings saved in `data/raw/asa-rulings/` also cite rules outside section 
 | 3.1 | "Marketing communications must not materially mislead or be likely to do so." |
 | 3.7 | "marketers must hold documentary evidence to prove claims that consumers are likely to regard as objective and that are capable of objective substantiation" |
 
-A supplement ad that claims to treat a condition is typically cited under 15.6.2 and also 12.1 or 12.11 (an unlicensed medicinal claim), so a section-15-only rule pack would miss rule numbers the ASA cites in about two in five of these rulings. The P12 rule pack covers all of these (`data/snapshots/cap-s15-2026-10-31.yaml`).
+A supplement ad that claims to treat a condition is typically cited under 15.6.2 and also 12.1 or 12.11 (an unlicensed medicinal claim), so a section-15-only rule pack would miss rule numbers the ASA cites in about two in five of these rulings. The P12 rule pack covers all of these (`data/snapshots/cap-2026-10-31.yaml`).
 
 ## Meta Model API: training and retention
 

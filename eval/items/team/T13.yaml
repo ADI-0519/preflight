@@ -1,0 +1,16 @@
+# Team-written negative: claims are authorised GB register wording, copied exactly (register 2026-05-19).
+# Written before any v1 positive was selected or read.
+item_id: T13
+format: image
+product: selenium tablets
+register_ids:
+- gbhc-7bd6ad7ddfef
+- gbhc-efd0e46e398e
+- gbhc-2b5e02d100fe
+on_screen_text:
+- Selenium tablets
+- Selenium contributes to the maintenance of normal hair
+- Selenium contributes to the maintenance of normal nails
+- Selenium contributes to the normal function of the immune system
+- Food supplements should not be used as a substitute for a varied and balanced diet and a healthy lifestyle.
+voiceover: ''

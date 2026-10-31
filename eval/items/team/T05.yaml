@@ -1,0 +1,14 @@
+# Team-written negative: claims are authorised GB register wording, copied exactly (register 2026-05-19).
+# Written before any v1 positive was selected or read.
+item_id: T05
+format: image
+product: vitamin C effervescent tablets
+register_ids:
+- gbhc-222b3bfc340d
+- gbhc-54356e869c8c
+on_screen_text:
+- Vitamin c effervescent tablets
+- Vitamin C contributes to the normal function of the immune system
+- Vitamin C contributes to the reduction of tiredness and fatigue
+- Food supplements should not be used as a substitute for a varied and balanced diet and a healthy lifestyle.
+voiceover: ''

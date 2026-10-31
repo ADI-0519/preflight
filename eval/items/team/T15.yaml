@@ -1,0 +1,12 @@
+# Team-written negative: claims are authorised GB register wording, copied exactly (register 2026-05-19).
+# Written before any v1 positive was selected or read.
+item_id: T15
+format: video
+product: magnesium and vitamin B6 tablets
+register_ids:
+- gbhc-63277e369bb5
+- gbhc-d05fc1549c25
+on_screen_text:
+- Magnesium and vitamin b6 tablets
+- Food supplements should not be used as a substitute for a varied and balanced diet and a healthy lifestyle.
+voiceover: Magnesium contributes to normal functioning of the nervous system. Vitamin B6 contributes to the reduction of tiredness and fatigue.

@@ -1,0 +1,14 @@
+# Team-written negative: claims are authorised GB register wording, copied exactly (register 2026-05-19).
+# Written before any v1 positive was selected or read.
+item_id: T08
+format: image
+product: vitamin B12 spray
+register_ids:
+- gbhc-7fc23b554217
+- gbhc-a932b42fea05
+on_screen_text:
+- Vitamin b12 spray
+- Vitamin B12 contributes to normal psychological function
+- Vitamin B12 contributes to normal energy-yielding metabolism
+- Food supplements should not be used as a substitute for a varied and balanced diet and a healthy lifestyle.
+voiceover: ''

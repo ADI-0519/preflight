@@ -1,0 +1,12 @@
+# Team-written negative: claims are authorised GB register wording, copied exactly (register 2026-05-19).
+# Written before any v1 positive was selected or read.
+item_id: T12
+format: video
+product: iodine drops
+register_ids:
+- gbhc-bc8de1f4efc8
+- gbhc-c5ead2f9610d
+on_screen_text:
+- Iodine drops
+- Food supplements should not be used as a substitute for a varied and balanced diet and a healthy lifestyle.
+voiceover: Iodine contributes to normal cognitive function. Iodine contributes to the maintenance of normal skin.

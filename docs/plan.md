@@ -30,9 +30,9 @@ ad file (video | image | page screenshot)
   │
   ├─ ingest ─────────── ffmpeg: audio track, frames at a fixed rate, change-detected keyframes
   │
-  ├─ transcribe ─────── Muse Voice Transcribe → segments with word timestamps
-  ├─ find regions ───── SAM 3.1, noun-phrase prompts → tracks with time spans and masks → crops
-  ├─ read regions ───── Muse Spark on the crops (batched) → on-screen text per track
+  ├─ transcribe ─────── Muse Voice Transcribe → segments with turn timestamps (no word timestamps; P24 decides how to refine)
+  ├─ read on-screen ─── Muse Spark on the video → on-screen text with start and end times
+  ├─ find regions ───── SAM 3.1, shape and object prompts ("label", "bottle", "black rectangle") → tracks in one call → crops
   │
   ├─ extract claims ─── Muse Spark, structured output → claims (explicit and implied), each tied to evidence
   │
@@ -73,15 +73,18 @@ A `Screening` records the ad's content hash, the snapshot versions of the regist
 
 ### How each Meta model is used
 
-| Job | Model | Why this one | Price (desk research, unverified until P03) |
-|---|---|---|---|
-| Voiceover to text with timestamps | Muse Voice Transcribe | Spark's own audio input is reported as degraded | $0.18 per hour |
-| Find claim-bearing regions and track them | SAM 3.1 | Text-prompted segmentation and tracking is the reason video matters: implied claims sit in before/after shots, graphics and pack shots | $2.50 per 1,000 images |
-| Read region text, extract claims, judge them, drive the agent | Muse Spark 1.3 (Standard mode) | Multimodal, structured output, tool calls, 1M context; Standard mode does not train on inputs | $1.25 in / $4.25 out per million tokens |
-| Rebuild ruled ads; regenerate a fixed still | Muse Image | Reconstructions for the benchmark and the fix loop | $0.01 per image |
-| First-pass triage that can run on an agency's own hardware | Muse Glimmer (open weights, via partner inference) | Confidentiality story and the open-weights bonus; optional | partner credits |
+Checked by calling each model in P03; details in `docs/notes/meta-model-api-findings.md`.
 
-A 30-second ad sampled at 2 frames per second sends about 60 frames to SAM (about $0.15) and, by our estimate, under 100k tokens to Spark (about $0.15–0.40), so a 60-item benchmark run costs in the tens of dollars. P03 replaces these estimates with measured figures.
+| Job | Model | Why this one | Price (published, confirmed in P03) |
+|---|---|---|---|
+| Voiceover to text with timestamps | Muse Voice Transcribe (`muse-voice-transcribe-1.0`) | Spark 1.3 mistimes speech in video; this model gives an accurate transcript under music, but turn-level timestamps only | $0.18 per hour |
+| Read on-screen text with its timing | Muse Spark 1.3 on the video | Read every overlay and the small print with times correct to the second | $1.25 in / $4.25 out per million tokens |
+| Find claim-bearing visuals and track them | SAM 3.1 (`sam-3.1`) | One call tracks objects with stable IDs across a whole clip: pack shots, labels, before/after shots, boxed captions. It does not find text as such, so prompts name objects and shapes | $0.20 per 1,000 video frames (every decoded frame, minimum 50), $2.50 per 1,000 images |
+| Extract claims, judge them, drive the agent | Muse Spark 1.3, Standard mode (`muse-spark-1.3`, never `-contributor`) | Structured output with strict JSON schema, tool calls, 1M context; Standard mode does not train on inputs | as above; reasoning effort set per stage |
+| Rebuild ruled ads; regenerate a fixed still | Muse Image (`muse-image-1.0`) | Reconstructions for the benchmark and the fix loop; no block on supplement health claims | $0.01 per image |
+| First-pass triage that can run on an agency's own hardware | Muse Glimmer (open weights, via partner inference) | Confidentiality story and the open-weights bonus; optional; not on Model API | partner credits |
+
+Measured in P03: a 30-second 720p ad costs about $0.15 in SAM at 25 fps (about $0.03 if re-encoded at 5 fps before upload) and about $0.02–0.05 in Spark at low or medium reasoning effort, so a 60-item benchmark run stays under $15.
 
 ### Stack (recommended; founders to confirm in P05)
 

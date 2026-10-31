@@ -23,3 +23,19 @@ uv run python -m preflight.sources.register data/raw/register/great-britain-nutr
 ```
 
 Attribution, as OGL v3.0 asks: contains public sector information licensed under the Open Government Licence v3.0.
+
+## ASA rulings index
+
+| | |
+|---|---|
+| Source | asa.org.uk rulings pages, found through the rulings search (`preflight.sources.rulings`, see `docs/notes/rulings-corpus.md`) |
+| Fetched | 31 Oct 2026, rulings published 31 Oct 2023 to 31 Oct 2026, 10 s between requests |
+| Raw pages | `data/raw/rulings/` (git-ignored; 146 pages) |
+| Snapshot | `data/snapshots/rulings-2026-10-31.jsonl`: the 77 in-scope rulings, metadata only (ID, date, advertiser, media, outcome, rules cited, URL, keyword topics). No ruling text, because asa.org.uk states no reuse terms (`docs/source-terms.md`). |
+
+Rebuild the raw cache and the index:
+
+```
+uv run python -m preflight.sources.rulings fetch --from 31/10/2023 --to 31/10/2026
+uv run python -m preflight.sources.rulings build --version 2026-10-31
+```

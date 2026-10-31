@@ -176,7 +176,7 @@ def sam(client: OpenAI, prompt: str, media: dict) -> dict:
         final = stream.get_final_response()
     # masks are long base85 payloads; keep them on disk, not in the summary
     (OUT / f"sam_{media['type']}.txt").write_text("".join(lines), encoding="utf-8")
-    return {"frames": len(lines), "first_frame_seconds": first_frame_at, "sample": [l[:300] for l in lines[:3]],
+    return {"frames": len(lines), "first_frame_seconds": first_frame_at, "sample": [line[:300] for line in lines[:3]],
             "usage": usage(final)}
 
 

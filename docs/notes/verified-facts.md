@@ -85,7 +85,7 @@ The XLSX of 19 May 2026 holds two sheets, `Health_claims` and `Nutrition_claims`
 
 What this changes:
 
-- **Entry Id is not a register ID.** It is missing, repeated or multi-valued for many authorised claims, so P11 has to derive its own stable `register_id` for each row (rule 2). The pair (Entry Id, claim text) is unique for 266 of the 267 authorised rows.
+- **Entry Id is not a register ID.** It is missing, repeated or multi-valued for many authorised claims, so it cannot serve as the register ID for rule 2. P11 derives its own `register_id` from six columns (`docs/notes/register.md`).
 - **No authorised wording exists for mushroom ingredients**, so under rule 2 a mushroom-supplement ad gets no suggested wording, and the agent fix loop needs a topic like magnesium (10 authorised claims) to show a rewrite. Authorised beta-glucan claims name oats or barley, plus one generic "Beta-glucans" entry, whose conditions of use have not been checked against mushroom-derived beta-glucans.
 - **A missing or non-authorised mushroom claim is not by itself a breach**, because of the "on hold" list below.
 
@@ -102,7 +102,7 @@ The register is not the only list that decides whether a claim may be used in Gr
 
 What this changes:
 
-- "No authorised register entry" does not mean "breach" for botanical ingredients. P11 should snapshot the on-hold list alongside the register. P27's checker should then report a claim that matches an on-hold entry as on hold, with that entry as its source, not as an unauthorised claim. Otherwise it will raise false alarms on usable claims.
+- "No authorised register entry" does not mean "breach" for botanical ingredients. The P11 snapshot holds the register only, so the on-hold list needs its own dated snapshot. The `15.1.1` entry in the P12 rule pack (`data/snapshots/cap-s15-2026-10-31.yaml`) treats a claim that "matches no authorised register entry" as breach evidence; it should exclude on-hold matches. P27's checker should then report a claim that matches an on-hold entry as on hold, with that entry as its source, not as an unauthorised claim. Otherwise it will raise false alarms on usable claims.
 - Whether rule 2 lets on-hold wording appear as suggested wording is a founders' call. The list's own notes say much of its wording may not be acceptable, so the safe reading is: suggest only authorised register wording, and cite on-hold entries as context.
 
 ## CAP Code section 15
@@ -133,7 +133,7 @@ The 27 rulings saved in `data/raw/asa-rulings/` also cite rules outside section 
 | 3.1 | "Marketing communications must not materially mislead or be likely to do so." |
 | 3.7 | "marketers must hold documentary evidence to prove claims that consumers are likely to regard as objective and that are capable of objective substantiation" |
 
-A supplement ad that claims to treat a condition is typically cited under 15.6.2 and also 12.1 or 12.11 (an unlicensed medicinal claim), so a section-15-only rule pack would miss rule numbers the ASA cites in about two in five of these rulings. P12 should cover 12.1, 12.2, 12.11, 3.1 and 3.7 as well.
+A supplement ad that claims to treat a condition is typically cited under 15.6.2 and also 12.1 or 12.11 (an unlicensed medicinal claim), so a section-15-only rule pack would miss rule numbers the ASA cites in about two in five of these rulings. The P12 rule pack covers all of these (`data/snapshots/cap-s15-2026-10-31.yaml`).
 
 ## Meta Model API: training and retention
 

@@ -19,6 +19,19 @@ ad (video | image | page screenshot)
   └─ report; an agent can swap flagged claims for register wording and re-check before a person approves
 ```
 
+## Setup
+
+Needs [uv](https://docs.astral.sh/uv/). It installs Python 3.12 if missing.
+
+```
+uv sync
+cp .env.example .env    # then fill in META_API_KEY
+uv run pytest           # skips tests marked live
+uv run ruff check
+```
+
+Tests that call the real Meta Model API are marked `live` and run only with `uv run pytest -m live`.
+
 ## Status
 
 Work in progress for the Meta Global AI Developer Hackathon (submission 4 November 2026). The plan, architecture and task list are in [docs/plan.md](docs/plan.md); tasks are tracked as issues on the project board.

@@ -138,13 +138,14 @@ Tasks in lane `all` need every founder: reading logged-in pages, contacting part
 | P13 | Build the ASA rulings corpus | A | P02, P04 | 29 Oct |
 | P14 | Freeze evaluation split v1 with ground truth | A | P11, P13 | 29 Oct |
 | P15 | Build reconstructions from ad descriptions | A | P03, P14 | 30 Oct |
+| P16 | Extend the CAP rule pack to every rule split v1 cites | A | P12, P14 | 1 Nov |
 | P21 | Define the output schema v1 | C | P04 | 28 Oct |
 | P22 | Write the model clients with caching and replay | B | P03, P04 | 28 Oct |
 | P23 | Ingest video, images and page screenshots | B | P04 | 29 Oct |
 | P24 | Transcription stage | B | P21, P22, P23 | 29 Oct |
 | P25 | On-screen evidence stage with SAM 3.1 | B | P21, P22, P23 | 30 Oct |
 | P26 | Claim extraction prompt and parser | B | P24, P25 | 30 Oct |
-| P27 | Checker: register, CAP rules, precedent, judge | C | P11, P12, P13, P14, P21, P26 | 31 Oct |
+| P27 | Checker: register, CAP rules, precedent, judge | C | P11, P12, P13, P14, P16, P21, P26 | 31 Oct |
 | P28 | Report rendering and the `preflight screen` CLI | C | P27 | 31 Oct |
 | P31 | Evaluation harness and run registry | A | P14, P15, P28 | 31 Oct |
 | P32 | Keyword and register-lookup baseline | A | P11, P31 | 1 Nov |

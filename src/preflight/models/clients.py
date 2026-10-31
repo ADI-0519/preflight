@@ -6,6 +6,7 @@ from contextlib import contextmanager
 from dataclasses import dataclass, field
 from pathlib import Path
 
+import httpx
 from dotenv import load_dotenv
 from openai import OpenAI
 
@@ -13,6 +14,7 @@ from preflight.models.store import UPLOAD_TTL_SECONDS, Store, digest, encode_byt
 
 BASE_URL = "https://api.meta.ai/v1"
 SPARK = "muse-spark-1.3"
+TRANSCRIBE = "muse-voice-transcribe-1.0"
 
 
 @dataclass
@@ -21,6 +23,14 @@ class SparkResult:
     text: str
     data: dict | None
     usage: dict
+
+
+@dataclass
+class Turn:
+    start_ms: int
+    end_ms: int
+    text: str
+    speaker: str | None
 
 
 @contextmanager
@@ -97,8 +107,39 @@ class Spark:
 
 
 @dataclass
+class VoiceTranscribe:
+    store: Store
+    key: str = field(repr=False)
+    http: httpx.Client = field(default_factory=lambda: httpx.Client(timeout=120), repr=False)
+    base_url: str = BASE_URL
+    sleep: Callable[[float], None] = time.sleep
+
+    def transcribe(self, wav: bytes) -> list[Turn]:
+        if wav[:4] != b"RIFF" or wav[8:12] != b"WAVE":
+            raise ValueError("audio must be WAV")
+        request = {"mode": "DIARIZATION", "model": TRANSCRIBE, "audioEncoding": "WAV"}
+
+        def call() -> dict:
+            r = self.http.post(
+                f"{self.base_url}/asr/transcribe",
+                headers={"Authorization": f"Bearer {self.key}"},
+                files={
+                    "request": (None, json.dumps(request), "application/json"),
+                    "audio": ("audio.wav", wav, "audio/wav"),
+                },
+            )
+            r.raise_for_status()
+            return r.json()
+
+        parts = {"kind": "transcribe", "request": request, "audio": digest(wav)}
+        r = self.store.fetch(TRANSCRIBE, parts, lambda: with_retry(call, self.sleep))
+        return [Turn(t["startMs"], t["endMs"], t["transcript"], t.get("speaker")) for t in r["turns"]]
+
+
+@dataclass
 class Models:
     spark: Spark
+    transcribe: VoiceTranscribe
 
 
 def from_env(store: Store | None = None, sleep: Callable[[float], None] = time.sleep) -> Models:
@@ -108,4 +149,5 @@ def from_env(store: Store | None = None, sleep: Callable[[float], None] = time.s
     meta = OpenAI(base_url=BASE_URL, api_key=key, max_retries=0)
     return Models(
         Spark(store, meta, sleep),
+        VoiceTranscribe(store, key, sleep=sleep),
     )

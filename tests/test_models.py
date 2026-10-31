@@ -9,7 +9,7 @@ import openai
 import pytest
 from dotenv import load_dotenv
 
-from preflight.models import CacheMiss, Spark, Store, from_env
+from preflight.models import CacheMiss, Spark, Store, VoiceTranscribe, from_env
 from preflight.models.store import check_model
 
 load_dotenv()
@@ -89,6 +89,18 @@ def test_spark_video_replay(replay):
     assert "Brightleaf Daily D" in r.text
 
 
+def test_transcribe_replay(replay):
+    turns = replay.transcribe.transcribe(WAV)
+    assert len(turns) == 1
+    assert (turns[0].start_ms, turns[0].end_ms) == (220, 2540)
+    assert "vitamin D" in turns[0].text
+
+
+def test_transcribe_refuses_non_wav(replay):
+    with pytest.raises(ValueError, match="WAV"):
+        replay.transcribe.transcribe(b"ID3 not a wav file")
+
+
 def test_second_identical_call_served_from_cache(tmp_path):
     api = FakeApi()
     spark = Spark(Store(tmp_path), api)
@@ -148,6 +160,19 @@ def test_rate_limit_retried_then_succeeds(tmp_path):
     assert api.requests == 3
     assert sleeps == [3.0, 2.0]
 
+    attempts = []
+
+    def handler(request):
+        attempts.append(request)
+        if len(attempts) == 1:
+            return httpx.Response(429, headers={"Retry-After": "1"})
+        return httpx.Response(200, json={"turns": [{"startMs": 0, "endMs": 5, "transcript": "hi"}]})
+
+    http = httpx.Client(transport=httpx.MockTransport(handler))
+    turns = VoiceTranscribe(Store(tmp_path), "dummy", http, sleep=sleeps.append).transcribe(WAV)
+    assert turns[0].text == "hi"
+    assert len(attempts) == 2
+
 
 def test_other_errors_not_retried(tmp_path):
     sleeps = []
@@ -183,8 +208,13 @@ def test_key_not_in_repr_or_cache(tmp_path, monkeypatch):
     assert SENTINEL not in repr(models)
     models.spark.api = FakeApi()
     models.spark.ask("hello", prompt_version=PV, effort="low")
+    http = httpx.Client(
+        transport=httpx.MockTransport(lambda r: httpx.Response(200, json={"turns": []})),
+    )
+    models.transcribe.http = http
+    models.transcribe.transcribe(WAV)
     files = list(tmp_path.rglob("*.json"))
-    assert len(files) == 1
+    assert len(files) == 2
     assert all(SENTINEL not in f.read_text(encoding="utf-8") for f in files)
 
 
@@ -212,3 +242,10 @@ def test_spark_live(tmp_path, monkeypatch):
     assert "ready" in r.text.lower()
     monkeypatch.setattr(models.spark.api.responses, "create", lambda **kw: pytest.fail("second request sent"))
     assert models.spark.ask("Reply with the single word: ready", prompt_version=PV, effort="low") == r
+
+
+@pytest.mark.live
+@need("META_API_KEY")
+def test_transcribe_live(tmp_path):
+    turns = from_env(Store(tmp_path)).transcribe.transcribe(WAV)
+    assert "vitamin" in " ".join(t.text for t in turns).lower()

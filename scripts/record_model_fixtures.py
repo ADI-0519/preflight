@@ -46,7 +46,7 @@ def main() -> None:
     if "media" in steps:
         make_media()
     m = from_env(Store(FIXTURES, "cache"))
-    frame, video = (MEDIA / "frame.png").read_bytes(), MEDIA / "ad.mp4"
+    frame, wav, video = (MEDIA / "frame.png").read_bytes(), (MEDIA / "speech.wav").read_bytes(), MEDIA / "ad.mp4"
     if "spark" in steps:
         for r in (
             m.spark.ask(f"List every claim in this script.\n\n{SPEECH}", prompt_version=PROMPT_VERSION, effort="low",
@@ -57,6 +57,8 @@ def main() -> None:
                         prompt_version=PROMPT_VERSION, effort="low", video=video),
         ):
             print(r.text[:200], r.usage)
+    if "transcribe" in steps:
+        print(m.transcribe.transcribe(wav))
 
 
 if __name__ == "__main__":

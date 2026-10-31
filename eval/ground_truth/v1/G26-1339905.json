@@ -1,0 +1,42 @@
+{
+  "item_id": "G26-1339905",
+  "kind": "ruling",
+  "label": "positive",
+  "outcome": "upheld",
+  "claims": [
+    {
+      "claim": "Spoiler alert it’s not for every meal",
+      "rules": [
+        "1.3"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "nutritionally complete whole food",
+      "rules": [
+        "1.3"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "gives you everything that you do need",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.2"
+      ],
+      "point": 2
+    },
+    {
+      "claim": "nutritionally complete whole food",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.2"
+      ],
+      "point": 2
+    }
+  ],
+  "written_by": "draft: scripts/draft_split_v1.py",
+  "checked_by": null
+}

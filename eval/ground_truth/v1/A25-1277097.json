@@ -1,0 +1,66 @@
+{
+  "item_id": "A25-1277097",
+  "kind": "ruling",
+  "label": "positive",
+  "outcome": "upheld",
+  "claims": [
+    {
+      "claim": "0g added sugar",
+      "rules": [
+        "15.1",
+        "15.1.1"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "[…] carbohydrates 2.9g (of which 2.3g naturally occurring sugars)",
+      "rules": [
+        "15.1",
+        "15.1.1"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "crafted for calm",
+      "rules": [
+        "15.1",
+        "15.1.1"
+      ],
+      "point": 2
+    },
+    {
+      "claim": "simply help you feel calm",
+      "rules": [
+        "15.1",
+        "15.1.1"
+      ],
+      "point": 2
+    },
+    {
+      "claim": "Each ingredient works with your natural bodies’ [sic] systems in different ways, to promote feelings of calm",
+      "rules": [
+        "15.1",
+        "15.1.1"
+      ],
+      "point": 2
+    },
+    {
+      "claim": "Health Benefits of Lion’s Mane - Reduces Anxiety and Stress",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "point": 3
+    },
+    {
+      "claim": "Lion’s mane is all the rage for […] mental health",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "point": 3
+    }
+  ],
+  "written_by": "draft: scripts/draft_split_v1.py",
+  "checked_by": null
+}

@@ -1,0 +1,68 @@
+{
+  "item_id": "A23-1224570",
+  "kind": "ruling",
+  "label": "positive",
+  "outcome": "upheld",
+  "claims": [
+    {
+      "claim": "Vitamins (grams per daily serving)",
+      "rules": [
+        "15.1",
+        "15.1.1"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "dump the sugars",
+      "rules": [
+        "15.1",
+        "15.1.1"
+      ],
+      "point": 2
+    },
+    {
+      "claim": "Dump the Junk",
+      "rules": [
+        "3.42"
+      ],
+      "point": 3
+    },
+    {
+      "claim": "Dump the sugars, chemicals and fillers. It’s a simple solution to make you feel you",
+      "rules": [
+        "3.42"
+      ],
+      "point": 3
+    },
+    {
+      "claim": "bad boys",
+      "rules": [
+        "3.42"
+      ],
+      "point": 3
+    },
+    {
+      "claim": "They don’t want to look after your health like we do",
+      "rules": [
+        "3.42"
+      ],
+      "point": 3
+    },
+    {
+      "claim": "dump the junk",
+      "rules": [
+        "3.42"
+      ],
+      "point": 3
+    },
+    {
+      "claim": "sugars, chemicals and fillers",
+      "rules": [
+        "3.42"
+      ],
+      "point": 3
+    }
+  ],
+  "written_by": "draft: scripts/draft_split_v1.py",
+  "checked_by": null
+}

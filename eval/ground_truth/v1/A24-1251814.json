@@ -1,0 +1,187 @@
+{
+  "item_id": "A24-1251814",
+  "kind": "ruling",
+  "label": "positive",
+  "outcome": "upheld",
+  "claims": [
+    {
+      "claim": "No Junk",
+      "rules": [
+        "3.1",
+        "3.3",
+        "3.7"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "Pure Vitamins",
+      "rules": [
+        "3.1",
+        "3.3",
+        "3.7"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "Pure: If an ingredients [sic] is there, it's there for a reason",
+      "rules": [
+        "3.1",
+        "3.3",
+        "3.7"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "Our supplements contain 100% active ingredients in the highest natural potency with no fillers, binders, glues, irradiation or lubricants from mass production - nothing!",
+      "rules": [
+        "3.1",
+        "3.3",
+        "3.7"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "up to 50% Ultra-Processed Junk",
+      "rules": [
+        "3.1",
+        "3.3",
+        "3.7"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "Ultra Processed Supplements",
+      "rules": [
+        "3.1",
+        "3.3",
+        "3.7"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "Many supplements contain ineffective fillers, Viridian only uses pure and active ingredients",
+      "rules": [
+        "3.1",
+        "3.3",
+        "3.7"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "pure vitamins",
+      "rules": [
+        "3.1",
+        "3.3",
+        "3.7"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "ineffective fillers",
+      "rules": [
+        "3.1",
+        "3.3",
+        "3.7"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "no junk",
+      "rules": [
+        "3.1",
+        "3.3",
+        "3.7"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "Viridian only uses pure and active ingredients",
+      "rules": [
+        "3.1",
+        "3.3",
+        "3.7"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "100% active ingredients",
+      "rules": [
+        "3.1",
+        "3.3",
+        "3.7"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "only uses",
+      "rules": [
+        "3.1",
+        "3.3",
+        "3.7"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "active ingredients",
+      "rules": [
+        "3.1",
+        "3.3",
+        "3.7"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "ultra processed",
+      "rules": [
+        "3.1",
+        "3.3",
+        "3.7"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "Mass produced supplements",
+      "rules": [
+        "3.42"
+      ],
+      "point": 2
+    },
+    {
+      "claim": "Say No to Ultra Processed Supplements",
+      "rules": [
+        "3.42"
+      ],
+      "point": 2
+    },
+    {
+      "claim": "No Junk",
+      "rules": [
+        "3.42"
+      ],
+      "point": 2
+    },
+    {
+      "claim": "Shockingly, Mass Produced Supplements Contain Up to 50% Ultra-Processed Junk!",
+      "rules": [
+        "3.42"
+      ],
+      "point": 2
+    },
+    {
+      "claim": "ineffective fillers",
+      "rules": [
+        "3.42"
+      ],
+      "point": 2
+    },
+    {
+      "claim": "What On Earth is in Your Supplement?",
+      "rules": [
+        "3.42"
+      ],
+      "point": 2
+    }
+  ],
+  "written_by": "draft: scripts/draft_split_v1.py",
+  "checked_by": null
+}

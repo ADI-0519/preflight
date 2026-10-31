@@ -1,0 +1,82 @@
+{
+  "item_id": "A25-1310978",
+  "kind": "ruling",
+  "label": "positive",
+  "outcome": "upheld",
+  "claims": [
+    {
+      "claim": "Introducing the NEW NAD+ Patch – your secret to youthful energy and vitality",
+      "rules": [
+        "3.1",
+        "3.7",
+        "12.1"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "Boost focus, memory, and brain health",
+      "rules": [
+        "3.1",
+        "3.7",
+        "12.1"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "Revitalize your skin with enhanced collagen production",
+      "rules": [
+        "3.1",
+        "3.7",
+        "12.1"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "Supports a balanced mood",
+      "rules": [
+        "3.1",
+        "3.7",
+        "12.1"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "Helps maintain daily mental clarity",
+      "rules": [
+        "3.1",
+        "3.7",
+        "12.1"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "Designed to reduce everyday stress",
+      "rules": [
+        "3.1",
+        "3.7",
+        "12.1"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "Low dopamine steals your spark. Dopamine Patches help bring it back",
+      "rules": [
+        "3.1",
+        "3.7",
+        "12.1"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "Just a little patch that keeps me feeling awake and clear…It just makes me feel like myself again",
+      "rules": [
+        "3.1",
+        "3.7",
+        "12.1"
+      ],
+      "point": 1
+    }
+  ],
+  "written_by": "draft: scripts/draft_split_v1.py",
+  "checked_by": null
+}

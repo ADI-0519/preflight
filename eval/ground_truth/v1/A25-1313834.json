@@ -1,0 +1,130 @@
+{
+  "item_id": "A25-1313834",
+  "kind": "ruling",
+  "label": "positive",
+  "outcome": "upheld",
+  "claims": [
+    {
+      "claim": "naturally balance out your hormones",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "periods are lighter",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "cramps easier",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "designed to help you feel calm, balanced, and back in control",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "Mood swings? Softened",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "Bloating and cravings? Reduced. Periods? Lighter and less chaotic. Anxiety? Calmer",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "Feel calm within days",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "support hormonal balance, ease stress",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "Your trusted partner for feeling",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "whether you're managing your cycle or perimenopause",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "digestive benefits, better stress resilience",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "Hormonal balance, improved skin, fewer mood swings",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "Enhanced immune function, more consistent mood, reduced menopausal or PMS symptoms",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "Reduce stress & anxiety",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "regulate hormones, reduce stress",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "point": 1
+    }
+  ],
+  "written_by": "draft: scripts/draft_split_v1.py",
+  "checked_by": null
+}

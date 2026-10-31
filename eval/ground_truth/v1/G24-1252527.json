@@ -1,0 +1,119 @@
+{
+  "item_id": "G24-1252527",
+  "kind": "ruling",
+  "label": "positive",
+  "outcome": "upheld",
+  "claims": [
+    {
+      "claim": "Get FAST relief from cravings",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.7"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "Food Craving Control",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.7"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "Feel Full Faster & Stay Full Longer",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.7"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "Reduction in Overall Appetite",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.7"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "Optimize fat burning Efficiency Blood Sugar",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.7"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "BURN HARD TO LOSE AREAS",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.7"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "APPETITE SUPPRESSION",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.7"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "BOOST METABOLISM",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.7"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "Curb Crave",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.7"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "LOSE 15-20% OF BODY WEIGHT",
+      "rules": [
+        "15.6",
+        "15.6.6"
+      ],
+      "point": 2
+    },
+    {
+      "claim": "prescription weight loss medication",
+      "rules": [
+        "12.1",
+        "12.11",
+        "15.6",
+        "15.6.2"
+      ],
+      "point": 3
+    },
+    {
+      "claim": "ozemp*c dupe pills",
+      "rules": [
+        "12.1",
+        "12.11",
+        "15.6",
+        "15.6.2"
+      ],
+      "point": 3
+    }
+  ],
+  "written_by": "draft: scripts/draft_split_v1.py",
+  "checked_by": null
+}

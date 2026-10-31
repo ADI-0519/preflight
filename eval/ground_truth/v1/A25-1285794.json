@@ -1,0 +1,98 @@
+{
+  "item_id": "A25-1285794",
+  "kind": "ruling",
+  "label": "positive",
+  "outcome": "upheld",
+  "claims": [
+    {
+      "claim": "supports immune function",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.7"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "strengthening your immune system",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.7"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "boosts bone health",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.7"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "promoting healthy bones",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.7"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "improves mood",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.7"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "enhancing mood",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.7"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "mental clarity",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.7"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "enhances energy levels",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.7"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "energy levels",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.7"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "always recommend",
+      "rules": [
+        "15.6.3"
+      ],
+      "point": 2
+    }
+  ],
+  "written_by": "draft: scripts/draft_split_v1.py",
+  "checked_by": null
+}

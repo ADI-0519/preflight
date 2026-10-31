@@ -1,0 +1,34 @@
+{
+  "item_id": "G23-1215538",
+  "kind": "ruling",
+  "label": "positive",
+  "outcome": "upheld",
+  "claims": [
+    {
+      "claim": "All of this was only 755 calories and helping me stay in a calorie deficit to shift some extra pounds when needed",
+      "rules": [
+        "1.3",
+        "13.7"
+      ],
+      "point": 2
+    },
+    {
+      "claim": "If I have a bad day I like to go in a calorie deficit to ensure it’s not a bad week!",
+      "rules": [
+        "1.3",
+        "13.7"
+      ],
+      "point": 2
+    },
+    {
+      "claim": "755 calories and helping me stay in a calorie deficit to shift some extra pounds when needed",
+      "rules": [
+        "15.1",
+        "15.1.1"
+      ],
+      "point": 3
+    }
+  ],
+  "written_by": "draft: scripts/draft_split_v1.py",
+  "checked_by": null
+}

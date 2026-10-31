@@ -1,0 +1,60 @@
+{
+  "item_id": "G24-1241706",
+  "kind": "ruling",
+  "label": "positive",
+  "outcome": "upheld",
+  "claims": [
+    {
+      "claim": "'Repair' Joints With This Tip",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "Arthritis Expert",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "this 'self-healing' mechanism can reverse YEARS of arthritis and joint damage",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "Relieves soreness, stiffness, and discomfort – Prevents inflammation, damaged cartilage, and bone decay – Facilitates joint repair & recovery – Improves movement and flexibility",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "Dr Paul O’Connell, the NHS’s leading joint expert",
+      "rules": [
+        "3.1",
+        "3.7",
+        "15.6.3"
+      ],
+      "point": 3
+    },
+    {
+      "claim": "Dr Paul O'Connell",
+      "rules": [
+        "3.1",
+        "3.7",
+        "15.6.3"
+      ],
+      "point": 3
+    }
+  ],
+  "written_by": "draft: scripts/draft_split_v1.py",
+  "checked_by": null
+}

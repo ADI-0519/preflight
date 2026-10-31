@@ -1,0 +1,88 @@
+{
+  "item_id": "A24-1239910",
+  "kind": "ruling",
+  "label": "positive",
+  "outcome": "upheld",
+  "claims": [
+    {
+      "claim": "struggling with",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.7"
+      ],
+      "point": 2
+    },
+    {
+      "claim": "increased energy",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.7"
+      ],
+      "point": 2
+    },
+    {
+      "claim": "I feel so sharp and focused",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.7"
+      ],
+      "point": 2
+    },
+    {
+      "claim": "improve focus",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.7"
+      ],
+      "point": 2
+    },
+    {
+      "claim": "struggling with memory fog",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.7"
+      ],
+      "point": 2
+    },
+    {
+      "claim": "obliterate brain fog",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.7"
+      ],
+      "point": 2
+    },
+    {
+      "claim": "just two of these gummies can transform your life in ways you wouldn’t believe",
+      "rules": [
+        "15.2",
+        "15.7"
+      ],
+      "point": 3
+    },
+    {
+      "claim": "super mushroom",
+      "rules": [
+        "15.2",
+        "15.7"
+      ],
+      "point": 3
+    },
+    {
+      "claim": "powerful super mushroom",
+      "rules": [
+        "15.2",
+        "15.7"
+      ],
+      "point": 3
+    }
+  ],
+  "written_by": "draft: scripts/draft_split_v1.py",
+  "checked_by": null
+}

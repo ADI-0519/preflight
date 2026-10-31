@@ -1,0 +1,26 @@
+{
+  "item_id": "A24-1242030",
+  "kind": "ruling",
+  "label": "positive",
+  "outcome": "upheld",
+  "claims": [
+    {
+      "claim": "low calorie",
+      "rules": [
+        "15.1",
+        "15.1.1"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "Try a low calorie swap with the Skinny Food Co",
+      "rules": [
+        "15.1",
+        "15.1.1"
+      ],
+      "point": 1
+    }
+  ],
+  "written_by": "draft: scripts/draft_split_v1.py",
+  "checked_by": null
+}

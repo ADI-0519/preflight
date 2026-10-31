@@ -1,0 +1,98 @@
+{
+  "item_id": "A25-1303989",
+  "kind": "ruling",
+  "label": "positive",
+  "outcome": "upheld",
+  "claims": [
+    {
+      "claim": "I have ADHD. One of my worst traits is that I have very poor memory. It is definitely helping",
+      "rules": [
+        "12.1",
+        "12.11",
+        "15.6",
+        "15.6.2"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "unique ability to",
+      "rules": [
+        "12.1",
+        "12.11",
+        "15.6",
+        "15.6.2"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "against UV exposure",
+      "rules": [
+        "12.1",
+        "12.11",
+        "15.6",
+        "15.6.2"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "magical supplement",
+      "rules": [
+        "12.1",
+        "12.11",
+        "15.6",
+        "15.6.2"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "MB serotonin and dopamine",
+      "rules": [
+        "15.1",
+        "15.1.1"
+      ],
+      "point": 2
+    },
+    {
+      "claim": "blood circulation",
+      "rules": [
+        "15.1",
+        "15.1.1"
+      ],
+      "point": 2
+    },
+    {
+      "claim": "oxygen absorption",
+      "rules": [
+        "15.1",
+        "15.1.1"
+      ],
+      "point": 2
+    },
+    {
+      "claim": "mitochondrial energy production and ATP",
+      "rules": [
+        "15.1",
+        "15.1.1"
+      ],
+      "point": 2
+    },
+    {
+      "claim": "Anti-oxidant. Methylene Blue functions as a robust antioxidant, battling free radicals and safeguarding your cells from oxidative damage",
+      "rules": [
+        "15.1",
+        "15.1.1"
+      ],
+      "point": 2
+    },
+    {
+      "claim": "cell longevity",
+      "rules": [
+        "15.1",
+        "15.1.1"
+      ],
+      "point": 2
+    }
+  ],
+  "written_by": "draft: scripts/draft_split_v1.py",
+  "checked_by": null
+}

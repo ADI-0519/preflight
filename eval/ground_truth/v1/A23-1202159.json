@@ -1,0 +1,85 @@
+{
+  "item_id": "A23-1202159",
+  "kind": "ruling",
+  "label": "positive",
+  "outcome": "upheld",
+  "claims": [
+    {
+      "claim": "it helps balance your sugar level",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.2"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "it balances your electrolytes",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.2"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "it actually doesn’t raise your blood pressure",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.2"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "it has 92 minerals in it",
+      "rules": [
+        "15.1",
+        "15.1.1"
+      ],
+      "point": 2
+    },
+    {
+      "claim": "packed with minerals",
+      "rules": [
+        "15.1",
+        "15.1.1"
+      ],
+      "point": 2
+    },
+    {
+      "claim": "packed with magnesium",
+      "rules": [
+        "15.1",
+        "15.1.1"
+      ],
+      "point": 2
+    },
+    {
+      "claim": "alkalining your body is so important, because the more acidic it is, the more open it is to disorders and diseases",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "point": 3
+    },
+    {
+      "claim": "eliminates mucus build up",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "point": 3
+    },
+    {
+      "claim": "reduce inflammation",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "point": 3
+    }
+  ],
+  "written_by": "draft: scripts/draft_split_v1.py",
+  "checked_by": null
+}

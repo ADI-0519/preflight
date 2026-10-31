@@ -1,0 +1,50 @@
+{
+  "item_id": "A26-1345353",
+  "kind": "ruling",
+  "label": "positive",
+  "outcome": "upheld",
+  "claims": [
+    {
+      "claim": "Eat pecans. Live longer",
+      "rules": [
+        "15.1",
+        "15.1.1"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "Eat nuts. Live longer",
+      "rules": [
+        "15.1",
+        "15.1.1"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "pecans can help lower cholesterol",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "point": 2
+    },
+    {
+      "claim": "regular nut consumption is linked to a lower risk of heart disease and premature death",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "point": 2
+    },
+    {
+      "claim": "If everyone in the UK added a daily portion of nuts, we estimate it could help save up to 20,000 lives every year",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "point": 2
+    }
+  ],
+  "written_by": "draft: scripts/draft_split_v1.py",
+  "checked_by": null
+}

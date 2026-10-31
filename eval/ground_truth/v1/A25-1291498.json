@@ -1,0 +1,82 @@
+{
+  "item_id": "A25-1291498",
+  "kind": "ruling",
+  "label": "positive",
+  "outcome": "upheld",
+  "claims": [
+    {
+      "claim": "You’re on anti-depressants, you see a Dr they say take these pills. They’re not magic beans",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "not automatically feel better",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "numb your emotions so you feel not happy, not sad. None of it delivers it. You’re very, very numb. With Supreme CBD, how we work is we balance your hormones in your body using the endocrine system",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "endocannabinoid system",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "endocrine system",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "suffering really bad anxiety",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "DO YOU TAKE ANTI DEPRESSANTS? They just numb your emotions so you don’t feel happy or sad",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "THOUSANDS OF PEOPLE HAVE SWITCH TO @Supremecbd which",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "WORKS WITH YOUR BODIES OWN ENDOCRINE SYSTEM",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "point": 1
+    }
+  ],
+  "written_by": "draft: scripts/draft_split_v1.py",
+  "checked_by": null
+}

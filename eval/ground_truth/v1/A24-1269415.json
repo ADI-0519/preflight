@@ -1,0 +1,50 @@
+{
+  "item_id": "A24-1269415",
+  "kind": "ruling",
+  "label": "positive",
+  "outcome": "upheld",
+  "claims": [
+    {
+      "claim": "THE BEST SLEEP SUPPLEMENT ON THE MARKET",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.2",
+        "15.7"
+      ],
+      "point": 2
+    },
+    {
+      "claim": "Are you struggling with sleep?",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.2",
+        "15.7"
+      ],
+      "point": 2
+    },
+    {
+      "claim": "each effervescent blends 300mg of essential magnesium, 100mg of KSM-^^ Ashwagandha, and 500mg of calming lemon balm. This powerhouse combination helps ease stress, improve sleep, and support muscle recovery so you can wake up refreshed",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.2",
+        "15.7"
+      ],
+      "point": 2
+    },
+    {
+      "claim": "Rest & Recover",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.2",
+        "15.7"
+      ],
+      "point": 2
+    }
+  ],
+  "written_by": "draft: scripts/draft_split_v1.py",
+  "checked_by": null
+}

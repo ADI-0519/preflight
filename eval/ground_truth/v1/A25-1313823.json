@@ -1,0 +1,178 @@
+{
+  "item_id": "A25-1313823",
+  "kind": "ruling",
+  "label": "positive",
+  "outcome": "upheld",
+  "claims": [
+    {
+      "claim": "nutritional supplements that support PCOS symptoms",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "Manage Your PCOS",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "Supports Ovulation & Regular Cycles",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "Reduce Acne",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "Hormonal Balance & Cycle Support",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "Expert hormonal support for women with PCOS",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "Supports ovulation and more regular cycles. Helps manage cravings and blood sugar levels. Encourages clearer skin and hormonal balance. Boosts […] immune function. Created by a doctor with PCOS",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "-More regular periods or signs of ovulation -Fewer cravings -Clearer skin",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "-Noticeable improvements in cycle regularity -More predictable ovulation -Support for egg quality and insulin response",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "The Perfect Supplement For PCOS",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "Stop scrolling if you have PCOS",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "I founded Polybiotics as a way to support my PCOS symptoms",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "supports your PCOS symptoms, including things like acne, hair thinning, excess body hair and insulin resistance",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "take control of your hormones",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "Myo-Inositol & D-Chiro Inositol (111.5:1 Ratio) - reflects natural ratio found in women without PCOS. Supports ovarian function and hormone signalling. Vitamin D3 + K2 - Addresses common deficiencies and supports calcium metabolism",
+      "rules": [
+        "15.1",
+        "15.1.1"
+      ],
+      "point": 2
+    },
+    {
+      "claim": "and menstrual health. Zinc Picolinate - Enhances the effectiveness of Vitamin D and supports hormonal balance, cardiovascular health, and proper calcium utilisation. Chromium Picolinate - Promotes insulin sensitivity and helps manage appetite",
+      "rules": [
+        "15.1",
+        "15.1.1"
+      ],
+      "point": 2
+    },
+    {
+      "claim": "I wanted real PCOS relief, so I made it. I’m Dr Amina Hersi. I’m a medical doctor and I live with PCOS. I created PolyBiotics – nutritional supplements that support PCOS symptoms and are trusted by 8000+ women",
+      "rules": [
+        "15.6",
+        "15.6.3"
+      ],
+      "point": 3
+    },
+    {
+      "claim": "Manage Your PCOS",
+      "rules": [
+        "15.6",
+        "15.6.3"
+      ],
+      "point": 3
+    },
+    {
+      "claim": "Stop scrolling if you have PCOS. I’m Doctor Amina Hersi and I’m a Doctor living with PCOS and the founder of Polybiotics. I founded Polybiotics as a way to support my PCOS symptoms and it’s been trusted by over 7000 women. The Inositol Infusion Supplement uses the latest research to create a formula that supports your PCOS symptoms, including things like acne, hair thinning, excess body hair and insulin resistance. Now it’s the time to take control of your hormones. Shop in the link below and see the transformation for yourselves",
+      "rules": [
+        "15.6",
+        "15.6.3"
+      ],
+      "point": 3
+    },
+    {
+      "claim": "I’m a Doctor",
+      "rules": [
+        "15.6",
+        "15.6.3"
+      ],
+      "point": 3
+    },
+    {
+      "claim": "I’m a medical doctor",
+      "rules": [
+        "15.6",
+        "15.6.3"
+      ],
+      "point": 3
+    }
+  ],
+  "written_by": "draft: scripts/draft_split_v1.py",
+  "checked_by": null
+}

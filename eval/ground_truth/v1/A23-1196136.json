@@ -1,0 +1,76 @@
+{
+  "item_id": "A23-1196136",
+  "kind": "ruling",
+  "label": "positive",
+  "outcome": "upheld",
+  "claims": [
+    {
+      "claim": "help maintain the elasticity and firmness of your skin",
+      "rules": [
+        "3.1",
+        "3.7",
+        "12.1"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "reduce the appearance of fine lines and wrinkles",
+      "rules": [
+        "3.1",
+        "3.7",
+        "12.1"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "thicker hair",
+      "rules": [
+        "3.1",
+        "3.7",
+        "12.1"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "fine lines and wrinkles",
+      "rules": [
+        "3.1",
+        "3.7",
+        "12.1"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "your skin being more hydrated",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.2",
+        "15.7"
+      ],
+      "point": 2
+    },
+    {
+      "claim": "stronger nails",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.2",
+        "15.7"
+      ],
+      "point": 2
+    },
+    {
+      "claim": "improved joint health",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.2",
+        "15.7"
+      ],
+      "point": 2
+    }
+  ],
+  "written_by": "draft: scripts/draft_split_v1.py",
+  "checked_by": null
+}

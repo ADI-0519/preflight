@@ -1,0 +1,37 @@
+{
+  "item_id": "A24-1253730",
+  "kind": "ruling",
+  "label": "positive",
+  "outcome": "upheld",
+  "claims": [
+    {
+      "claim": "my mood’s a lot better",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.7"
+      ],
+      "point": 3
+    },
+    {
+      "claim": "my energy’s better",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.7"
+      ],
+      "point": 3
+    },
+    {
+      "claim": "I’ve got energy to get up and do stuff",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.7"
+      ],
+      "point": 3
+    }
+  ],
+  "written_by": "draft: scripts/draft_split_v1.py",
+  "checked_by": null
+}

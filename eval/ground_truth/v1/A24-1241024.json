@@ -1,0 +1,62 @@
+{
+  "item_id": "A24-1241024",
+  "kind": "ruling",
+  "label": "positive",
+  "outcome": "upheld",
+  "claims": [
+    {
+      "claim": "Key for Peri + Menopause",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "It’s the most comprehensive menopause support supplement that’s out there, it also works for perimenopause, it also works for post-menopause",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "[F]rom helping with mood, to brain fog, to hot flushes, to night sweats, to just all over, feeling so much better, more energy, and better sleep, that’s what every woman wants",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "see how you get on first, and let us know, I bet you you’ll see a difference",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "and cognitive function",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.2",
+        "15.7"
+      ],
+      "point": 2
+    },
+    {
+      "claim": "supports your immunity",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.2",
+        "15.7"
+      ],
+      "point": 2
+    }
+  ],
+  "written_by": "draft: scripts/draft_split_v1.py",
+  "checked_by": null
+}

@@ -1,0 +1,50 @@
+{
+  "item_id": "A24-1228813",
+  "kind": "ruling",
+  "label": "positive",
+  "outcome": "upheld",
+  "claims": [
+    {
+      "claim": "JUST TAKE HANGCURE REBOUND, TAKE 2 CAPSULES BEFORE DRINKING",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "NO NEED FOR CRAZY REMEDIES ANYMORE",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "#hangcure #hangcurerebound #ultimatehangovercure",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "#hangover #hangoverremedies",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "hangover cure",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "point": 1
+    }
+  ],
+  "written_by": "draft: scripts/draft_split_v1.py",
+  "checked_by": null
+}

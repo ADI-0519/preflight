@@ -1,0 +1,105 @@
+{
+  "item_id": "A26-1330390",
+  "kind": "ruling",
+  "label": "positive",
+  "outcome": "upheld",
+  "claims": [
+    {
+      "claim": "Telomere length is literally a predictor of how long you have left to live",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.2"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "Moderate coffee drinkers had telomeres equivalent to people five years younger",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.2"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "buying you time",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.2"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "protecting your DNA",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.2"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "slowing down aging at the cellular level",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.2"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "it was most likely coffee’s polyphenols protecting telomeres because they’re powerful antioxidants",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.2"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "the healthiest",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.2"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "polyphenols to support gut and brain health",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.2"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "how long you have left to live",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.2"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "overseen by Dr Rupy",
+      "rules": [
+        "15.6.3"
+      ],
+      "point": 2
+    },
+    {
+      "claim": "our Director and Chief Science Officer",
+      "rules": [
+        "15.6.3"
+      ],
+      "point": 2
+    }
+  ],
+  "written_by": "draft: scripts/draft_split_v1.py",
+  "checked_by": null
+}

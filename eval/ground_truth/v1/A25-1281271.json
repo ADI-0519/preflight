@@ -1,0 +1,176 @@
+{
+  "item_id": "A25-1281271",
+  "kind": "ruling",
+  "label": "positive",
+  "outcome": "upheld",
+  "claims": [
+    {
+      "claim": "Natural GLP-1 Secretion Enhancer",
+      "rules": [
+        "12.1",
+        "12.11",
+        "15.6",
+        "15.6.2"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "Supports blood sugar balance",
+      "rules": [
+        "12.1",
+        "12.11",
+        "15.6",
+        "15.6.2"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "Keeps cravings & appetite in check",
+      "rules": [
+        "12.1",
+        "12.11",
+        "15.6",
+        "15.6.2"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "Improve metabolic health",
+      "rules": [
+        "12.1",
+        "12.11",
+        "15.6",
+        "15.6.2"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "Unlock Your Body’s Natural GLP-1 Power with Berberine!",
+      "rules": [
+        "12.1",
+        "12.11",
+        "15.6",
+        "15.6.2"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "Struggling with cravings, blood sugar spikes",
+      "rules": [
+        "12.1",
+        "12.11",
+        "15.6",
+        "15.6.2"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "? Berberine is your natural metabolism booster, enhancing GLP-1 secretion to support: Appetite Control – Feel fuller, eat less",
+      "rules": [
+        "12.1",
+        "12.11",
+        "15.6",
+        "15.6.2"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "Faster Metabolism – Activates AMPK for fat burning",
+      "rules": [
+        "12.1",
+        "12.11",
+        "15.6",
+        "15.6.2"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "Struggling with",
+      "rules": [
+        "12.1",
+        "12.11",
+        "15.6",
+        "15.6.2"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "stubborn weight?",
+      "rules": [
+        "12.1",
+        "12.11",
+        "15.6",
+        "15.6.2"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "Balanced Blood Sugar – No more energy crashes",
+      "rules": [
+        "12.1",
+        "12.11",
+        "15.6",
+        "15.6.2"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "and Gut Health Support – Optimizes microbiome for digestion",
+      "rules": [
+        "12.1",
+        "12.11",
+        "15.6",
+        "15.6.2"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "your body’s natural metabolic switch",
+      "rules": [
+        "12.1",
+        "12.11",
+        "15.6",
+        "15.6.2"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "Supports blood sugar balance",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.7"
+      ],
+      "point": 2
+    },
+    {
+      "claim": "stubborn weight?",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.7"
+      ],
+      "point": 2
+    },
+    {
+      "claim": "Balanced Blood Sugar – No more energy crashes",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.7"
+      ],
+      "point": 2
+    },
+    {
+      "claim": "and Gut Health Support – Optimizes microbiome for digestion",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.7"
+      ],
+      "point": 2
+    }
+  ],
+  "written_by": "draft: scripts/draft_split_v1.py",
+  "checked_by": null
+}

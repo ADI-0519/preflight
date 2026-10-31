@@ -1,0 +1,106 @@
+{
+  "item_id": "A25-1313822",
+  "kind": "ruling",
+  "label": "positive",
+  "outcome": "upheld",
+  "claims": [
+    {
+      "claim": "I went from a size XL to a M…and finally feel like myself again",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "Once menopause hit, everything changed. I became apple-shaped overnight, no waist, no bum, skinny arms and legs",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "Lunera is a natural menopause supplement designed to tackle what’s really going on: Hormonal weight gain",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "Lunera helps support hormonal balance, allowing your body to release stubborn fat and return to its natural, feminine shape",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "after just two weeks of taking Lunera Hormone Balance every morning … I could actually see my waist again. Dresses fit properly, and I felt proud in them, my tummy flattened noticeably, I dropped nearly 4kg without even trying",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "I went from XL to M at 54! Tackle Stubborn Apron Belly",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "Relieve Bloating",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "I’m 52, menopausal and no matter what I ate or how much I walked, the weight just kept creeping up. I was bloated, tired and felt like a stranger in my own body. A friend recommended Lunera",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "no wild promises, just support for hormones",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "nearly 3 months in, I’m down 11 lbs",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "support for",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "I dropped nearly 4kg without even trying",
+      "rules": [
+        "15.6",
+        "15.6.6"
+      ],
+      "point": 2
+    }
+  ],
+  "written_by": "draft: scripts/draft_split_v1.py",
+  "checked_by": null
+}

@@ -1,0 +1,127 @@
+{
+  "item_id": "A25-1281265",
+  "kind": "ruling",
+  "label": "positive",
+  "outcome": "upheld",
+  "claims": [
+    {
+      "claim": "Ozempic works, but 20-50% of weight loss is muscle. Is this $1/day solution better? Unlike Ozempic, Curb Crave: Helps preserve lean muscle mass as you lose weight Supports healthy digestion instead of disrupting it Keeps your face looking youthful and vibrant And won’t cost you $1,000 a month like most GLP-1 injections do",
+      "rules": [
+        "12.1",
+        "12.11",
+        "15.6",
+        "15.6.2"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "The FASTEST Way To Eliminate Sugar Cravings",
+      "rules": [
+        "12.1",
+        "12.11",
+        "15.6",
+        "15.6.2"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "Food Craving Control",
+      "rules": [
+        "12.1",
+        "12.11",
+        "15.6",
+        "15.6.2"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "CURB CRAVE",
+      "rules": [
+        "12.1",
+        "12.11",
+        "15.6",
+        "15.6.2"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "‘I was close on [sic] getting on prescription weight loss medication but decided to give these a try and I am amazed",
+      "rules": [
+        "12.1",
+        "12.11",
+        "15.6",
+        "15.6.2"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "I hardly get hungry throughout the day",
+      "rules": [
+        "12.1",
+        "12.11",
+        "15.6",
+        "15.6.2"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "It works",
+      "rules": [
+        "12.1",
+        "12.11",
+        "15.6",
+        "15.6.2"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "Helps preserve lean muscle mass as you lose weight Supports healthy digestion instead of disrupting it Keeps your face looking youthful and vibrant",
+      "rules": [
+        "12.1",
+        "12.11",
+        "15.6",
+        "15.6.2"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "I Notice [sic] a good energy boost from them",
+      "rules": [
+        "12.1",
+        "12.11",
+        "15.6",
+        "15.6.2"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "Helps preserve lean muscle mass as you lose weight Supports healthy digestion instead of disrupting it Keeps your face looking youthful and vibrant",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.7"
+      ],
+      "point": 2
+    },
+    {
+      "claim": "I Notice [sic] a good energy boost from them",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.7"
+      ],
+      "point": 2
+    },
+    {
+      "claim": "Curb Crave",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.7"
+      ],
+      "point": 2
+    }
+  ],
+  "written_by": "draft: scripts/draft_split_v1.py",
+  "checked_by": null
+}

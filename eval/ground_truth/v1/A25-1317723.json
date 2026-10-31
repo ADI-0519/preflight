@@ -1,0 +1,105 @@
+{
+  "item_id": "A25-1317723",
+  "kind": "ruling",
+  "label": "positive",
+  "outcome": "upheld",
+  "claims": [
+    {
+      "claim": "Stubborn weight gone",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.7"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "Natural weight loss",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.7"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "Weight: Unlock results with reduced cravings",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.7"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "GuLP-1 can support healthy, sustainable weight loss alongside a balanced diet and regular movement",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.7"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "Engineered for optimum weight loss by naturally increasing GLP-1 levels",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.7"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "Digestive: Increase GLP-1 naturally",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.7"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "GuLP-1's prebiotic fibres work gradually in the gut, triggering a natural, steady release of GLP-1",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.7"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "sustainable weight loss without injections",
+      "rules": [
+        "12.1",
+        "12.11"
+      ],
+      "point": 2
+    },
+    {
+      "claim": "A science-backed blend of natural fibres that helps you feel fuller for longer - supporting healthy, sustainable weight loss without injections",
+      "rules": [
+        "12.1",
+        "12.11"
+      ],
+      "point": 2
+    },
+    {
+      "claim": "Stop Your Cravings",
+      "rules": [
+        "12.1",
+        "12.11"
+      ],
+      "point": 2
+    },
+    {
+      "claim": "Natural Alternative To Trending Weight Loss Products",
+      "rules": [
+        "12.1",
+        "12.11"
+      ],
+      "point": 2
+    }
+  ],
+  "written_by": "draft: scripts/draft_split_v1.py",
+  "checked_by": null
+}

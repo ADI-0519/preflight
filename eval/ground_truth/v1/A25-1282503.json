@@ -1,0 +1,24 @@
+{
+  "item_id": "A25-1282503",
+  "kind": "ruling",
+  "label": "positive",
+  "outcome": "upheld",
+  "claims": [
+    {
+      "claim": "WPC Transformed My Life – Overcoming Anorexia",
+      "rules": [
+        "15.6.2"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "Winning Battle WITH ANOREXIA",
+      "rules": [
+        "15.6.2"
+      ],
+      "point": 1
+    }
+  ],
+  "written_by": "draft: scripts/draft_split_v1.py",
+  "checked_by": null
+}

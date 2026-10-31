@@ -1,0 +1,211 @@
+{
+  "item_id": "A24-1239905",
+  "kind": "ruling",
+  "label": "positive",
+  "outcome": "upheld",
+  "claims": [
+    {
+      "claim": "help with the effects of anxiety",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "my stress levels are finally stable",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "Reduced stress and anxiety",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "more energy",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.7"
+      ],
+      "point": 2
+    },
+    {
+      "claim": "No more mid day crashes",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.7"
+      ],
+      "point": 2
+    },
+    {
+      "claim": "All-Day Energy",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.7"
+      ],
+      "point": 2
+    },
+    {
+      "claim": "Calm Energy",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.7"
+      ],
+      "point": 2
+    },
+    {
+      "claim": "Sustained energy",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.7"
+      ],
+      "point": 2
+    },
+    {
+      "claim": "Wanting to be more productive",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.7"
+      ],
+      "point": 2
+    },
+    {
+      "claim": "stay focused",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.7"
+      ],
+      "point": 2
+    },
+    {
+      "claim": "improving brain function",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.7"
+      ],
+      "point": 2
+    },
+    {
+      "claim": "more focused and productive",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.7"
+      ],
+      "point": 2
+    },
+    {
+      "claim": "feeling pretty focused",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.7"
+      ],
+      "point": 2
+    },
+    {
+      "claim": "more productive",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.7"
+      ],
+      "point": 2
+    },
+    {
+      "claim": "improve your focus",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.7"
+      ],
+      "point": 2
+    },
+    {
+      "claim": "Reduced brain fog",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.7"
+      ],
+      "point": 2
+    },
+    {
+      "claim": "Improved focus",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.7"
+      ],
+      "point": 2
+    },
+    {
+      "claim": "Mental Clarity",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.7"
+      ],
+      "point": 2
+    },
+    {
+      "claim": "improved immunity",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.7"
+      ],
+      "point": 2
+    },
+    {
+      "claim": "sleeping really well",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.7"
+      ],
+      "point": 2
+    },
+    {
+      "claim": "functional mushroom gummies",
+      "rules": [
+        "15.2",
+        "15.7"
+      ],
+      "point": 3
+    },
+    {
+      "claim": "Feel Güd gummies",
+      "rules": [
+        "15.2",
+        "15.7"
+      ],
+      "point": 3
+    },
+    {
+      "claim": "Feel Güd",
+      "rules": [
+        "15.2",
+        "15.7"
+      ],
+      "point": 3
+    }
+  ],
+  "written_by": "draft: scripts/draft_split_v1.py",
+  "checked_by": null
+}

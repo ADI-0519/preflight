@@ -1,0 +1,34 @@
+{
+  "item_id": "A26-1337420",
+  "kind": "ruling",
+  "label": "positive",
+  "outcome": "upheld",
+  "claims": [
+    {
+      "claim": "very much reduced",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "nowhere near as bad",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "Blurry here. Crystal clear on Trustpilot. Regulations mean we can’t show everything on this page, but you can read the lot over there",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "point": 1
+    }
+  ],
+  "written_by": "draft: scripts/draft_split_v1.py",
+  "checked_by": null
+}

@@ -1,0 +1,104 @@
+{
+  "item_id": "A25-1303555",
+  "kind": "ruling",
+  "label": "positive",
+  "outcome": "upheld",
+  "claims": [
+    {
+      "claim": "helps with problems with enlarged prostate and frequent urination",
+      "rules": [
+        "12.1",
+        "12.11",
+        "15.6",
+        "15.6.2"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "supports peak urine flow",
+      "rules": [
+        "12.1",
+        "12.11",
+        "15.6",
+        "15.6.2"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "PROBLEMS WITH PROSTATE",
+      "rules": [
+        "12.1",
+        "12.11",
+        "15.6",
+        "15.6.2"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "GONE WITH THIS SIMPLE DRINK",
+      "rules": [
+        "12.1",
+        "12.11",
+        "15.6",
+        "15.6.2"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "in a two-month study with 52 men, those taking the formula reported: […] 66% improvement in urine flow. Meanwhile, the placebo group saw no changes. As you can see this formula worked wonders",
+      "rules": [
+        "12.1",
+        "12.11",
+        "15.6",
+        "15.6.2"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "enlarged prostates",
+      "rules": [
+        "12.1",
+        "12.11",
+        "15.6",
+        "15.6.2"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "PROstate Support",
+      "rules": [
+        "12.1",
+        "12.11",
+        "15.6",
+        "15.6.2"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "Dr. Simon Nolan",
+      "rules": [
+        "12.18",
+        "15.6.3"
+      ],
+      "point": 2
+    },
+    {
+      "claim": "Luckily there’s now a simple, natural solution that can eliminate prostate problems",
+      "rules": [
+        "12.18",
+        "15.6.3"
+      ],
+      "point": 2
+    },
+    {
+      "claim": "Doctor-Formulated Solution That Shrinks Enlarged Prostate and Eliminates Urgency and Frequency of Urination",
+      "rules": [
+        "12.18",
+        "15.6.3"
+      ],
+      "point": 2
+    }
+  ],
+  "written_by": "draft: scripts/draft_split_v1.py",
+  "checked_by": null
+}

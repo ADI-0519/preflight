@@ -1,0 +1,34 @@
+{
+  "item_id": "A24-1241337",
+  "kind": "ruling",
+  "label": "positive",
+  "outcome": "upheld",
+  "claims": [
+    {
+      "claim": "secret weapon parents of ASD kids swear by",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "Autism focused, Packed with ingredients that help your child thrive emotionally, mentally and socially",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "This has helped my 5 year old with Level 2 autism so much. Within the first week his melt downs decreased by 80%. He is communicating so much better…he is starting to show kindness and empathy to his little sister…",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "point": 1
+    }
+  ],
+  "written_by": "draft: scripts/draft_split_v1.py",
+  "checked_by": null
+}

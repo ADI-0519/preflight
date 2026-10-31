@@ -1,0 +1,135 @@
+{
+  "item_id": "G24-1248968",
+  "kind": "ruling",
+  "label": "positive",
+  "outcome": "upheld",
+  "claims": [
+    {
+      "claim": "crush stress",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "ignite your energy",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.2"
+      ],
+      "point": 2
+    },
+    {
+      "claim": "robust immunity",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.2"
+      ],
+      "point": 2
+    },
+    {
+      "claim": "discover the secret to sharper focus",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.2"
+      ],
+      "point": 2
+    },
+    {
+      "claim": "Feeling foggy and forgetful",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.2"
+      ],
+      "point": 2
+    },
+    {
+      "claim": "known for its potential to support cognitive function, focus, and memory",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.2"
+      ],
+      "point": 2
+    },
+    {
+      "claim": "mental potential",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.2"
+      ],
+      "point": 2
+    },
+    {
+      "claim": "a sharper mind",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.2"
+      ],
+      "point": 2
+    },
+    {
+      "claim": "LITERALLY REGROW BRAIN CELLS",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.2"
+      ],
+      "point": 2
+    },
+    {
+      "claim": "support your brain health",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.2"
+      ],
+      "point": 2
+    },
+    {
+      "claim": "youthful vitality",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.2"
+      ],
+      "point": 2
+    },
+    {
+      "claim": "peak wellness",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.2"
+      ],
+      "point": 2
+    },
+    {
+      "claim": "transform your life today",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.2"
+      ],
+      "point": 2
+    },
+    {
+      "claim": "superstar mushroom",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.2"
+      ],
+      "point": 2
+    }
+  ],
+  "written_by": "draft: scripts/draft_split_v1.py",
+  "checked_by": null
+}

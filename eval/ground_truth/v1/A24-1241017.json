@@ -1,0 +1,98 @@
+{
+  "item_id": "A24-1241017",
+  "kind": "ruling",
+  "label": "positive",
+  "outcome": "upheld",
+  "claims": [
+    {
+      "claim": "95% Success Rate in Menopause Relief",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "Pioneering Natural Menopause Relief since 2019",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "Night sweats",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "Intense hot flashes",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "Frustrating brain fog episodes",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "Sleep disturbances",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "point": 1
+    },
+    {
+      "claim": "FSA APPROVED",
+      "rules": [
+        "3.1",
+        "3.50"
+      ],
+      "point": 2
+    },
+    {
+      "claim": "the only FSA approved menopause supplement",
+      "rules": [
+        "3.1",
+        "3.50"
+      ],
+      "point": 2
+    },
+    {
+      "claim": "the only FSA Approved menopause supplement",
+      "rules": [
+        "3.1",
+        "3.50"
+      ],
+      "point": 2
+    },
+    {
+      "claim": "the most effective, highest quality ingredients",
+      "rules": [
+        "3.1",
+        "3.50"
+      ],
+      "point": 2
+    },
+    {
+      "claim": "Highest Quality Ingredients",
+      "rules": [
+        "3.1",
+        "3.50"
+      ],
+      "point": 2
+    }
+  ],
+  "written_by": "draft: scripts/draft_split_v1.py",
+  "checked_by": null
+}

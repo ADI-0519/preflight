@@ -1,7 +1,7 @@
-import json
 from collections import Counter
 
 import pytest
+import yaml
 
 from preflight.eval.split import EVAL_DIR, advertiser_key, load_ground_truth, load_split, load_team_ad
 from preflight.sources.register import load_register
@@ -76,11 +76,13 @@ def test_team_ads_use_only_authorised_register_wording(split):
         assert DISCLAIMER in ad.on_screen_text
 
 
-def test_manifest_counts_match_lists(split):
-    import yaml
-
+def test_manifest_counts_match_lists():
     data = yaml.safe_load((EVAL_DIR / "splits" / "v1.yaml").read_text(encoding="utf-8"))
     for part in ("dev", "test"):
         teams = sum(1 for i in data[part] if i.startswith("T"))
         assert data["counts"][part] == {"positive": len(data[part]) - teams, "negative": teams}
-    assert json.dumps(data["frozen"]) == "false"  # draft until a second founder checks the ground truth
+
+
+def test_frozen_split_is_fully_checked(split):
+    if split.frozen:
+        assert all(load_ground_truth("v1", i).checked_by for i in split.items)

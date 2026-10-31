@@ -1,6 +1,6 @@
 # Reconstructions (P15)
 
-Built 31 Oct 2026 by `preflight.eval.reconstruct` from the ruling items in the draft split v1 (P14, not yet frozen). Outputs are in `data/raw/reconstructions/<ruling-id>/` (git-ignored); nothing generated is committed.
+Built 31 Oct 2026 by `preflight.eval.reconstruct` from the 74 ruling items in split v1 (P14; frozen since, with the same items). Outputs are in `data/raw/reconstructions/<ruling-id>/` (git-ignored); nothing generated is committed.
 
 ## How they are built
 
@@ -9,7 +9,7 @@ Built 31 Oct 2026 by `preflight.eval.reconstruct` from the ruling items in the d
   - carries quoted wording exactly and invents nothing for `[…]`;
   - replaces brand and person names with generic ones;
   - picks a video when the description mentions speech, video, TikTok and similar, and an image otherwise.
-- **Stills:** `muse-image-1.0`, one per scene, asked for no text in the image. All wording is drawn on afterwards with ffmpeg, so it stays exact.
+- **Stills:** `muse-image-1.0`, one per scene, asked for no text in the image. All wording is drawn on afterwards with ffmpeg, so it stays exact. If Muse Image refuses a scene's picture, the builder uses a neutral product shot instead and lists the scene in `meta.json` under `fallback_stills`; the scene's wording is unchanged.
 - **Voiceover:** local Piper TTS (`en_GB-alan-medium`), video items only, installed with `uv sync --group fixtures` (decided in P05).
 - **Label:** "AI reconstruction from ASA ruling text" is drawn on every frame and set in `meta.json` (`reconstruction: true`). Long on-screen text is shrunk to fit, not cut.
 
@@ -18,21 +18,71 @@ Built 31 Oct 2026 by `preflight.eval.reconstruct` from the ruling items in the d
 | | |
 |---|---|
 | Ruling items in split v1 | 74 |
-| Built | 72 (37 image, 35 video; 179 scenes) |
-| Failed | 2: A25-1281264 and A26-1341476, refused by Meta's content filter ("prompt triggering our content management policy") |
-| Cost | $2.57 at published prices (about $0.04 per item) |
-| Time | about 62 minutes, one item at a time |
-
-The two refusals have no reconstruction, so the evaluation either drops them from v1 or replaces them before the freeze. Rerunning with `--only <id> --rebuild` retries one item.
-
-A check for advertiser names in the shot lists found none: two hits were ordinary words ("drop", "top 5 supplements").
+| Built | 74 (38 image, 36 video) |
+| Picture refused by Muse Image | 2 on the first run. A25-1281264 went through on a rebuild with a new shot list. A26-1341476 (a before-and-after drawing of a bottom) uses the fallback picture, so the imagery that ruling partly rests on is not in its reconstruction. |
+| Cost | $2.64 at published prices (about $0.04 per item) |
+| Time | about 65 minutes, one item at a time |
 
 Video items run longer than the prompt's 40 seconds when the quoted voiceover is long, because each scene lasts as long as its speech.
 
+## Automatic check
+
+`uv run python -m preflight.eval.check_reconstructions` compares each reconstruction's wording with its ad description and ground truth (no model calls; results in `data/raw/reconstructions/_check.json`).
+
+- **Claims carried:** 763 of 799 ground-truth claims, 735 word for word and 28 near (a brand swapped for "[brand]" or a "[sic]" dropped).
+- **Claims missing: 36, in 23 items.** Every one contains a brand, product or person's name, which the shot-list prompt genericises (rule 3 of the prompt, to keep real brands and likenesses out). Some of those names are claims in themselves: product names ("Happy Mind", "GuLP-1", "PROstate Support"), doctor endorsements ("DR. ... BOARD-CERTIFIED UROLOGIST") and comparisons with named drugs ("Ozempic"). A screener cannot flag them in the reconstruction, so P31 should either score those claims as not reconstructable or a prompt v2 should keep claim-bearing names. **Founders to decide.**
+- **Lines not from the ad description:** 7 of 891, in 5 items, all genericised names ("Meet the product by [brand]") or testimonial attributions ("– Customer"). None adds a claim.
+
+## Spot-check (product rule 8)
+
+Two founders check each item below before reconstructions are used in any run: the wording is carried exactly, nothing is added, and no real brand or person's likeness appears. The list is every item the automatic check flagged (26) plus 10 of the other 48 drawn at random (seed 15). Open `data/raw/reconstructions/<id>/` next to the ruling page, and put your GitHub name in a column when the item passes, or a note when it does not.
+
+| Item | Split | Format | Claims carried | Why checked | Founder 1 | Founder 2 |
+|---|---|---|---|---|---|---|
+| A24-1228813 | dev | video | 3 of 5 | 2 claim(s) missing | | |
+| A24-1231792 | dev | image | 4 of 6 | 2 claim(s) missing | | |
+| A24-1238193 | dev | video | 4 of 6 | 2 claim(s) missing | | |
+| A24-1239904 | dev | video | 23 of 24 | 1 claim(s) missing | | |
+| A24-1239905 | dev | video | 27 of 28 | 1 claim(s) missing | | |
+| A24-1241023 | dev | image | 12 of 13 | 1 claim(s) missing | | |
+| A24-1242030 | test | image | 3 of 4 | 1 claim(s) missing | | |
+| A24-1269415 | test | video | 6 of 6 | 1 added line(s) | | |
+| A25-1281257 | test | video | 23 of 25 | 2 claim(s) missing | | |
+| A25-1281265 | test | image | 11 of 13 | 2 claim(s) missing, 1 added line(s) | | |
+| A25-1281266 | test | video | 12 of 12 | 2 added line(s) | | |
+| A25-1303537 | test | image | 4 of 5 | 1 claim(s) missing | | |
+| A25-1303555 | test | video | 25 of 27 | 2 claim(s) missing | | |
+| A25-1303556 | test | image | 9 of 10 | 1 claim(s) missing | | |
+| A25-1303750 | test | image | 1 of 2 | 1 claim(s) missing | | |
+| A25-1313821 | test | image | 14 of 15 | 1 claim(s) missing | | |
+| A25-1313823 | test | video | 38 of 39 | 1 claim(s) missing | | |
+| A25-1317723 | test | image | 11 of 12 | 1 claim(s) missing | | |
+| A26-1325179 | test | video | 43 of 48 | 5 claim(s) missing, 1 added line(s) | | |
+| A26-1330390 | test | video | 11 of 12 | 1 claim(s) missing | | |
+| A26-1341476 | test | image | 4 of 4 | fallback picture | | |
+| G23-1215538 | dev | video | 4 of 5 | 1 claim(s) missing | | |
+| G24-1248968 | dev | video | 14 of 15 | 1 claim(s) missing | | |
+| G24-1252527 | test | image | 11 of 14 | 3 claim(s) missing, 2 added line(s) | | |
+| G25-1323444 | test | image | 16 of 18 | 2 claim(s) missing | | |
+| G26-1339905 | test | video | 2 of 3 | 1 claim(s) missing | | |
+| A23-1191380 | dev | image | 3 of 3 | random sample | | |
+| A23-1196136 | dev | video | 6 of 6 | random sample | | |
+| A23-1202159 | dev | video | 12 of 12 | random sample | | |
+| A23-1216841 | dev | image | 8 of 8 | random sample | | |
+| A24-1240828 | dev | image | 5 of 5 | random sample | | |
+| A24-1240834 | test | video | 7 of 7 | random sample | | |
+| A24-1241024 | dev | video | 6 of 6 | random sample | | |
+| A24-1243213 | dev | video | 10 of 10 | random sample | | |
+| A25-1279959 | test | image | 11 of 11 | random sample | | |
+| A25-1303746 | test | video | 7 of 7 | random sample | | |
+
+Reading reconstructions of test items means reading test-split ad wording, so the checkers should stay off prompt and few-shot work (rule 5), as for the ground truth.
+
 ## Still to do
 
-- **Spot-check by two founders**, as product rule 8 requires before any reconstruction is used: wording carried exactly, nothing added, no brand or likeness. Record who checked which items here.
 - **Gate 1:** `docs/notes/decisions.md` says the organisers' answer on gate 1 is needed before P15. It has not arrived. These reconstructions stay local and unpublished until it does.
+- **Spot-check** above, by two founders.
+- **Names that carry claims:** the decision above.
 
 ## Rebuild
 

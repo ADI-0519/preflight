@@ -7,6 +7,7 @@ requires-python = ">=3.12,<3.13"
 dependencies = [
     "httpx>=0.28",
     "openai>=1.60",
+    "openpyxl>=3.1.5",
     "pydantic>=2.10",
     "python-dotenv>=1.0",
 ]

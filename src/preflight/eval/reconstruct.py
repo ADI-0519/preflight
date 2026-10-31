@@ -34,6 +34,8 @@ VOICE = "en_GB-alan-medium"
 VOICE_URL = "https://huggingface.co/rhasspy/piper-voices/resolve/v1.0.0/en/en_GB/alan/medium/"
 
 LABEL = "AI reconstruction from ASA ruling text"
+# Used when Muse Image refuses a scene's picture. Only the picture changes: the ad's wording is drawn on afterwards.
+FALLBACK_STILL = "A plain unbranded supplement pack on a simple tabletop, soft daylight, studio product shot"
 WIDTH, HEIGHT = 1280, 720
 FONTS = [
     Path(os.environ.get("WINDIR", "C:/Windows")) / "Fonts" / "arial.ttf",
@@ -119,7 +121,18 @@ class Builder:
         usage = response.usage.model_dump() if response.usage else {}
         return ShotList.model_validate_json(response.output_text), usage
 
-    def still(self, prompt: str, path: Path) -> None:
+    def still(self, prompt: str, path: Path) -> bool:
+        """Generate one still; returns True if Muse Image refused the prompt and the neutral fallback was used."""
+        try:
+            self._image(prompt, path)
+            return False
+        except Exception as e:  # the API answers a refused prompt with a 400 naming its content policy
+            if "content management policy" not in str(e):
+                raise
+            self._image(FALLBACK_STILL, path)
+            return True
+
+    def _image(self, prompt: str, path: Path) -> None:
         response = self.client.images.generate(
             model=IMAGE_MODEL,
             prompt=f"{prompt}. Photographic advertising style. No text, letters, labels or logos anywhere.",
@@ -145,10 +158,11 @@ class Builder:
         (target / "shotlist.json").write_text(shots.model_dump_json(indent=2), encoding="utf-8")
         with tempfile.TemporaryDirectory() as tmp:
             work = Path(tmp)
-            clips = []
+            clips, fallbacks = [], []
             for i, scene in enumerate(shots.scenes):
                 still = target / f"scene{i}.png"
-                self.still(scene.image_prompt, still)
+                if self.still(scene.image_prompt, still):
+                    fallbacks.append(i)
                 audio = None
                 if shots.format == "video" and scene.voiceover.strip():
                     audio = work / f"scene{i}.wav"
@@ -161,7 +175,7 @@ class Builder:
                 for i, clip in enumerate(clips[1:], 1):
                     frame(clip, target / f"reconstruction-{i}.png")
         cost = (usage.get("input_tokens", 0) * SPARK_IN + usage.get("output_tokens", 0) * SPARK_OUT) / 1e6
-        cost += IMAGE_EACH * len(shots.scenes)
+        cost += IMAGE_EACH * (len(shots.scenes) + len(fallbacks))
         meta = {
             "reconstruction": True,
             "ruling_id": desc.ruling_id,
@@ -170,6 +184,7 @@ class Builder:
             "models": {"shotlist": SHOTLIST_MODEL, "image": IMAGE_MODEL, "voice": f"piper:{VOICE}"},
             "format": shots.format,
             "scenes": len(shots.scenes),
+            "fallback_stills": fallbacks,  # scenes whose picture is the neutral fallback; their wording is unchanged
             "usage": usage,
             "cost_usd": round(cost, 4),
             "seconds": round(time.monotonic() - started, 1),
@@ -300,10 +315,11 @@ def main() -> None:
     builder = Builder(voice=ensure_voice())
     results = []
     for desc in descriptions_for(args.manifest):
-        if args.only and desc.ruling_id not in args.only:
-            continue
-        if (OUT_DIR / desc.ruling_id / "meta.json").exists() and not args.rebuild:
+        skip = args.only and desc.ruling_id not in args.only
+        if (OUT_DIR / desc.ruling_id / "meta.json").exists() and (skip or not args.rebuild):
             results.append(json.loads((OUT_DIR / desc.ruling_id / "meta.json").read_text(encoding="utf-8")))
+            continue
+        if skip:
             continue
         try:
             meta = builder.build(desc)

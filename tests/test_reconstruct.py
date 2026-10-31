@@ -5,7 +5,7 @@ from pathlib import Path
 import pytest
 from pydantic import ValidationError
 
-from preflight.eval.reconstruct import LABEL, AdDescription, Builder, Scene, ShotList, overlay_filter
+from preflight.eval.reconstruct import FALLBACK_STILL, LABEL, AdDescription, Builder, Scene, ShotList, overlay_filter
 from preflight.sources.rulings import Ruling, parse_ruling
 
 FIXTURE = Path(__file__).parent / "fixtures" / "rulings"
@@ -101,3 +101,23 @@ def test_long_text_is_shrunk_not_cut():
     lines = [f"Claim number {i} that the ad made in full" for i in range(20)]
     drawn = overlay_filter(lines)
     assert all(line in drawn for line in lines)
+
+
+class Refuser(Recorder):
+    """Refuses the first image prompt the way the Meta API does."""
+
+    def _image(self, **kwargs):
+        if not any(kind == "images" for kind, _ in self.calls):
+            self.calls.append(("images", kwargs))
+            raise ValueError("Error code: 400 - the prompt triggered our content management policy.")
+        return super()._image(**kwargs)
+
+
+@pytest.mark.skipif(not shutil.which("ffmpeg"), reason="ffmpeg not installed")
+def test_refused_picture_falls_back_and_keeps_wording(tmp_path):
+    client = Refuser()
+    meta = Builder(client=client).build(AdDescription.from_ruling(ruling()), out_dir=tmp_path)
+    prompts = [kwargs["prompt"] for kind, kwargs in client.calls if kind == "images"]
+    assert len(prompts) == 2 and FALLBACK_STILL in prompts[1]
+    assert meta["fallback_stills"] == [0]
+    assert (tmp_path / "A26-1000001" / "reconstruction.png").exists()

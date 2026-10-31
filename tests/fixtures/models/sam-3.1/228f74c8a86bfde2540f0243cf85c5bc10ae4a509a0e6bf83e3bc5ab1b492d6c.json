@@ -1,0 +1,1 @@
+{"key": "228f74c8a86bfde2540f0243cf85c5bc10ae4a509a0e6bf83e3bc5ab1b492d6c", "response": {"model": "sam-3.1", "text": "", "usage": {"input_tokens": 0, "input_tokens_details": {"cache_write_tokens": null, "cached_tokens": 0}, "output_tokens": 0, "output_tokens_details": {"reasoning_tokens": 0}, "total_tokens": 0, "video_frames_processed": 50}}}

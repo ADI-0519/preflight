@@ -4,7 +4,12 @@ import subprocess
 import sys
 from pathlib import Path
 
+from preflight.evidence.on_screen import read_on_screen
+from preflight.evidence.regions import find_regions
+from preflight.ingest import Frame, Ingested
 from preflight.models import Store, from_env
+from preflight.models.store import digest
+from preflight.schema import Ad
 
 FIXTURES = Path("tests/fixtures/models")
 MEDIA = FIXTURES / "media"
@@ -51,6 +56,42 @@ def make_boxes() -> None:
         str(MEDIA / "boxes.png"))
 
 
+def caption(text: str, start: float, end: float) -> str:
+    return (
+        f"drawtext=fontfile='{FONT}':text='{text}':fontsize=18:fontcolor=white:box=1:boxcolor=black@0.5:boxborderw=8"
+        f":x=(w-text_w)/2:y=60:enable='gte(t,{start})*lt(t,{end})'"
+    )
+
+
+def make_captions() -> None:
+    footnote = (
+        f"drawtext=fontfile='{FONT}':text='*Vitamin D contributes to the normal function of the immune system'"
+        ":fontsize=8:fontcolor=white:x=6:y=165"
+    )
+    graph = ",".join(
+        [caption("Supports your immune system", 1.0, 4.0), caption("Clinically proven formula", 4.0, 7.0), footnote]
+    )
+    run("ffmpeg", "-y", "-f", "lavfi", "-i", "color=c=0x2e7d32:s=320x180:r=2:d=8", "-vf", graph,
+        "-c:v", "libx264", "-pix_fmt", "yuv420p", str(MEDIA / "captions.mp4"))
+
+
+def record_evidence(m) -> None:
+    clip = MEDIA / "captions.mp4"
+    work = Path("data/work/_captions")
+    (work / "frames").mkdir(parents=True, exist_ok=True)
+    run("ffmpeg", "-y", "-i", str(clip), "-fps_mode", "passthrough", str(work / "frames" / "%06d.png"))
+    frames = tuple(Frame(index=i, time=i / 2, path=p) for i, p in enumerate(sorted((work / "frames").glob("*.png"))))
+    ad = Ad(content_hash=digest(clip), media="video", width=320, height=180, duration=8.0, fps=2.0)
+    done = Ingested(ad=ad, source=clip, audio=None, video=clip, rate=2.0, threshold=0.3, frames=frames, keyframes=(0,))
+    texts, run_spark = read_on_screen(done, m.spark)
+    for line in (run_spark, *texts):
+        print(line)
+    tracks, run_sam = find_regions(done, m.sam)
+    print(run_sam)
+    for t in tracks:
+        print(t.track_id, [(r.frame_time, r.box) for r in t.regions])
+
+
 def shrink_image_fixture() -> None:
     # the model returns 1600x1600; the recorded copy is scaled down to keep the repo small
     for path in (FIXTURES / "muse-image-1.0").glob("*.json"):
@@ -69,6 +110,8 @@ def main() -> None:
     steps = sys.argv[1:]
     if "media" in steps:
         make_media()
+    if "captions" in steps:
+        make_captions()
     m = from_env(Store(FIXTURES, "cache"))
     frame, wav, video = (MEDIA / "frame.png").read_bytes(), (MEDIA / "speech.wav").read_bytes(), MEDIA / "ad.mp4"
     if "spark" in steps:
@@ -93,6 +136,8 @@ def main() -> None:
             m.sam.segment("black rectangle", image=boxes),
         ):
             print(len(r.frames), [len(f.objects) for f in r.frames], r.usage)
+    if "evidence" in steps:
+        record_evidence(m)
     if "image" in steps:
         m.image.generate("a plain white tub labelled Brightleaf Daily D")
         shrink_image_fixture()

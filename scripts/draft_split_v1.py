@@ -91,13 +91,17 @@ def main() -> None:
     test_pos, dev_pos = positives[:n_test], positives[n_test:]
     team_test = [t for t in TEAM_ITEMS if t not in TEAM_DEV]
 
-    for ruling in positives:
+    drafted = {p.stem for p in (EVAL_DIR / "ground_truth" / VERSION).glob("*.json")}
+    # founders correct the drafts by hand, so an existing file is kept; delete it to redraft
+    for ruling in (r for r in positives if r.ruling_id not in drafted):
         write_ground_truth(VERSION, GroundTruth(
             item_id=ruling.ruling_id, kind="ruling", label="positive", outcome=ruling.outcome,
             claims=draft_claims(ruling), written_by="draft: scripts/draft_split_v1.py", checked_by=None,
         ))  # fmt: skip
     for item in TEAM_ITEMS:
         load_team_ad(item)  # validates the item file
+        if item in drafted:
+            continue
         write_ground_truth(VERSION, GroundTruth(
             item_id=item, kind="team", label="negative", outcome=None, claims=[],
             written_by="team: authorised register wording only", checked_by=None,

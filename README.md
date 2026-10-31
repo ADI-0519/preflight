@@ -1,6 +1,6 @@
 # PreFlight
 
-PreFlight screens a health or supplement ad before it goes live. Give it a video, an image or a product-page screenshot and it finds every health claim, including claims implied by imagery, checks each against the GB nutrition and health claims register, the CAP Code and past ASA rulings, and shows for every flag the evidence (a transcript timestamp or an on-screen region) and the source it conflicts with. Where the register authorises a claim on the same substance, PreFlight quotes that wording exactly as the fix.
+PreFlight screens a health or supplement ad before it goes live. Give it a video, an image or a product-page screenshot and it finds every claim the ad makes, including claims implied by imagery: health claims, and claims about the product or its rivals that could mislead. It checks each against the GB nutrition and health claims register, the CAP Code and past ASA rulings, and shows for every flag the evidence (a transcript timestamp or an on-screen region) and the source it conflicts with. Where the register authorises a claim on the same substance, PreFlight quotes that wording exactly as the fix.
 
 It is screening, not legal advice. It flags and explains; a person decides whether the ad runs. The rules the product follows are in [docs/product-rules.md](docs/product-rules.md).
 

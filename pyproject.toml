@@ -18,6 +18,9 @@ dev = [
     "pytest>=8.3",
     "ruff>=0.9",
 ]
+fixtures = [
+    "piper-tts>=1.8.0",
+]
 
 [build-system]
 requires = ["hatchling"]

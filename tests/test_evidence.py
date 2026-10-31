@@ -4,12 +4,12 @@ from pathlib import Path
 import pytest
 
 from preflight.evidence.on_screen import PROMPT_VERSION as ON_SCREEN_PROMPT
-from preflight.evidence.on_screen import read_on_screen
+from preflight.evidence.on_screen import read_on_screen, snap, spark_box
 from preflight.evidence.regions import PROMPTS, find_regions
 from preflight.ingest import Frame, Ingested, png_size, run
 from preflight.models import SamFrame, SamObject, SamResult, SparkResult, Store, from_env
 from preflight.models.store import digest
-from preflight.schema import Ad
+from preflight.schema import Ad, OnScreenText, Region, Track
 
 FIXTURES = Path(__file__).parent / "fixtures" / "models"
 CLIP = FIXTURES / "media" / "captions.mp4"
@@ -19,6 +19,8 @@ CAPTIONS = [
     ("clinically proven formula", (53, 52, 265, 84), 4.0, 7.0),
 ]
 FOOTNOTE = "*vitamin d contributes"
+# the footnote's pixels in the first frame
+FOOTNOTE_BOX = (6, 165, 245, 174)
 
 
 def ffmpeg(*args: str) -> None:
@@ -94,7 +96,22 @@ def test_on_screen_text_matches_timings(captions, models):
         (found,) = [t for t in texts if caption in t.text.lower()]
         assert abs(found.start - start) <= 1.0
         assert abs(found.end - end) <= 1.0
-    assert any(FOOTNOTE in t.text.lower() for t in texts)
+    (footnote,) = [t for t in texts if FOOTNOTE in t.text.lower()]
+    assert contains(footnote.box, FOOTNOTE_BOX)
+
+
+def contains(outer, inner):
+    return outer[0] <= inner[0] and outer[1] <= inner[1] and outer[2] >= inner[2] and outer[3] >= inner[3]
+
+
+def test_captions_snap_to_their_sam_boxes(captions, models):
+    texts, _ = read_on_screen(captions, models.spark)
+    tracks, _ = find_regions(captions, models.sam)
+    placed = {t.text.lower(): t.box for t in snap(texts, tracks)}
+    for caption, box, _, _ in CAPTIONS:
+        assert placed[caption] == box
+    # nothing sits behind the footnote, so it keeps Spark's padded box
+    assert placed[FOOTNOTE + " to the normal function of the immune system"] == texts[0].box
 
 
 def test_one_spark_call_per_ad(captions, models, monkeypatch):
@@ -210,8 +227,36 @@ class FakeSpark:
         return SparkResult("muse-spark-1.3", "", {"texts": self.texts}, {})
 
 
-def item(text, start, end):
-    return {"text": text, "start": start, "end": end}
+def item(text, start, end, box=(100, 100, 200, 200)):
+    return {"text": text, "start": start, "end": end} | dict(zip(("x0", "y0", "x1", "y1"), box, strict=True))
+
+
+def test_spark_box_is_scaled_padded_and_clamped():
+    assert spark_box(item("a", 0, 0, (100, 500, 600, 550)), 1000, 200) == (50, 90, 650, 120)
+    assert spark_box(item("a", 0, 0, (0, 0, 1000, 1000)), 320, 180) == (0, 0, 320, 180)
+    assert spark_box(item("a", 0, 0, (600, 500, 100, 550)), 1000, 200) is None
+    assert spark_box(item("a", 0, 0, (0, 0, 0, 0)), 1000, 200) is None
+
+
+def text_at(box, start=1.0, end=3.0):
+    return OnScreenText(text_id="text-0", text="a", start=start, end=end, box=box)
+
+
+def track_at(box, times, prompt="dark rectangle"):
+    return Track(track_id=f"t{box[0]}", prompt=prompt, regions=tuple(Region(frame_time=t, box=box) for t in times))
+
+
+def test_snap_takes_a_caption_box_inside_the_padded_box():
+    (text,) = snap([text_at((0, 40, 300, 100))], [track_at((20, 50, 280, 90), [1.5, 2.0, 2.5])])
+    assert text.box == (20, 50, 280, 90)
+
+
+def test_snap_ignores_larger_regions_other_times_and_unplaced_text():
+    label = track_at((0, 0, 320, 180), [2.0], "label")
+    later = track_at((20, 50, 280, 90), [5.0, 5.5])
+    elsewhere = track_at((0, 150, 100, 170), [2.0])
+    texts = [text_at((0, 40, 300, 100)), text_at(None)]
+    assert snap(texts, [label, later, elsewhere]) == texts
 
 
 def test_spark_output_is_clamped_sorted_and_numbered(gray):
@@ -223,7 +268,7 @@ def test_spark_output_is_clamped_sorted_and_numbered(gray):
         ("text-2", "b", 2.0, 3.0),
         ("text-3", "late", 4.0, 4.0),
     ]
-    assert all(t.box is None for t in texts)
+    assert all(t.box == (16, 9, 80, 45) for t in texts)
     assert stage.model == "muse-spark-1.3"
     assert spark.calls[0]["video"] == CLIP and "image" not in spark.calls[0]
 

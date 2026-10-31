@@ -72,6 +72,20 @@ def test_out_of_scope_without_claim_rules_or_supplement():
     assert not in_scope(r)
 
 
+def test_blank_outcome_read_from_assessment_points():
+    name = "fixture-fernway-g24-1000003-fixture-fernway.html"
+    page = (FIXTURES / name).read_text(encoding="utf-8").replace(
+        '<span class="caption">Upheld in part</span>', '<span class="caption"></span>'
+    )
+    assert parse_ruling(page, f"https://www.asa.org.uk/rulings/{name}").outcome == "upheld in part"
+
+
+def test_known_scope_errors_are_excluded():
+    page = (FIXTURES / "fixture-brightleaf-ltd-a26-1000001-fixture-brightleaf-ltd.html").read_text(encoding="utf-8")
+    r = parse_ruling(page, "https://www.asa.org.uk/rulings/x-g26-1332433-x.html")
+    assert not in_scope(r)
+
+
 @pytest.mark.skipif(not any(RAW_DIR.glob("*.html")), reason="no cached rulings in data/raw/rulings")
 def test_every_cached_page_parses():
     rulings = load_rulings(scope_only=False)

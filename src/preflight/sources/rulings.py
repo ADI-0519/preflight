@@ -35,10 +35,15 @@ SEARCHES = [{"topic": FOOD_TOPIC}, {"q": "food supplement"}, {"q": "health claim
 # Rules that only a health or nutrition claim for a food can breach.
 CLAIM_RULES = ("15.1", "15.1.1", "15.2", "15.6", "15.7", "15.8", "15.9", "15.17")
 
+# Rulings the scope test gets wrong, with the reason. Checked by hand.
+NOT_IN_SCOPE = {
+    "G26-1332433": "less healthy food placement (rule 15.19); the page's rule link mislabels it 15.9",
+}
+
 Outcome = Literal["upheld", "upheld in part", "not upheld"]
 
 _RULING_LINK = re.compile(r'href="(https://www\.asa\.org\.uk/rulings/[^"]+\.html)"')
-_ID = re.compile(r"\b([AG]\d{2}-\d{6,7})\b", re.IGNORECASE)
+_ID = re.compile(r"\b([AG]\d{2}-\d{6,8})\b", re.IGNORECASE)
 
 
 class Ruling(BaseModel):
@@ -112,10 +117,19 @@ def _sections(page: str) -> dict[str, str]:
     return {text(parts[i]).rstrip(": "): parts[i + 1] for i in range(1, len(parts) - 1, 2)}
 
 
-def _outcome(raw: str) -> Outcome:
+def _outcome(raw: str, assessment: str) -> Outcome:
     value = raw.strip().lower()
     if value in ("upheld", "upheld in part", "not upheld"):
         return value  # type: ignore[return-value]
+    if not value:
+        # A few pages leave the outcome caption blank; read the assessment's point headings instead.
+        points = {p.lower() for p in re.findall(r"^(?:\d+\.\s*)?(Not upheld|Upheld)\s*$", assessment, re.M | re.I)}
+        if points == {"upheld"}:
+            return "upheld"
+        if points == {"not upheld"}:
+            return "not upheld"
+        if points == {"upheld", "not upheld"}:
+            return "upheld in part"
     raise ValueError(f"unknown ruling outcome: {raw!r}")
 
 
@@ -129,7 +143,7 @@ def parse_ruling(page: str, url: str) -> Ruling:
     captions = [text(c) for c in re.findall(r'<span class="caption">(.*?)</span>', head, re.S)]
     outcome, *rest = captions
     ruling_date = datetime.strptime(rest[-1], "%d %B %Y").date()
-    media = [m.strip() for c in rest[:-1] for m in c.split(",") if m.strip()]
+    media = list(dict.fromkeys(m.strip() for c in rest[:-1] for m in c.split(",") if m.strip()))
 
     sections = _sections(page)
     code_html = {k: v for k, v in sections.items() if k.startswith("CAP Code") or k.startswith("BCAP Code")}
@@ -152,7 +166,7 @@ def parse_ruling(page: str, url: str) -> Ruling:
         date=ruling_date,
         advertiser=advertiser,
         media=media,
-        outcome=_outcome(outcome),
+        outcome=_outcome(outcome, text(sections["Assessment"])),
         background=section("Background"),
         ad_description=section("Ad description"),
         issue=section("Issue"),
@@ -171,6 +185,8 @@ def topics(ruling: Ruling) -> list[str]:
 
 def in_scope(ruling: Ruling) -> bool:
     """A supplement or health-claim ruling: cites a food-claim rule, or the ad is for a supplement."""
+    if ruling.ruling_id in NOT_IN_SCOPE:
+        return False
     if any(r == rule or r.startswith(rule + ".") for r in ruling.cap_rules for rule in CLAIM_RULES):
         return True
     return "supplement" in f"{ruling.background or ''}\n{ruling.ad_description}".lower()

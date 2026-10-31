@@ -19,6 +19,7 @@ Pages read on 31 Oct 2026:
    Disallow: */account/*
   ```
   The CAP Code rule pages are disallowed. Task P12 has to take the CAP Code text from another route, such as the published PDF or the section pages outside `code_rule/`, and record that route here.
+- CAP Code route used by P12 (31 Oct 2026): the section pages `/type/non_broadcast/code_section/01.html`, `03.html`, `12.html` and `15.html`, which `robots.txt` allows, read once each with 10 s between requests. The section pages give no per-rule anchors, so each rule in the pack links to its section page. Under the same no-reuse-terms position as rulings, the pack in `data/snapshots/cap-s15-<date>.yaml` holds rule numbers and our own paraphrases only, not the Code's text.
 - The footer links to accessibility, cookie policy, privacy policy, media, Cymru and unacceptable contact pages. None of them has terms of use or reuse terms. The media page has nothing on copyright or reuse.
 - `sitemap.xml` lists no terms-of-use, copyright or legal page. `/general/terms-of-use.html`, `/general/terms-and-conditions.html`, `/general/legal.html`, `/general/copyright.html`, `/general/terms.html`, `/general/disclaimer.html` and `/general/legal-notice.html` all return 404.
 - `/advice-and-resources/copy-advice/terms-and-conditions.html` covers only the paid Expedited Turnaround copy advice service: "All intellectual property rights in the advice and related materials remain vested in us" (9.1). It says nothing about rulings or the website.

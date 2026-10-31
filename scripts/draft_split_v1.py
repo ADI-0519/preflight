@@ -11,7 +11,14 @@ from collections import Counter
 
 import yaml
 
-from preflight.eval.split import EVAL_DIR, BreachingClaim, GroundTruth, load_team_ad, write_ground_truth
+from preflight.eval.split import (
+    EVAL_DIR,
+    BreachingClaim,
+    GroundTruth,
+    advertiser_key,
+    load_team_ad,
+    write_ground_truth,
+)
 from preflight.sources.rulings import Ruling, load_rulings
 
 VERSION = "v1"
@@ -28,10 +35,6 @@ RULE = re.compile(r"\b(\d{1,2}\.\d{1,2}(?:\.\d{1,2})?)\b")
 
 def norm(s: str) -> str:
     return re.sub(r"\s+", " ", s.replace("’", "'").replace("‘", "'")).strip().lower()
-
-
-def advertiser(ruling: Ruling) -> str:
-    return re.split(r"\s+t/a\s+", ruling.advertiser)[0].strip().lower()
 
 
 def eligible(ruling: Ruling) -> bool:
@@ -81,9 +84,9 @@ def draft_claims(ruling: Ruling) -> list[BreachingClaim]:
 def main() -> None:
     positives, per_advertiser = [], Counter()
     for ruling in load_rulings():  # most recent first
-        if eligible(ruling) and per_advertiser[advertiser(ruling)] < MAX_PER_ADVERTISER:
+        if eligible(ruling) and per_advertiser[advertiser_key(ruling.advertiser)] < MAX_PER_ADVERTISER:
             positives.append(ruling)
-            per_advertiser[advertiser(ruling)] += 1
+            per_advertiser[advertiser_key(ruling.advertiser)] += 1
     n_test = round(len(positives) * TEST_SHARE)
     test_pos, dev_pos = positives[:n_test], positives[n_test:]
     team_test = [t for t in TEAM_ITEMS if t not in TEAM_DEV]

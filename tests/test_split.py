@@ -3,7 +3,7 @@ from collections import Counter
 
 import pytest
 
-from preflight.eval.split import EVAL_DIR, load_ground_truth, load_split, load_team_ad
+from preflight.eval.split import EVAL_DIR, advertiser_key, load_ground_truth, load_split, load_team_ad
 from preflight.sources.register import load_register
 from preflight.sources.rulings import load_ruling_index
 
@@ -33,7 +33,7 @@ def test_rulings_are_in_the_corpus_and_capped_per_advertiser(split):
     index = {r.ruling_id: r for r in load_ruling_index("2026-10-31")}
     rulings = split.excluded_ruling_ids()
     assert rulings <= set(index)
-    advertisers = Counter(index[i].advertiser.split(" t/a ")[0].strip().lower() for i in rulings)
+    advertisers = Counter(advertiser_key(index[i].advertiser) for i in rulings)
     assert max(advertisers.values()) <= 2
 
 

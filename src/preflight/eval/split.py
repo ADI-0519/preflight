@@ -65,6 +65,10 @@ class TeamAd(BaseModel):
     voiceover: str
 
 
+def advertiser_key(advertiser: str) -> str:
+    return re.split(r"\s+t/a\s+", advertiser)[0].strip().lower()
+
+
 def load_split(version: str = "v1") -> Split:
     data = yaml.safe_load((EVAL_DIR / "splits" / f"{version}.yaml").read_text(encoding="utf-8"))
     return Split(**{k: data[k] for k in Split.model_fields})

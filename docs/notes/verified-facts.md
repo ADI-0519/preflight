@@ -102,7 +102,7 @@ The register is not the only list that decides whether a claim may be used in Gr
 
 What this changes:
 
-- "No authorised register entry" does not mean "breach" for botanical ingredients. The P11 snapshot holds the register only, so the on-hold list needs its own dated snapshot. The `15.1.1` entry in the P12 rule pack (`data/snapshots/cap-s15-2026-10-31.yaml`) treats a claim that "matches no authorised register entry" as breach evidence; it should exclude on-hold matches. P27's checker should then report a claim that matches an on-hold entry as on hold, with that entry as its source, not as an unauthorised claim. Otherwise it will raise false alarms on usable claims.
+- "No authorised register entry" does not mean "breach" for botanical ingredients. The on-hold list is snapshotted on its own (`data/snapshots/on-hold-2021-01-12.jsonl`, loader `preflight.sources.on_hold`), and the `15.1.1` entry in the CAP rule pack now says an on-hold match is not a breach of that rule. P27's checker should report a claim that matches an on-hold entry as on hold, with that entry as its source, not as an unauthorised claim. Otherwise it will raise false alarms on usable claims.
 - Whether rule 2 lets on-hold wording appear as suggested wording is a founders' call. The list's own notes say much of its wording may not be acceptable, so the safe reading is: suggest only authorised register wording, and cite on-hold entries as context.
 
 ## CAP Code section 15

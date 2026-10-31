@@ -1,0 +1,1 @@
+{"key": "e3debf1f54c010f2ea1f70ea48055a7bcabcba1da23abd48052c9959e192f71b", "response": {"model": "muse-spark-1.3", "text": "Brightleaf Daily D", "usage": {"input_tokens": 85, "input_tokens_details": {"cache_write_tokens": null, "cached_tokens": 0}, "output_tokens": 226, "output_tokens_details": {"reasoning_tokens": 213}, "total_tokens": 311}}}

@@ -47,3 +47,7 @@ data/cache/
 *.ckpt
 *.gguf
 *.bin
+
+# tiny media we made ourselves for model replay tests
+!tests/fixtures/models/media/*.mp4
+!tests/fixtures/models/media/*.wav

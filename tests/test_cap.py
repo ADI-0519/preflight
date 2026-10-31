@@ -3,6 +3,7 @@ from pathlib import Path
 
 import pytest
 
+from preflight.eval.split import load_ground_truth, load_split
 from preflight.sources.cap import load_cap_rules
 
 SNAPSHOT = "2026-10-31"
@@ -32,12 +33,23 @@ def test_covers_every_rule_cited_by_p02_sample(pack):
     assert rules_cited_in_sample() - pack.rules.keys() == set()
 
 
+def test_covers_every_rule_cited_by_split_v1(pack):
+    cited = {
+        rule
+        for item_id in load_split("v1").items
+        for claim in load_ground_truth("v1", item_id).claims
+        for rule in claim.rules
+    }
+    assert cited - pack.rules.keys() == set()
+
+
 def test_rule_fields(pack):
     rule = pack.rules["15.6.2"]
     assert rule.section == "15"
     assert rule.url == "https://www.asa.org.uk/type/non_broadcast/code_section/15.html"
     assert rule.screenable
     assert pack.rules["12.18"].url.endswith("/code_section/12.html")
+    assert pack.rules["13.9"].url.endswith("/code_section/13.html")
 
 
 def test_conduct_rule_not_screenable(pack):

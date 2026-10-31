@@ -28,7 +28,7 @@ class CapRulePack(BaseModel):
 
 
 def snapshot_path(version: str) -> Path:
-    return SNAPSHOT_DIR / f"cap-s15-{version}.yaml"
+    return SNAPSHOT_DIR / f"cap-{version}.yaml"
 
 
 def load_cap_rules(snapshot: str | Path) -> CapRulePack:

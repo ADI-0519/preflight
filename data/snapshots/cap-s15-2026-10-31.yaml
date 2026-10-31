@@ -19,7 +19,7 @@ rules:
     screenable: true
   - rule: "15.1.1"
     summary: Only nutrition claims on the register, and only health claims authorised on the register or ones a consumer would read as meaning the same, may be used.
-    breach_evidence: A health claim, spoken, written or implied by imagery, that matches no authorised register entry for the substance, or matches a non-authorised one.
+    breach_evidence: A health claim, spoken, written or implied by imagery, that matches no authorised register entry for the substance, or matches a non-authorised one. A claim matching an entry on DHSC's on-hold list and no non-authorised register entry is not a breach of this rule.
     screenable: true
   - rule: "15.2"
     summary: A general claim that a nutrient or food is good for overall health or well-being is allowed only when a specific authorised health claim sits alongside it.

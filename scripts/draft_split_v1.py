@@ -16,6 +16,7 @@ from preflight.eval.split import (
     BreachingClaim,
     GroundTruth,
     advertiser_key,
+    load_split,
     load_team_ad,
     write_ground_truth,
 )
@@ -86,6 +87,8 @@ def draft_claims(ruling: Ruling) -> list[BreachingClaim]:
 
 
 def main() -> None:
+    if (EVAL_DIR / "splits" / f"{VERSION}.yaml").exists() and load_split(VERSION).frozen:
+        raise SystemExit(f"split {VERSION} is frozen; a change needs a new version")
     positives, per_advertiser = [], Counter()
     for ruling in load_rulings():  # most recent first
         if eligible(ruling) and per_advertiser[advertiser_key(ruling.advertiser)] < MAX_PER_ADVERTISER:

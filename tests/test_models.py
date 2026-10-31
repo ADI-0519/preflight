@@ -137,6 +137,11 @@ def test_sam_unparsed_output_raises(tmp_path):
         parse_sam("<0f>0<|box;x1=1;y1=2;x2=3;y2=4;w=9;h=9|> stray")
 
 
+def test_image_generate_replay(replay):
+    png = replay.image.generate("a plain white tub labelled Brightleaf Daily D")
+    assert png[:8] == b"\x89PNG\r\n\x1a\n"
+
+
 class EmptyStream:
     def __enter__(self):
         return self
@@ -306,3 +311,12 @@ def test_transcribe_live(tmp_path):
 def test_sam_live(tmp_path):
     r = from_env(Store(tmp_path)).sam.segment("black rectangle", image=FRAME)
     assert r.frames[0].objects
+
+
+@pytest.mark.live
+@need("META_API_KEY")
+def test_image_live(tmp_path):
+    models = from_env(Store(tmp_path))
+    png = models.image.generate("a plain white tub labelled Brightleaf Daily D")
+    assert png[:4] == b"\x89PNG"
+    assert models.image.edit(FRAME, "make the background blue")[:4] == b"\x89PNG"

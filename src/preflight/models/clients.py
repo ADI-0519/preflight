@@ -1,3 +1,4 @@
+import base64
 import json
 import os
 import re
@@ -17,6 +18,7 @@ BASE_URL = "https://api.meta.ai/v1"
 SPARK = "muse-spark-1.3"
 TRANSCRIBE = "muse-voice-transcribe-1.0"
 SAM = "sam-3.1"
+IMAGE = "muse-image-1.0"
 
 _FRAME = re.compile(r"<(\d+)f>")
 # objects on a frame line are joined by commas
@@ -219,10 +221,38 @@ class Sam:
 
 
 @dataclass
+class Image:
+    store: Store
+    api: OpenAI = field(repr=False)
+    sleep: Callable[[float], None] = time.sleep
+
+    def generate(self, prompt: str) -> bytes:
+        return self._png(
+            {"kind": "image_generate", "prompt": prompt},
+            lambda: self.api.images.generate(model=IMAGE, prompt=prompt, n=1, output_format="png"),
+        )
+
+    def edit(self, image: bytes, prompt: str) -> bytes:
+        return self._png(
+            {"kind": "image_edit", "prompt": prompt, "image": digest(image)},
+            lambda: self.api.images.edit(
+                model=IMAGE, prompt=prompt, image=("image.png", image, "image/png"), n=1, output_format="png"
+            ),
+        )
+
+    def _png(self, parts: dict, request: Callable) -> bytes:
+        def call() -> dict:
+            return {"model": IMAGE, "png": request().data[0].b64_json}
+
+        return base64.b64decode(self.store.fetch(IMAGE, parts, lambda: with_retry(call, self.sleep))["png"])
+
+
+@dataclass
 class Models:
     spark: Spark
     transcribe: VoiceTranscribe
     sam: Sam
+    image: Image
 
 
 def from_env(store: Store | None = None, sleep: Callable[[float], None] = time.sleep) -> Models:
@@ -234,4 +264,5 @@ def from_env(store: Store | None = None, sleep: Callable[[float], None] = time.s
         Spark(store, meta, sleep),
         VoiceTranscribe(store, key, sleep=sleep),
         Sam(store, meta, sleep),
+        Image(store, meta, sleep),
     )

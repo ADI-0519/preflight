@@ -1,3 +1,5 @@
+import base64
+import json
 import subprocess
 import sys
 from pathlib import Path
@@ -49,6 +51,20 @@ def make_boxes() -> None:
         str(MEDIA / "boxes.png"))
 
 
+def shrink_image_fixture() -> None:
+    # the model returns 1600x1600; the recorded copy is scaled down to keep the repo small
+    for path in (FIXTURES / "muse-image-1.0").glob("*.json"):
+        entry = json.loads(path.read_text(encoding="utf-8"))
+        full, small = MEDIA / "_full.png", MEDIA / "_small.png"
+        full.write_bytes(base64.b64decode(entry["response"]["png"]))
+        run("ffmpeg", "-y", "-i", str(full), "-vf", "scale=128:128", str(small))
+        entry["response"]["png"] = base64.b64encode(small.read_bytes()).decode()
+        entry["note"] = "recorded response, with the png scaled down to 128x128"
+        path.write_text(json.dumps(entry), encoding="utf-8")
+        full.unlink()
+        small.unlink()
+
+
 def main() -> None:
     steps = sys.argv[1:]
     if "media" in steps:
@@ -77,6 +93,9 @@ def main() -> None:
             m.sam.segment("black rectangle", image=boxes),
         ):
             print(len(r.frames), [len(f.objects) for f in r.frames], r.usage)
+    if "image" in steps:
+        m.image.generate("a plain white tub labelled Brightleaf Daily D")
+        shrink_image_fixture()
 
 
 if __name__ == "__main__":

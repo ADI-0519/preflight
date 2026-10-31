@@ -1,12 +1,12 @@
 # Split v1. Item IDs are ASA ruling IDs (positives) or T-numbers (team-written negatives).
 version: v1
-frozen: false
+frozen: true
 created: '2026-10-31'
-status: 'draft: ground truth awaits a second founder''s check; not frozen'
+status: 'frozen 2026-10-31; ground truth checked by NEESAY'
 sources:
   rulings: '2026-10-31'
   register: '2026-05-19'
-topics: all in-scope supplement and health-claim rulings (see docs/notes/rulings-corpus.md)
+topics: all in-scope supplement rulings, any CAP breach (see docs/notes/rulings-corpus.md)
 counts:
   dev:
     positive: 25

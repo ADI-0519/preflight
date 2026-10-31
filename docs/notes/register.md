@@ -16,7 +16,7 @@ The health claims sheet has 2,555 data rows: 2,349 entries plus 206 continuation
 
 ## Statuses
 
-The spreadsheet uses exactly three values: `Authorised for use in Great Britain`, the same with a trailing `*`, and `Non-authorised`. It has no "on hold" status. The EU's on-hold botanical claims are not in this register at all, so a botanical claim (for example on a mushroom extract) finds no authorised wording here. The loader rejects any other status value, so a new one in a future release fails loudly instead of being misfiled.
+The spreadsheet uses exactly three values: `Authorised for use in Great Britain`, the same with a trailing `*`, and `Non-authorised`. It has no "on hold" status. The EU's on-hold botanical claims are not in this register at all, so a botanical claim (for example on a mushroom extract) finds no authorised wording here. DHSC's separate on-hold list says those claims may still be used; it is snapshotted on its own in `data/snapshots/on-hold-2021-01-12.jsonl`. The loader rejects any other status value, so a new one in a future release fails loudly instead of being misfiled.
 
 ## IDs are not stable in the source, so we define our own
 

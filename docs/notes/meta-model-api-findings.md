@@ -27,6 +27,7 @@ Costs are the measured usage multiplied by the published prices. The account's b
 - **Video:** upload with `files.create(purpose="user_data")`, then pass `{"type": "input_file", "file_id": ...}`. A 30-second 720p clip with audio cost 8,210 input tokens.
 - **Spark reads on-screen text from video well.** All three timed overlays and the footnote were read with start and end times correct to the second.
 - **Spark's timing of speech in video is wrong.** It spread the voiceover across the full 30 seconds; in fact it ends at 16.2 s. Its spoken text was right. The docs say audio is not fully supported on 1.3.
+- **Spark can give a box for each on-screen text** (31 Oct 2026, P25), as 0–1000 shares of the frame, at no extra output tokens. On a still (1920x1280, three texts drawn over the product shot) every edge was within 29 px. On the 30-second video the unboxed footnote was within a few pixels horizontally at the left edge, but the three boxed captions came back about 45 px (6% of 720) too high. P25 therefore pads Spark's box by 5% of the frame and replaces it with SAM's box where a caption box sits behind the text. Local OCR (RapidOCR) gave tighter boxes on clean text (2 px) but misread a yellow italic line printed over the label, so it is not used.
 
 ## Muse Voice Transcribe
 

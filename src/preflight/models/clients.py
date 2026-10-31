@@ -1,5 +1,6 @@
 import json
 import os
+import re
 import time
 from collections.abc import Callable
 from contextlib import contextmanager
@@ -15,6 +16,11 @@ from preflight.models.store import UPLOAD_TTL_SECONDS, Store, digest, encode_byt
 BASE_URL = "https://api.meta.ai/v1"
 SPARK = "muse-spark-1.3"
 TRANSCRIBE = "muse-voice-transcribe-1.0"
+SAM = "sam-3.1"
+
+_FRAME = re.compile(r"<(\d+)f>")
+# objects on a frame line are joined by commas
+_OBJECT = re.compile(r",?(\d+)<\|box;(.*?)\|><\|mask;(.*?)\|>(?=,\d+<\|box;|\s*$)", re.DOTALL)
 
 
 @dataclass
@@ -31,6 +37,26 @@ class Turn:
     end_ms: int
     text: str
     speaker: str | None
+
+
+@dataclass
+class SamObject:
+    id: int
+    box: tuple[float, float, float, float]
+    confidence: float | None
+    mask: str = field(repr=False)
+
+
+@dataclass
+class SamFrame:
+    index: int
+    objects: list[SamObject]
+
+
+@dataclass
+class SamResult:
+    frames: list[SamFrame]
+    usage: dict
 
 
 @contextmanager
@@ -136,10 +162,67 @@ class VoiceTranscribe:
         return [Turn(t["startMs"], t["endMs"], t["transcript"], t.get("speaker")) for t in r["turns"]]
 
 
+def parse_sam(text: str) -> list[SamFrame]:
+    pieces = _FRAME.split(text)
+    frames = []
+    for index, body in zip(pieces[1::2], pieces[2::2], strict=True):
+        matches = list(_OBJECT.finditer(body))
+        # an object the pattern misses would read as nothing found, so fail instead
+        if "".join(m[0] for m in matches) != body.strip():
+            raise ValueError(f"unparsed {SAM} output in frame {index}")
+        objects = []
+        for m in matches:
+            box = dict(field.split("=", 1) for field in m[2].split(";"))
+            corners = (float(box["x1"]), float(box["y1"]), float(box["x2"]), float(box["y2"]))
+            objects.append(SamObject(int(m[1]), corners, float(box["c"]) if "c" in box else None, m[3]))
+        frames.append(SamFrame(int(index), objects))
+    return frames
+
+
+@dataclass
+class Sam:
+    store: Store
+    api: OpenAI = field(repr=False)
+    sleep: Callable[[float], None] = time.sleep
+
+    def segment(
+        self, prompt: str, *, image: bytes | None = None, image_mime: str = "image/png", video: Path | None = None
+    ) -> SamResult:
+        if (image is None) == (video is None):
+            raise ValueError("give exactly one of image or video")
+        parts = {
+            "kind": "sam", "prompt": prompt, "image": image and digest(image), "image_mime": image and image_mime,
+            "video": video and digest(video),
+        }
+
+        def stream(media: dict) -> dict:
+            deltas = []
+            with self.api.responses.stream(
+                model=SAM,
+                input=[{"type": "message", "role": "user", "content": [{"type": "input_text", "text": prompt}, media]}],
+                metadata={"include_confidence": "true"},
+            ) as events:
+                for event in events:
+                    if event.type == "response.output_text.delta":
+                        deltas.append(event.delta)
+                final = events.get_final_response()
+            return {"model": final.model, "text": "".join(deltas), "usage": usage_of(final)}
+
+        def call() -> dict:
+            if image is not None:
+                return stream({"type": "input_image", "image_url": data_url(image, image_mime)})
+            with uploaded(self.api, video) as file_id:
+                return stream({"type": "input_video", "file_id": file_id})
+
+        r = self.store.fetch(SAM, parts, lambda: with_retry(call, self.sleep))
+        return SamResult(parse_sam(r["text"]), r["usage"])
+
+
 @dataclass
 class Models:
     spark: Spark
     transcribe: VoiceTranscribe
+    sam: Sam
 
 
 def from_env(store: Store | None = None, sleep: Callable[[float], None] = time.sleep) -> Models:
@@ -150,4 +233,5 @@ def from_env(store: Store | None = None, sleep: Callable[[float], None] = time.s
     return Models(
         Spark(store, meta, sleep),
         VoiceTranscribe(store, key, sleep=sleep),
+        Sam(store, meta, sleep),
     )

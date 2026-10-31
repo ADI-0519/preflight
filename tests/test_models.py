@@ -9,7 +9,8 @@ import openai
 import pytest
 from dotenv import load_dotenv
 
-from preflight.models import CacheMiss, Spark, Store, VoiceTranscribe, from_env
+from preflight.models import CacheMiss, Sam, Spark, Store, VoiceTranscribe, from_env
+from preflight.models.clients import parse_sam
 from preflight.models.store import check_model
 
 load_dotenv()
@@ -99,6 +100,55 @@ def test_transcribe_replay(replay):
 def test_transcribe_refuses_non_wav(replay):
     with pytest.raises(ValueError, match="WAV"):
         replay.transcribe.transcribe(b"ID3 not a wav file")
+
+
+def test_sam_image_replay(replay):
+    r = replay.sam.segment("black rectangle", image=FRAME)
+    (frame,) = r.frames
+    (obj,) = frame.objects
+    assert (obj.id, obj.box) == (0, (40.0, 60.0, 279.0, 119.0))
+    assert 0.5 < obj.confidence <= 1
+    assert obj.mask.startswith("x=0;y=0;")
+    assert "mask" not in repr(obj)
+
+
+def test_sam_video_replay(replay):
+    r = replay.sam.segment("black rectangle", video=VIDEO)
+    assert [f.index for f in r.frames] == list(range(15))
+    assert all(len(f.objects) == 1 and f.objects[0].id == 0 for f in r.frames)
+    assert r.usage["video_frames_processed"] == 50
+
+
+def test_sam_empty_response_is_valid(tmp_path):
+    api = NS(responses=NS(stream=lambda **kw: EmptyStream()))
+    assert Sam(Store(tmp_path), api).segment("text", image=FRAME).frames == []
+
+
+def test_sam_two_objects_in_one_frame_replay(replay):
+    (frame,) = replay.sam.segment("black rectangle", image=(MEDIA / "boxes.png").read_bytes()).frames
+    assert sorted((o.id, o.box) for o in frame.objects) == [
+        (0, (180.0, 80.0, 289.0, 149.0)), (1, (20.0, 40.0, 119.0, 99.0))
+    ]
+    assert all("box;" not in o.mask for o in frame.objects)
+
+
+def test_sam_unparsed_output_raises(tmp_path):
+    with pytest.raises(ValueError, match="frame 0"):
+        parse_sam("<0f>0<|box;x1=1;y1=2;x2=3;y2=4;w=9;h=9|> stray")
+
+
+class EmptyStream:
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *exc):
+        return False
+
+    def __iter__(self):
+        return iter(())
+
+    def get_final_response(self):
+        return NS(model="sam-3.1", usage=None)
 
 
 def test_second_identical_call_served_from_cache(tmp_path):
@@ -249,3 +299,10 @@ def test_spark_live(tmp_path, monkeypatch):
 def test_transcribe_live(tmp_path):
     turns = from_env(Store(tmp_path)).transcribe.transcribe(WAV)
     assert "vitamin" in " ".join(t.text for t in turns).lower()
+
+
+@pytest.mark.live
+@need("META_API_KEY")
+def test_sam_live(tmp_path):
+    r = from_env(Store(tmp_path)).sam.segment("black rectangle", image=FRAME)
+    assert r.frames[0].objects

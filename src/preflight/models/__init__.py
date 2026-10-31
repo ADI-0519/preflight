@@ -1,5 +1,9 @@
 from preflight.models.clients import (
     Models,
+    Sam,
+    SamFrame,
+    SamObject,
+    SamResult,
     Spark,
     SparkResult,
     Turn,
@@ -8,4 +12,17 @@ from preflight.models.clients import (
 )
 from preflight.models.store import CacheMiss, Store
 
-__all__ = ["CacheMiss", "Models", "Spark", "SparkResult", "Store", "Turn", "VoiceTranscribe", "from_env"]
+__all__ = [
+    "CacheMiss",
+    "Models",
+    "Sam",
+    "SamFrame",
+    "SamObject",
+    "SamResult",
+    "Spark",
+    "SparkResult",
+    "Store",
+    "Turn",
+    "VoiceTranscribe",
+    "from_env",
+]

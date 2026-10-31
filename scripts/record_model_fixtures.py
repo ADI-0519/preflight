@@ -39,6 +39,14 @@ def make_media() -> None:
     run("ffmpeg", "-y", "-f", "lavfi", "-i", "color=c=0x2e7d32:s=320x180:r=5:d=3", "-vf", overlay,
         "-c:v", "libx264", "-pix_fmt", "yuv420p", str(MEDIA / "ad.mp4"))
     run("ffmpeg", "-y", "-i", str(MEDIA / "ad.mp4"), "-frames:v", "1", str(MEDIA / "frame.png"))
+    make_boxes()
+
+
+def make_boxes() -> None:
+    # two objects in one frame, to pin how SAM joins them on a line
+    boxes = "drawbox=x=20:y=40:w=100:h=60:color=black:t=fill,drawbox=x=180:y=80:w=110:h=70:color=black:t=fill"
+    run("ffmpeg", "-y", "-f", "lavfi", "-i", "color=c=0x2e7d32:s=320x180", "-vf", boxes, "-frames:v", "1",
+        str(MEDIA / "boxes.png"))
 
 
 def main() -> None:
@@ -59,6 +67,16 @@ def main() -> None:
             print(r.text[:200], r.usage)
     if "transcribe" in steps:
         print(m.transcribe.transcribe(wav))
+    if "sam" in steps:
+        if not (MEDIA / "boxes.png").exists():
+            make_boxes()
+        boxes = (MEDIA / "boxes.png").read_bytes()
+        for r in (
+            m.sam.segment("black rectangle", image=frame),
+            m.sam.segment("black rectangle", video=video),
+            m.sam.segment("black rectangle", image=boxes),
+        ):
+            print(len(r.frames), [len(f.objects) for f in r.frames], r.usage)
 
 
 if __name__ == "__main__":

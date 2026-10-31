@@ -1,6 +1,6 @@
 # Product rules
 
-*Draft, 27 October 2026, awaiting the founders' confirmation (task P05).*
+*Drafted 27 October 2026; confirmed by the founders as drafted on 31 October 2026 (task P05).*
 
 PreFlight screens ads; it does not give legal advice. These rules keep its output honest, its evaluation clean and its customers' ads private. Changing one needs the agreement of all three founders and a dated note in the decision record.
 

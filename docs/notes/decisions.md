@@ -1,0 +1,12 @@
+# Decisions
+
+One dated line per decision the founders take. Changing a product rule needs all three founders and a line here.
+
+- **31 Oct 2026 (P05).** Keep and reframe PreFlight. Gate 2 passed (`docs/notes/ruling-rebuildability-sample.md`) and gate 1 is unclear but has not failed (`docs/notes/hackathon-rules.md`), so there is no switch to DampTrace. The organisers' answer on gate 1 is still needed before P15.
+- **31 Oct 2026 (P05).** Product rules 1–10 confirmed as drafted; `docs/product-rules.md` is no longer a draft.
+- **31 Oct 2026 (P05).** Stack confirmed as in `docs/plan.md`, "Stack", with one change: the front end is React with TypeScript built by Vite, served as static files by FastAPI, in place of a single plain HTML page.
+- **31 Oct 2026 (P05).** The two fully built topics wait until P13 reports how many rulings each topic has. Mushroom and magnesium are held provisionally; of the 27 rulings saved so far, 2 mention mushroom and 3 magnesium, against 20 that mention ADHD (a keyword count, not a topic classification). ADHD-claim supplements stay the hook. The choice is final when P14 freezes split v1.
+- **31 Oct 2026 (P05).** Reconstruction voiceover uses a local open-source TTS in the fixture builder only; the screening path stays on Meta models.
+- **31 Oct 2026 (P05).** P24 word timestamps come from a local forced aligner run over the Voice Transcribe transcript, as an optional extra; where alignment fails, the turn's start and end are kept and the evidence is marked turn-level.
+- **31 Oct 2026 (P05).** Lanes have no fixed owners. Whoever claims a task becomes its issue's assignee.
+- **31 Oct 2026 (P05).** The team will not ask the ASA for permission to store and show ruling excerpts for now. What we store and show stays within `docs/source-terms.md`.

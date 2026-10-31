@@ -9,7 +9,6 @@
       "rules": [
         "15.1",
         "15.1.1",
-        "15.2",
         "15.7"
       ],
       "points": [
@@ -21,7 +20,6 @@
       "rules": [
         "15.1",
         "15.1.1",
-        "15.2",
         "15.7"
       ],
       "points": [
@@ -29,11 +27,32 @@
       ]
     },
     {
-      "claim": "each effervescent blends 300mg of essential magnesium, 100mg of KSM-^^ Ashwagandha, and 500mg of calming lemon balm. This powerhouse combination helps ease stress, improve sleep, and support muscle recovery so you can wake up refreshed",
+      "claim": "helps ease stress",
       "rules": [
         "15.1",
         "15.1.1",
-        "15.2",
+        "15.7"
+      ],
+      "points": [
+        2
+      ]
+    },
+    {
+      "claim": "improve sleep",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.7"
+      ],
+      "points": [
+        2
+      ]
+    },
+    {
+      "claim": "support muscle recovery",
+      "rules": [
+        "15.1",
+        "15.1.1",
         "15.7"
       ],
       "points": [
@@ -43,8 +62,6 @@
     {
       "claim": "Rest & Recover",
       "rules": [
-        "15.1",
-        "15.1.1",
         "15.2",
         "15.7"
       ],

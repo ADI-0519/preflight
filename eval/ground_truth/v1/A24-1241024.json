@@ -5,16 +5,6 @@
   "outcome": "upheld",
   "claims": [
     {
-      "claim": "Key for Peri + Menopause",
-      "rules": [
-        "15.6",
-        "15.6.2"
-      ],
-      "points": [
-        1
-      ]
-    },
-    {
       "claim": "It’s the most comprehensive menopause support supplement that’s out there, it also works for perimenopause, it also works for post-menopause",
       "rules": [
         "15.6",
@@ -35,7 +25,7 @@
       ]
     },
     {
-      "claim": "see how you get on first, and let us know, I bet you you’ll see a difference",
+      "claim": "I bet you you’ll see a difference",
       "rules": [
         "15.6",
         "15.6.2"
@@ -45,34 +35,30 @@
       ]
     },
     {
-      "claim": "and cognitive function",
-      "rules": [
-        "15.1",
-        "15.1.1",
-        "15.2",
-        "15.7"
-      ],
-      "points": [
-        2
-      ]
-    },
-    {
-      "claim": "supports",
-      "rules": [
-        "15.1",
-        "15.1.1",
-        "15.2",
-        "15.7"
-      ],
-      "points": [
-        2
-      ]
-    },
-    {
       "claim": "supports your immunity",
       "rules": [
         "15.1",
         "15.1.1",
+        "15.7"
+      ],
+      "points": [
+        2
+      ]
+    },
+    {
+      "claim": "cognitive function",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.7"
+      ],
+      "points": [
+        2
+      ]
+    },
+    {
+      "claim": "your bone health, your heart health",
+      "rules": [
         "15.2",
         "15.7"
       ],

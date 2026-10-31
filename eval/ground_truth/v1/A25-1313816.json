@@ -65,12 +65,20 @@
       ]
     },
     {
-      "claim": "Natural Menopause Relief. Supports Hormonal Balance and Metabolism",
+      "claim": "Natural Menopause Relief",
       "rules": [
         "15.6",
-        "15.6.2",
-        "12.1",
-        "12.11"
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "Supports Hormonal Balance and Metabolism",
+      "rules": [
+        "15.6",
+        "15.6.2"
       ],
       "points": [
         1
@@ -80,9 +88,7 @@
       "claim": "supplements for menopause",
       "rules": [
         "15.6",
-        "15.6.2",
-        "12.1",
-        "12.11"
+        "15.6.2"
       ],
       "points": [
         1
@@ -92,9 +98,7 @@
       "claim": "all-in-one natural menopause supplement",
       "rules": [
         "15.6",
-        "15.6.2",
-        "12.1",
-        "12.11"
+        "15.6.2"
       ],
       "points": [
         1
@@ -104,9 +108,7 @@
       "claim": "helps support hormonal balance, cognitive and physiological functions",
       "rules": [
         "15.6",
-        "15.6.2",
-        "12.1",
-        "12.11"
+        "15.6.2"
       ],
       "points": [
         1
@@ -116,9 +118,7 @@
       "claim": "anxiety, low mood, fatigue, bloating, sleep, hot flushes, sluggish metabolism, night sweats and skin",
       "rules": [
         "15.6",
-        "15.6.2",
-        "12.1",
-        "12.11"
+        "15.6.2"
       ],
       "points": [
         1
@@ -126,16 +126,6 @@
     },
     {
       "claim": "adaptogenic herbs",
-      "rules": [
-        "15.1",
-        "15.1.1"
-      ],
-      "points": [
-        2
-      ]
-    },
-    {
-      "claim": "adaptogenic",
       "rules": [
         "15.1",
         "15.1.1"

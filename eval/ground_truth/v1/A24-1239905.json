@@ -35,7 +35,73 @@
       ]
     },
     {
+      "claim": "improving brain function, energy, and immunity",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.7"
+      ],
+      "points": [
+        2
+      ]
+    },
+    {
+      "claim": "improving brain function",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.7"
+      ],
+      "points": [
+        2
+      ]
+    },
+    {
+      "claim": "improved immunity",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.7"
+      ],
+      "points": [
+        2
+      ]
+    },
+    {
+      "claim": "stable energy",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.7"
+      ],
+      "points": [
+        2
+      ]
+    },
+    {
+      "claim": "feeling really energised",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.7"
+      ],
+      "points": [
+        2
+      ]
+    },
+    {
       "claim": "more energy",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.7"
+      ],
+      "points": [
+        2
+      ]
+    },
+    {
+      "claim": "improve your focus, your sleep, your energy",
       "rules": [
         "15.1",
         "15.1.1",
@@ -79,7 +145,7 @@
       ]
     },
     {
-      "claim": "Sustained energy",
+      "claim": "Sustained energy & focus",
       "rules": [
         "15.1",
         "15.1.1",
@@ -112,17 +178,6 @@
       ]
     },
     {
-      "claim": "improving brain function",
-      "rules": [
-        "15.1",
-        "15.1.1",
-        "15.7"
-      ],
-      "points": [
-        2
-      ]
-    },
-    {
       "claim": "more focused and productive",
       "rules": [
         "15.1",
@@ -145,7 +200,7 @@
       ]
     },
     {
-      "claim": "more productive",
+      "claim": "never felt more productive",
       "rules": [
         "15.1",
         "15.1.1",
@@ -156,7 +211,7 @@
       ]
     },
     {
-      "claim": "improve your focus",
+      "claim": "My focus - So much sharper",
       "rules": [
         "15.1",
         "15.1.1",
@@ -200,17 +255,6 @@
       ]
     },
     {
-      "claim": "improved immunity",
-      "rules": [
-        "15.1",
-        "15.1.1",
-        "15.7"
-      ],
-      "points": [
-        2
-      ]
-    },
-    {
       "claim": "sleeping really well",
       "rules": [
         "15.1",
@@ -222,7 +266,7 @@
       ]
     },
     {
-      "claim": "adaptogen",
+      "claim": "adaptogenic",
       "rules": [
         "15.1",
         "15.1.1",
@@ -233,7 +277,7 @@
       ]
     },
     {
-      "claim": "antioxidant",
+      "claim": "Antioxidant Rich",
       "rules": [
         "15.1",
         "15.1.1",
@@ -255,26 +299,6 @@
     },
     {
       "claim": "Feel Güd gummies",
-      "rules": [
-        "15.2",
-        "15.7"
-      ],
-      "points": [
-        3
-      ]
-    },
-    {
-      "claim": "functional",
-      "rules": [
-        "15.2",
-        "15.7"
-      ],
-      "points": [
-        3
-      ]
-    },
-    {
-      "claim": "Feel Güd",
       "rules": [
         "15.2",
         "15.7"

@@ -19,7 +19,7 @@
       "rules": [
         "15.1",
         "15.1.1",
-        "15.2"
+        "15.7"
       ],
       "points": [
         2
@@ -30,18 +30,18 @@
       "rules": [
         "15.1",
         "15.1.1",
-        "15.2"
+        "15.7"
       ],
       "points": [
         2
       ]
     },
     {
-      "claim": "discover the secret to sharper focus",
+      "claim": "sharper focus",
       "rules": [
         "15.1",
         "15.1.1",
-        "15.2"
+        "15.7"
       ],
       "points": [
         2
@@ -52,7 +52,7 @@
       "rules": [
         "15.1",
         "15.1.1",
-        "15.2"
+        "15.7"
       ],
       "points": [
         2
@@ -63,29 +63,18 @@
       "rules": [
         "15.1",
         "15.1.1",
-        "15.2"
+        "15.7"
       ],
       "points": [
         2
       ]
     },
     {
-      "claim": "unlock",
+      "claim": "unlock your mental potential",
       "rules": [
         "15.1",
         "15.1.1",
-        "15.2"
-      ],
-      "points": [
-        2
-      ]
-    },
-    {
-      "claim": "mental potential",
-      "rules": [
-        "15.1",
-        "15.1.1",
-        "15.2"
+        "15.7"
       ],
       "points": [
         2
@@ -96,7 +85,7 @@
       "rules": [
         "15.1",
         "15.1.1",
-        "15.2"
+        "15.7"
       ],
       "points": [
         2
@@ -107,7 +96,7 @@
       "rules": [
         "15.1",
         "15.1.1",
-        "15.2"
+        "15.7"
       ],
       "points": [
         2
@@ -116,9 +105,8 @@
     {
       "claim": "support your brain health",
       "rules": [
-        "15.1",
-        "15.1.1",
-        "15.2"
+        "15.2",
+        "15.7"
       ],
       "points": [
         2
@@ -127,9 +115,8 @@
     {
       "claim": "youthful vitality",
       "rules": [
-        "15.1",
-        "15.1.1",
-        "15.2"
+        "15.2",
+        "15.7"
       ],
       "points": [
         2
@@ -138,9 +125,8 @@
     {
       "claim": "peak wellness",
       "rules": [
-        "15.1",
-        "15.1.1",
-        "15.2"
+        "15.2",
+        "15.7"
       ],
       "points": [
         2
@@ -149,9 +135,8 @@
     {
       "claim": "transform your life today",
       "rules": [
-        "15.1",
-        "15.1.1",
-        "15.2"
+        "15.2",
+        "15.7"
       ],
       "points": [
         2
@@ -160,9 +145,8 @@
     {
       "claim": "#VitaShroomMagic",
       "rules": [
-        "15.1",
-        "15.1.1",
-        "15.2"
+        "15.2",
+        "15.7"
       ],
       "points": [
         2
@@ -171,9 +155,8 @@
     {
       "claim": "superstar mushroom",
       "rules": [
-        "15.1",
-        "15.1.1",
-        "15.2"
+        "15.2",
+        "15.7"
       ],
       "points": [
         2

@@ -5,7 +5,7 @@
   "outcome": "upheld",
   "claims": [
     {
-      "claim": "This is a supplement revolution. No ultra-processed pills, no shakes, just real food",
+      "claim": "plant-based wholefood supplement",
       "rules": [
         "3.1"
       ],
@@ -14,52 +14,7 @@
       ]
     },
     {
-      "claim": "Daily30+",
-      "rules": [
-        "3.1"
-      ],
-      "points": [
-        1
-      ]
-    },
-    {
-      "claim": "pills",
-      "rules": [
-        "3.1"
-      ],
-      "points": [
-        1
-      ]
-    },
-    {
-      "claim": "shakes",
-      "rules": [
-        "3.1"
-      ],
-      "points": [
-        1
-      ]
-    },
-    {
-      "claim": "wholefood",
-      "rules": [
-        "3.1"
-      ],
-      "points": [
-        1
-      ]
-    },
-    {
-      "claim": "real food",
-      "rules": [
-        "3.1"
-      ],
-      "points": [
-        1
-      ]
-    },
-    {
-      "claim": "ultra-processed",
+      "claim": "No ultra-processed pills, no shakes",
       "rules": [
         "3.1"
       ],
@@ -69,15 +24,6 @@
     },
     {
       "claim": "just real food",
-      "rules": [
-        "3.1"
-      ],
-      "points": [
-        1
-      ]
-    },
-    {
-      "claim": "wholefood supplement",
       "rules": [
         "3.1"
       ],

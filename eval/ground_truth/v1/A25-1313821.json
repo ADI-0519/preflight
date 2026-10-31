@@ -5,10 +5,12 @@
   "outcome": "upheld",
   "claims": [
     {
-      "claim": "Not HRT – a great alternative",
+      "claim": "Not HRT – A great alternative",
       "rules": [
         "12.1",
-        "12.11"
+        "12.11",
+        "15.6",
+        "15.6.2"
       ],
       "points": [
         1
@@ -18,7 +20,9 @@
       "claim": "a natural joint and tendon rejuvenation boost",
       "rules": [
         "12.1",
-        "12.11"
+        "12.11",
+        "15.6",
+        "15.6.2"
       ],
       "points": [
         1
@@ -28,7 +32,9 @@
       "claim": "Over 100,000+ women have transformed their joint health",
       "rules": [
         "12.1",
-        "12.11"
+        "12.11",
+        "15.6",
+        "15.6.2"
       ],
       "points": [
         1
@@ -38,7 +44,9 @@
       "claim": "80% of menopausal women suffer from hormone starvation – don’t wait until it’s too late!",
       "rules": [
         "12.1",
-        "12.11"
+        "12.11",
+        "15.6",
+        "15.6.2"
       ],
       "points": [
         1
@@ -48,7 +56,9 @@
       "claim": "Healing Joints & Tendons",
       "rules": [
         "12.1",
-        "12.11"
+        "12.11",
+        "15.6",
+        "15.6.2"
       ],
       "points": [
         1
@@ -58,7 +68,9 @@
       "claim": "Saving money on painkillers",
       "rules": [
         "12.1",
-        "12.11"
+        "12.11",
+        "15.6",
+        "15.6.2"
       ],
       "points": [
         1
@@ -68,57 +80,21 @@
       "claim": "Heal your Joint pain in 60 days",
       "rules": [
         "12.1",
-        "12.11"
+        "12.11",
+        "15.6",
+        "15.6.2"
       ],
       "points": [
         1
       ]
     },
     {
-      "claim": "The Special probiotic fixing hip pain",
+      "claim": "The special probiotic fixing hip pain",
       "rules": [
         "12.1",
-        "12.11"
-      ],
-      "points": [
-        1
-      ]
-    },
-    {
-      "claim": "The hip pain started slowly - just a little stiffness getting out of bed. But within months, I was limping everywhere, avoiding stairs, and sleeping in our guest room because I couldn't stop tossing and turning",
-      "rules": [
-        "12.1",
-        "12.11"
-      ],
-      "points": [
-        1
-      ]
-    },
-    {
-      "claim": "Three doctors, zero answers",
-      "rules": [
-        "12.1",
-        "12.11"
-      ],
-      "points": [
-        1
-      ]
-    },
-    {
-      "claim": "That's when I learned something that blew my mind: when estrogen drops during menopause, it literally inflames your hip tendons. It's called gluteal tendinopathy, and most doctors have never heard of it",
-      "rules": [
-        "12.1",
-        "12.11"
-      ],
-      "points": [
-        1
-      ]
-    },
-    {
-      "claim": "I found women raving about this supplement called Her Again with something called L. gasseri. Apparently, it's the only probiotic clinically proven to help your body produce estrogen naturally",
-      "rules": [
-        "12.1",
-        "12.11"
+        "12.11",
+        "15.6",
+        "15.6.2"
       ],
       "points": [
         1
@@ -126,16 +102,6 @@
     },
     {
       "claim": "clinically-proven ingredients that help restore estrogen production naturally",
-      "rules": [
-        "15.1",
-        "15.1.1"
-      ],
-      "points": [
-        2
-      ]
-    },
-    {
-      "claim": "L. gasseri",
       "rules": [
         "15.1",
         "15.1.1"
@@ -162,6 +128,46 @@
       ],
       "points": [
         2
+      ]
+    },
+    {
+      "claim": "Four weeks later, I'm a different person",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "The constant burning ache is gone",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "I sleep through the night on my side",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "No one understands your hip pain? Her Again does",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
       ]
     }
   ],

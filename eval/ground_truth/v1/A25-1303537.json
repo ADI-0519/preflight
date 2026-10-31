@@ -5,7 +5,7 @@
   "outcome": "upheld",
   "claims": [
     {
-      "claim": "Are you constantly getting up at night to use the bathroom?",
+      "claim": "Reduce nighttime bathroom trips",
       "rules": [
         "12.1",
         "12.11",
@@ -17,31 +17,7 @@
       ]
     },
     {
-      "claim": "As men age, the prostate can enlarge – causing frequent urination, weak flow, and sleepless nights",
-      "rules": [
-        "12.1",
-        "12.11",
-        "15.6",
-        "15.6.2"
-      ],
-      "points": [
-        1
-      ]
-    },
-    {
-      "claim": "our doctor-formulated natural prostate supplement",
-      "rules": [
-        "12.1",
-        "12.11",
-        "15.6",
-        "15.6.2"
-      ],
-      "points": [
-        1
-      ]
-    },
-    {
-      "claim": "helps: Reduce nighttime bathroom trips Improve urine flow & bladder emptying",
+      "claim": "Improve urine flow & bladder emptying",
       "rules": [
         "12.1",
         "12.11",
@@ -65,7 +41,7 @@
       ]
     },
     {
-      "claim": "Impact Prostate Health",
+      "claim": "Impact PROSTATE HEALTH",
       "rules": [
         "12.1",
         "12.11",
@@ -77,7 +53,7 @@
       ]
     },
     {
-      "claim": "our doctor-formulated natural prostate supplement that helps",
+      "claim": "our doctor-formulated natural prostate supplement",
       "rules": [
         "12.18",
         "15.6.3"

@@ -21,6 +21,24 @@
       "points": [
         1
       ]
+    },
+    {
+      "claim": "Protein World helped me fuel my body, rebuild strength and find a healthier relationship with food",
+      "rules": [
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "Recover Rebuild & Rise with WPC!",
+      "rules": [
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
     }
   ],
   "written_by": "draft: scripts/draft_split_v1.py",

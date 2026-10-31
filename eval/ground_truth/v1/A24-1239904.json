@@ -5,13 +5,40 @@
   "outcome": "upheld",
   "claims": [
     {
-      "claim": "stress",
+      "claim": "Anti-Stress",
       "rules": [
         "15.6",
-        "15.6.2",
-        "15.1",
-        "15.1.1",
-        "15.7"
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "Stress Relief",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "Fights Stress",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "If someone with ADHD ate these three mushrooms, this is what would happen to their body",
+      "rules": [
+        "15.6",
+        "15.6.2"
       ],
       "points": [
         1
@@ -21,10 +48,7 @@
       "claim": "reduces symptoms of anxiety and depression",
       "rules": [
         "15.6",
-        "15.6.2",
-        "15.1",
-        "15.1.1",
-        "15.7"
+        "15.6.2"
       ],
       "points": [
         1
@@ -34,10 +58,7 @@
       "claim": "prevent future diseases",
       "rules": [
         "15.6",
-        "15.6.2",
-        "15.1",
-        "15.1.1",
-        "15.7"
+        "15.6.2"
       ],
       "points": [
         1
@@ -47,10 +68,7 @@
       "claim": "clears acne",
       "rules": [
         "15.6",
-        "15.6.2",
-        "15.1",
-        "15.1.1",
-        "15.7"
+        "15.6.2"
       ],
       "points": [
         1
@@ -59,8 +77,6 @@
     {
       "claim": "All-day Energy",
       "rules": [
-        "15.6",
-        "15.6.2",
         "15.1",
         "15.1.1",
         "15.7"
@@ -72,8 +88,6 @@
     {
       "claim": "Energy & Stamina",
       "rules": [
-        "15.6",
-        "15.6.2",
         "15.1",
         "15.1.1",
         "15.7"
@@ -85,8 +99,6 @@
     {
       "claim": "Zen Energy",
       "rules": [
-        "15.6",
-        "15.6.2",
         "15.1",
         "15.1.1",
         "15.7"
@@ -98,8 +110,6 @@
     {
       "claim": "increases energy as it battles fatigue",
       "rules": [
-        "15.6",
-        "15.6.2",
         "15.1",
         "15.1.1",
         "15.7"
@@ -111,8 +121,6 @@
     {
       "claim": "sharp and focused",
       "rules": [
-        "15.6",
-        "15.6.2",
         "15.1",
         "15.1.1",
         "15.7"
@@ -124,8 +132,6 @@
     {
       "claim": "Laser Focus",
       "rules": [
-        "15.6",
-        "15.6.2",
         "15.1",
         "15.1.1",
         "15.7"
@@ -137,8 +143,6 @@
     {
       "claim": "Focus & Memory",
       "rules": [
-        "15.6",
-        "15.6.2",
         "15.1",
         "15.1.1",
         "15.7"
@@ -150,8 +154,6 @@
     {
       "claim": "Boosts Focus",
       "rules": [
-        "15.6",
-        "15.6.2",
         "15.1",
         "15.1.1",
         "15.7"
@@ -163,8 +165,6 @@
     {
       "claim": "improving focus and concentration",
       "rules": [
-        "15.6",
-        "15.6.2",
         "15.1",
         "15.1.1",
         "15.7"
@@ -176,8 +176,6 @@
     {
       "claim": "destroys brain fog",
       "rules": [
-        "15.6",
-        "15.6.2",
         "15.1",
         "15.1.1",
         "15.7"
@@ -189,8 +187,6 @@
     {
       "claim": "enhances cognitive ability",
       "rules": [
-        "15.6",
-        "15.6.2",
         "15.1",
         "15.1.1",
         "15.7"
@@ -202,8 +198,6 @@
     {
       "claim": "Digestion",
       "rules": [
-        "15.6",
-        "15.6.2",
         "15.1",
         "15.1.1",
         "15.7"
@@ -215,8 +209,6 @@
     {
       "claim": "Immunity",
       "rules": [
-        "15.6",
-        "15.6.2",
         "15.1",
         "15.1.1",
         "15.7"
@@ -228,8 +220,6 @@
     {
       "claim": "boosts your immune system",
       "rules": [
-        "15.6",
-        "15.6.2",
         "15.1",
         "15.1.1",
         "15.7"
@@ -266,20 +256,6 @@
       ],
       "points": [
         3
-      ]
-    },
-    {
-      "claim": "TURKEY TAIL",
-      "rules": [
-        "15.6",
-        "15.6.2",
-        "15.1",
-        "15.1.1",
-        "15.2",
-        "15.7"
-      ],
-      "points": [
-        4
       ]
     }
   ],

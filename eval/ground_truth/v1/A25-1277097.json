@@ -5,7 +5,7 @@
   "outcome": "upheld",
   "claims": [
     {
-      "claim": "0g added sugar",
+      "claim": "0G ADDED SUGAR",
       "rules": [
         "15.1",
         "15.1.1"
@@ -15,13 +15,13 @@
       ]
     },
     {
-      "claim": "[…] carbohydrates 2.9g (of which 2.3g naturally occurring sugars)",
+      "claim": "A statistically significant decrease in the serum cortisol level appeared after (500mg) Mg supplementation, for 28 days",
       "rules": [
         "15.1",
         "15.1.1"
       ],
       "points": [
-        1
+        2
       ]
     },
     {
@@ -55,7 +55,17 @@
       ]
     },
     {
-      "claim": "Health Benefits of Lion’s Mane - Reduces Anxiety and Stress",
+      "claim": "Can it help with anxiety?",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        3
+      ]
+    },
+    {
+      "claim": "Reduces Anxiety and Stress",
       "rules": [
         "15.6",
         "15.6.2"

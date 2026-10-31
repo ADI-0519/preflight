@@ -5,7 +5,7 @@
   "outcome": "upheld",
   "claims": [
     {
-      "claim": "secret weapon parents of ASD kids swear by",
+      "claim": "The secret weapon parents of ASD kids swear by",
       "rules": [
         "15.6",
         "15.6.2"
@@ -15,7 +15,7 @@
       ]
     },
     {
-      "claim": "Autism focused, Packed with ingredients that help your child thrive emotionally, mentally and socially",
+      "claim": "This has helped my 5 year old with Level 2 autism so much",
       "rules": [
         "15.6",
         "15.6.2"
@@ -25,7 +25,57 @@
       ]
     },
     {
-      "claim": "This has helped my 5 year old with Level 2 autism so much. Within the first week his melt downs decreased by 80%. He is communicating so much better…he is starting to show kindness and empathy to his little sister…",
+      "claim": "Within the first week his melt downs decreased by 80%",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "He is communicating so much better",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "he is starting to show kindness and empathy to his little sister",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "Autism focused",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "Packed with ingredients that help your child thrive emotionally, mentally and socially",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "“Bentley of Vitamin Products” for ASD Kiddos",
       "rules": [
         "15.6",
         "15.6.2"

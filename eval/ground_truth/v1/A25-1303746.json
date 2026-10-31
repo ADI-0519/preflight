@@ -5,7 +5,7 @@
   "outcome": "upheld",
   "claims": [
     {
-      "claim": "But this?",
+      "claim": "I tried over 20 vitamins for my daughter with autism… none worked",
       "rules": [
         "12.1",
         "12.11",
@@ -17,7 +17,7 @@
       ]
     },
     {
-      "claim": "fewer meltdowns",
+      "claim": "Fewer meltdowns",
       "rules": [
         "12.1",
         "12.11",
@@ -41,6 +41,42 @@
       ]
     },
     {
+      "claim": "this is truly life-changing for sensory-sensitive kids",
+      "rules": [
+        "12.1",
+        "12.11",
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "Our paediatrician recommended us to take a multivitamin, since nutrient deficiencies can cause behavioural issues",
+      "rules": [
+        "12.1",
+        "12.11",
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "She’s even trying new foods like strawberries!",
+      "rules": [
+        "12.1",
+        "12.11",
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
       "claim": "More energy & alertness",
       "rules": [
         "15.1",
@@ -49,15 +85,6 @@
       ],
       "points": [
         2
-      ]
-    },
-    {
-      "claim": "Pure Nutrition Mom",
-      "rules": [
-        "2.3"
-      ],
-      "points": [
-        3
       ]
     }
   ],

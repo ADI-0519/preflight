@@ -5,47 +5,117 @@
   "outcome": "upheld",
   "claims": [
     {
-      "claim": "cured",
-      "rules": [
-        "15.6",
-        "15.6.2"
-      ],
-      "points": [
-        1
-      ]
-    },
-    {
-      "claim": "halved",
-      "rules": [
-        "15.6",
-        "15.6.2"
-      ],
-      "points": [
-        1
-      ]
-    },
-    {
-      "claim": "very much reduced",
-      "rules": [
-        "15.6",
-        "15.6.2"
-      ],
-      "points": [
-        1
-      ]
-    },
-    {
-      "claim": "nowhere near as bad",
-      "rules": [
-        "15.6",
-        "15.6.2"
-      ],
-      "points": [
-        1
-      ]
-    },
-    {
       "claim": "Blurry here. Crystal clear on Trustpilot. Regulations mean we can’t show everything on this page, but you can read the lot over there",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "Whilst it’s not “cured” the [blurred word] has halved at least since I started my shots",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "my [blurred words] and [blurred words] is very much reduced",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "I’m convinced they really help my [blurred words]",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "after day 8 I had so much more energy and [blurred words] and [blurred word] were reducing",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "Even my [blurred words] has gone",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "I’m recovering [blurred words] and [blurred words]",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "I have had on and off [blurred words] problems for the best part of 20 years, I am now nearly 8 weeks into Turmeric co shots and I can genuinely say I have not felt this good in years",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "Since he started taking the shots he has not had to use the cream at all",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "No more [blurred words] and it has given me my life back",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "the [blurred word] are nowhere near as bad",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "really helped with [blurred words] and [blurred word]",
       "rules": [
         "15.6",
         "15.6.2"

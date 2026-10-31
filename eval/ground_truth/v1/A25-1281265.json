@@ -5,7 +5,67 @@
   "outcome": "upheld",
   "claims": [
     {
-      "claim": "Ozempic works, but 20-50% of weight loss is muscle. Is this $1/day solution better? Unlike Ozempic, Curb Crave: Helps preserve lean muscle mass as you lose weight Supports healthy digestion instead of disrupting it Keeps your face looking youthful and vibrant And won’t cost you $1,000 a month like most GLP-1 injections do",
+      "claim": "Is this $1/day solution better? Unlike Ozempic",
+      "rules": [
+        "12.1",
+        "12.11",
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "Helps preserve lean muscle mass as you lose weight",
+      "rules": [
+        "12.1",
+        "12.11",
+        "15.6",
+        "15.6.2",
+        "15.1",
+        "15.1.1",
+        "15.7"
+      ],
+      "points": [
+        1,
+        2
+      ]
+    },
+    {
+      "claim": "Supports healthy digestion instead of disrupting it",
+      "rules": [
+        "12.1",
+        "12.11",
+        "15.6",
+        "15.6.2",
+        "15.1",
+        "15.1.1",
+        "15.7"
+      ],
+      "points": [
+        1,
+        2
+      ]
+    },
+    {
+      "claim": "Keeps your face looking youthful and vibrant",
+      "rules": [
+        "12.1",
+        "12.11",
+        "15.6",
+        "15.6.2",
+        "15.1",
+        "15.1.1",
+        "15.7"
+      ],
+      "points": [
+        1,
+        2
+      ]
+    },
+    {
+      "claim": "won’t cost you $1,000 a month like most GLP-1 injections do",
       "rules": [
         "12.1",
         "12.11",
@@ -41,7 +101,7 @@
       ]
     },
     {
-      "claim": "CURB CRAVE",
+      "claim": "Curb Crave",
       "rules": [
         "12.1",
         "12.11",
@@ -69,7 +129,7 @@
       ]
     },
     {
-      "claim": "‘I was close on [sic] getting on prescription weight loss medication but decided to give these a try and I am amazed",
+      "claim": "I was close on [sic] getting on prescription weight loss medication but decided to give these a try and I am amazed",
       "rules": [
         "12.1",
         "12.11",
@@ -93,34 +153,6 @@
       ]
     },
     {
-      "claim": "It works",
-      "rules": [
-        "12.1",
-        "12.11",
-        "15.6",
-        "15.6.2"
-      ],
-      "points": [
-        1
-      ]
-    },
-    {
-      "claim": "Helps preserve lean muscle mass as you lose weight Supports healthy digestion instead of disrupting it Keeps your face looking youthful and vibrant",
-      "rules": [
-        "12.1",
-        "12.11",
-        "15.6",
-        "15.6.2",
-        "15.1",
-        "15.1.1",
-        "15.7"
-      ],
-      "points": [
-        1,
-        2
-      ]
-    },
-    {
       "claim": "I Notice [sic] a good energy boost from them",
       "rules": [
         "12.1",
@@ -137,7 +169,7 @@
       ]
     },
     {
-      "claim": "doctor-approved",
+      "claim": "Doctor-Approved",
       "rules": [
         "12.18",
         "15.6.3"

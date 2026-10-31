@@ -15,6 +15,36 @@
       ]
     },
     {
+      "claim": "within the first three days he started using way more words",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "Within a week he was speaking sentences",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "A week later taking Power and Focus",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
       "claim": "Natural Nutritional Supplements for Autism & ADHD",
       "rules": [
         "15.6",

@@ -5,11 +5,33 @@
   "outcome": "upheld",
   "claims": [
     {
-      "claim": "it helps balance your sugar level",
+      "claim": "Celtic Sea Salt alkalines your body",
       "rules": [
         "15.1",
         "15.1.1",
-        "15.2"
+        "15.7"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "It helps balance your sugar level",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.7"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "it improves your brain function",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.7"
       ],
       "points": [
         1
@@ -20,7 +42,7 @@
       "rules": [
         "15.1",
         "15.1.1",
-        "15.2"
+        "15.7"
       ],
       "points": [
         1
@@ -31,14 +53,24 @@
       "rules": [
         "15.1",
         "15.1.1",
-        "15.2"
+        "15.7"
       ],
       "points": [
         1
       ]
     },
     {
-      "claim": "it has 92 minerals in it",
+      "claim": "it makes you function to optimal level",
+      "rules": [
+        "15.2",
+        "15.7"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "It has 92 minerals in it",
       "rules": [
         "15.1",
         "15.1.1"
@@ -68,7 +100,7 @@
       ]
     },
     {
-      "claim": "alkalining your body is so important, because the more acidic it is, the more open it is to disorders and diseases",
+      "claim": "Alkalining your body is so important, because the more acidic it is, the more open it is to disorders and diseases",
       "rules": [
         "15.6",
         "15.6.2"
@@ -88,7 +120,7 @@
       ]
     },
     {
-      "claim": "reduce inflammation",
+      "claim": "Reduce inflammation",
       "rules": [
         "15.6",
         "15.6.2"

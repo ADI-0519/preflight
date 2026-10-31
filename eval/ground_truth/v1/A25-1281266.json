@@ -5,59 +5,7 @@
   "outcome": "upheld",
   "claims": [
     {
-      "claim": "faux-zempic",
-      "rules": [
-        "12.1",
-        "12.11",
-        "15.6",
-        "15.6.2",
-        "15.1",
-        "15.1.1",
-        "15.7"
-      ],
-      "points": [
-        1,
-        2
-      ]
-    },
-    {
-      "claim": "Meet MB-1 by Arrae, your all-natural Faux-Zempic!",
-      "rules": [
-        "12.1",
-        "12.11",
-        "15.6",
-        "15.6.2"
-      ],
-      "points": [
-        1
-      ]
-    },
-    {
-      "claim": "Arrae MB-1 provides comprehensize [sic] metabolic support by activating AMPK and key enzymes to support",
-      "rules": [
-        "12.1",
-        "12.11",
-        "15.6",
-        "15.6.2"
-      ],
-      "points": [
-        1
-      ]
-    },
-    {
-      "claim": "craving control, blood sugar + cholesterol regulation",
-      "rules": [
-        "12.1",
-        "12.11",
-        "15.6",
-        "15.6.2"
-      ],
-      "points": [
-        1
-      ]
-    },
-    {
-      "claim": "Meet MB-1 by Arrae, your all-natural Faux-Zempic",
+      "claim": "your all-natural Faux-Zempic",
       "rules": [
         "12.1",
         "12.11",
@@ -81,7 +29,7 @@
       ]
     },
     {
-      "claim": "a clinically backed supplement with seven natural ingredients that work with your body to",
+      "claim": "comprehensize [sic] metabolic support by activating AMPK and key enzymes",
       "rules": [
         "12.1",
         "12.11",
@@ -93,7 +41,7 @@
       ]
     },
     {
-      "claim": "curb cravings",
+      "claim": "craving control",
       "rules": [
         "12.1",
         "12.11",
@@ -105,7 +53,7 @@
       ]
     },
     {
-      "claim": "it helped quiet food noise",
+      "claim": "blood sugar + cholesterol regulation",
       "rules": [
         "12.1",
         "12.11",
@@ -130,6 +78,30 @@
       "points": [
         1,
         2
+      ]
+    },
+    {
+      "claim": "curb cravings",
+      "rules": [
+        "12.1",
+        "12.11",
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "it helped quiet food noise",
+      "rules": [
+        "12.1",
+        "12.11",
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
       ]
     },
     {

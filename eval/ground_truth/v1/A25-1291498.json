@@ -8,14 +8,30 @@
       "claim": "You’re on anti-depressants, you see a Dr they say take these pills. They’re not magic beans",
       "rules": [
         "15.6",
-        "15.6.2"
+        "15.6.2",
+        "1.3",
+        "12.2"
       ],
       "points": [
-        1
+        1,
+        2
       ]
     },
     {
-      "claim": "not automatically feel better",
+      "claim": "numb your emotions so you feel not happy, not sad. None of it delivers it. You’re very, very numb",
+      "rules": [
+        "15.6",
+        "15.6.2",
+        "1.3",
+        "12.2"
+      ],
+      "points": [
+        1,
+        2
+      ]
+    },
+    {
+      "claim": "we balance your hormones in your body using the endocrine system",
       "rules": [
         "15.6",
         "15.6.2"
@@ -25,7 +41,46 @@
       ]
     },
     {
-      "claim": "numb your emotions so you feel not happy, not sad. None of it delivers it. You’re very, very numb. With Supreme CBD, how we work is we balance your hormones in your body using the endocrine system",
+      "claim": "I wouldn’t recommend antidepressants at all",
+      "rules": [
+        "15.6",
+        "15.6.2",
+        "1.3",
+        "12.2"
+      ],
+      "points": [
+        1,
+        2
+      ]
+    },
+    {
+      "claim": "I’d recommend you to come off them",
+      "rules": [
+        "15.6",
+        "15.6.2",
+        "1.3",
+        "12.2"
+      ],
+      "points": [
+        1,
+        2
+      ]
+    },
+    {
+      "claim": "I’d recommend CBD",
+      "rules": [
+        "15.6",
+        "15.6.2",
+        "1.3",
+        "12.2"
+      ],
+      "points": [
+        1,
+        2
+      ]
+    },
+    {
+      "claim": "that’s what helped me. I got years and years ago suffering really bad anxiety",
       "rules": [
         "15.6",
         "15.6.2"
@@ -35,53 +90,42 @@
       ]
     },
     {
-      "claim": "endocannabinoid system",
+      "claim": "they wanted to put me on antidepressants and I’ve said no, but the only thing that ever helped me was taking CBD oil",
       "rules": [
         "15.6",
-        "15.6.2"
+        "15.6.2",
+        "1.3",
+        "12.2"
       ],
       "points": [
-        1
-      ]
-    },
-    {
-      "claim": "endocrine system",
-      "rules": [
-        "15.6",
-        "15.6.2"
-      ],
-      "points": [
-        1
-      ]
-    },
-    {
-      "claim": "suffering really bad anxiety",
-      "rules": [
-        "15.6",
-        "15.6.2"
-      ],
-      "points": [
-        1
+        1,
+        2
       ]
     },
     {
       "claim": "DO YOU TAKE ANTI DEPRESSANTS? They just numb your emotions so you don’t feel happy or sad",
       "rules": [
         "15.6",
-        "15.6.2"
+        "15.6.2",
+        "1.3",
+        "12.2"
       ],
       "points": [
-        1
+        1,
+        2
       ]
     },
     {
-      "claim": "THOUSANDS OF PEOPLE HAVE SWITCH TO @Supremecbd which",
+      "claim": "THOUSANDS OF PEOPLE HAVE SWITCH TO @Supremecbd",
       "rules": [
         "15.6",
-        "15.6.2"
+        "15.6.2",
+        "1.3",
+        "12.2"
       ],
       "points": [
-        1
+        1,
+        2
       ]
     },
     {

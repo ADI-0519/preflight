@@ -8,10 +8,13 @@
       "claim": "All of this was only 755 calories and helping me stay in a calorie deficit to shift some extra pounds when needed",
       "rules": [
         "1.3",
-        "13.7"
+        "13.7",
+        "15.1",
+        "15.1.1"
       ],
       "points": [
-        2
+        2,
+        3
       ]
     },
     {
@@ -25,7 +28,27 @@
       ]
     },
     {
-      "claim": "755 calories and helping me stay in a calorie deficit to shift some extra pounds when needed",
+      "claim": "Total calories for the day = 755",
+      "rules": [
+        "1.3",
+        "13.7"
+      ],
+      "points": [
+        2
+      ]
+    },
+    {
+      "claim": "look at that double chin, here’s why I’m on the Skinny Foods",
+      "rules": [
+        "15.1",
+        "15.1.1"
+      ],
+      "points": [
+        3
+      ]
+    },
+    {
+      "claim": "Skinny Food",
       "rules": [
         "15.1",
         "15.1.1"

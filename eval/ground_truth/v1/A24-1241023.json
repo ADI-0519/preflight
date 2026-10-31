@@ -55,7 +55,29 @@
       ]
     },
     {
-      "claim": "I’ve lost 8kgs [sic], have zero bloating (used to look 9 months pregnant daily!)",
+      "claim": "my moods are calm and I have so much energy",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "I’ve lost 8kgs",
+      "rules": [
+        "15.6",
+        "15.6.2",
+        "15.6.6"
+      ],
+      "points": [
+        1,
+        2
+      ]
+    },
+    {
+      "claim": "have zero bloating (used to look 9 months pregnant daily!)",
       "rules": [
         "15.6",
         "15.6.2"
@@ -85,6 +107,26 @@
       ]
     },
     {
+      "claim": "Ended my bloating and hormonal weight",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "It Balanced My Hormones and the Old Me Is Back",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
       "claim": "Hormone Harmony",
       "rules": [
         "15.6",
@@ -92,26 +134,6 @@
       ],
       "points": [
         1
-      ]
-    },
-    {
-      "claim": "MenoDaily",
-      "rules": [
-        "15.6",
-        "15.6.2"
-      ],
-      "points": [
-        1
-      ]
-    },
-    {
-      "claim": "I’ve lost 8kgs",
-      "rules": [
-        "15.6",
-        "15.6.6"
-      ],
-      "points": [
-        2
       ]
     }
   ],

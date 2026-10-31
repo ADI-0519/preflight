@@ -5,7 +5,27 @@
   "outcome": "upheld",
   "claims": [
     {
+      "claim": "encourage breast milk supply",
+      "rules": [
+        "15.1",
+        "15.1.1"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
       "claim": "lactation tea",
+      "rules": [
+        "15.1",
+        "15.1.1"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "7 days of daily tea = 3oz daytime pump",
       "rules": [
         "15.1",
         "15.1.1"

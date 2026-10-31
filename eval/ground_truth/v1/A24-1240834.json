@@ -5,21 +5,7 @@
   "outcome": "upheld",
   "claims": [
     {
-      "claim": "greens",
-      "rules": [
-        "15.1",
-        "15.1.1",
-        "15.3",
-        "3.1",
-        "3.7"
-      ],
-      "points": [
-        1,
-        2
-      ]
-    },
-    {
-      "claim": "you’ve been told your whole life to eat greens",
+      "claim": "equally good, or in my eyes better",
       "rules": [
         "15.1",
         "15.1.1",
@@ -27,52 +13,6 @@
       ],
       "points": [
         1
-      ]
-    },
-    {
-      "claim": "a lot of people can’t get that amount of greens into their diet",
-      "rules": [
-        "15.1",
-        "15.1.1",
-        "15.3"
-      ],
-      "points": [
-        1
-      ]
-    },
-    {
-      "claim": "we’ve taken a very broad range of greens",
-      "rules": [
-        "15.1",
-        "15.1.1",
-        "15.3",
-        "3.1",
-        "3.7"
-      ],
-      "points": [
-        1,
-        2
-      ]
-    },
-    {
-      "claim": "better",
-      "rules": [
-        "15.1",
-        "15.1.1",
-        "15.3"
-      ],
-      "points": [
-        1
-      ]
-    },
-    {
-      "claim": "but you get it substantially cheaper",
-      "rules": [
-        "3.1",
-        "3.7"
-      ],
-      "points": [
-        2
       ]
     },
     {
@@ -90,31 +30,6 @@
       "rules": [
         "15.1",
         "15.1.1",
-        "15.2",
-        "15.7"
-      ],
-      "points": [
-        3
-      ]
-    },
-    {
-      "claim": "support",
-      "rules": [
-        "15.1",
-        "15.1.1",
-        "15.2",
-        "15.7"
-      ],
-      "points": [
-        3
-      ]
-    },
-    {
-      "claim": "smooth, healthy skin",
-      "rules": [
-        "15.1",
-        "15.1.1",
-        "15.2",
         "15.7"
       ],
       "points": [
@@ -126,7 +41,6 @@
       "rules": [
         "15.1",
         "15.1.1",
-        "15.2",
         "15.7"
       ],
       "points": [
@@ -136,8 +50,6 @@
     {
       "claim": "Superfoods to supercharge your health",
       "rules": [
-        "15.1",
-        "15.1.1",
         "15.2",
         "15.7"
       ],
@@ -148,8 +60,6 @@
     {
       "claim": "gut-friendly probiotics",
       "rules": [
-        "15.1",
-        "15.1.1",
         "15.2",
         "15.7"
       ],
@@ -160,8 +70,6 @@
     {
       "claim": "All the nutrients your body needs to thrive",
       "rules": [
-        "15.1",
-        "15.1.1",
         "15.2",
         "15.7"
       ],

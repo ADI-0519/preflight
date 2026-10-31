@@ -25,7 +25,7 @@
       ]
     },
     {
-      "claim": "natural menopause support",
+      "claim": "Natural Menopause Support",
       "rules": [
         "15.6",
         "15.6.2"
@@ -96,6 +96,16 @@
     },
     {
       "claim": "Fatigue",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "no more headaches, muscle aches or hot flushes",
       "rules": [
         "15.6",
         "15.6.2"

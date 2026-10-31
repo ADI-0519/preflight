@@ -62,10 +62,14 @@
         "12.1",
         "12.11",
         "15.6",
-        "15.6.2"
+        "15.6.2",
+        "15.1",
+        "15.1.1",
+        "15.7"
       ],
       "points": [
-        1
+        1,
+        2
       ]
     },
     {
@@ -93,7 +97,31 @@
       ]
     },
     {
-      "claim": "? Berberine is your natural metabolism booster, enhancing GLP-1 secretion to support: Appetite Control – Feel fuller, eat less",
+      "claim": "Berberine is your natural metabolism booster",
+      "rules": [
+        "12.1",
+        "12.11",
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "enhancing GLP-1 secretion",
+      "rules": [
+        "12.1",
+        "12.11",
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "Appetite Control – Feel fuller, eat less",
       "rules": [
         "12.1",
         "12.11",
@@ -117,19 +145,7 @@
       ]
     },
     {
-      "claim": "Struggling with",
-      "rules": [
-        "12.1",
-        "12.11",
-        "15.6",
-        "15.6.2"
-      ],
-      "points": [
-        1
-      ]
-    },
-    {
-      "claim": "stubborn weight?",
+      "claim": "stubborn weight",
       "rules": [
         "12.1",
         "12.11",
@@ -161,7 +177,7 @@
       ]
     },
     {
-      "claim": "and Gut Health Support – Optimizes microbiome for digestion",
+      "claim": "Gut Health Support – Optimizes microbiome for digestion",
       "rules": [
         "12.1",
         "12.11",
@@ -182,10 +198,14 @@
         "12.1",
         "12.11",
         "15.6",
-        "15.6.2"
+        "15.6.2",
+        "15.1",
+        "15.1.1",
+        "15.7"
       ],
       "points": [
-        1
+        1,
+        2
       ]
     }
   ],

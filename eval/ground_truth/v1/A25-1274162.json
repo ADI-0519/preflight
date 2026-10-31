@@ -35,17 +35,7 @@
       ]
     },
     {
-      "claim": "nutraceuticals",
-      "rules": [
-        "15.6",
-        "15.6.2"
-      ],
-      "points": [
-        1
-      ]
-    },
-    {
-      "claim": "pharmaceutical",
+      "claim": "stimulant ADHD medicine will increase dopamine, but so will saffron",
       "rules": [
         "15.6",
         "15.6.2",
@@ -57,75 +47,101 @@
       ]
     },
     {
-      "claim": "These powerful gummies and pops combine the best of nutrition and medicine, helping you stay",
+      "claim": "Why would we choose a nutraceutical over a pharmaceutical?",
       "rules": [
         "15.6",
-        "15.6.2"
+        "15.6.2",
+        "1.3"
       ],
       "points": [
-        1
+        1,
+        3
       ]
     },
     {
-      "claim": "focused",
-      "rules": [
-        "15.6",
-        "15.6.2"
-      ],
-      "points": [
-        1
-      ]
-    },
-    {
-      "claim": "With our SaffPro products, your sleep will be at ease, increased mood stability",
-      "rules": [
-        "15.6",
-        "15.6.2"
-      ],
-      "points": [
-        1
-      ]
-    },
-    {
-      "claim": "These powerful gummies and pops combine the best of nutrition and medicine, helping you stay strong",
-      "rules": [
-        "15.1",
-        "15.1.1",
-        "15.7"
-      ],
-      "points": [
-        2
-      ]
-    },
-    {
-      "claim": "and energised every day",
-      "rules": [
-        "15.1",
-        "15.1.1",
-        "15.7"
-      ],
-      "points": [
-        2
-      ]
-    },
-    {
-      "claim": "and it comes with powerful antioxidant",
-      "rules": [
-        "15.1",
-        "15.1.1",
-        "15.7"
-      ],
-      "points": [
-        2
-      ]
-    },
-    {
-      "claim": "pharmaceutical medications",
+      "claim": "There are people who will respond to certain pharmaceutical medications, but there will always be people who do not respond to them",
       "rules": [
         "1.3"
       ],
       "points": [
         3
+      ]
+    },
+    {
+      "claim": "there are hundreds of thousands, if not millions of people out there who do not choose to put pharmaceutical drugs in their body",
+      "rules": [
+        "1.3"
+      ],
+      "points": [
+        3
+      ]
+    },
+    {
+      "claim": "another reason for this is the incredible withdrawals and side effects that can come with them",
+      "rules": [
+        "1.3"
+      ],
+      "points": [
+        3
+      ]
+    },
+    {
+      "claim": "These powerful gummies and pops combine the best of nutrition and medicine",
+      "rules": [
+        "15.6",
+        "15.6.2",
+        "15.1",
+        "15.1.1",
+        "15.7"
+      ],
+      "points": [
+        1,
+        2
+      ]
+    },
+    {
+      "claim": "helping you stay strong, focused and energised every day",
+      "rules": [
+        "15.6",
+        "15.6.2",
+        "15.1",
+        "15.1.1",
+        "15.7"
+      ],
+      "points": [
+        1,
+        2
+      ]
+    },
+    {
+      "claim": "your sleep will be at ease",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "increased mood stability",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "it comes with powerful antioxidant",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.7"
+      ],
+      "points": [
+        2
       ]
     }
   ],

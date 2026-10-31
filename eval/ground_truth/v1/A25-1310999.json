@@ -14,39 +14,6 @@
       "points": [
         1
       ]
-    },
-    {
-      "claim": "grown",
-      "rules": [
-        "3.1",
-        "3.3",
-        "3.7"
-      ],
-      "points": [
-        1
-      ]
-    },
-    {
-      "claim": "Food-Grown [trademark symbol] supplements",
-      "rules": [
-        "3.1",
-        "3.3",
-        "3.7"
-      ],
-      "points": [
-        1
-      ]
-    },
-    {
-      "claim": "Wild by nature",
-      "rules": [
-        "3.1",
-        "3.3",
-        "3.7"
-      ],
-      "points": [
-        1
-      ]
     }
   ],
   "written_by": "draft: scripts/draft_split_v1.py",

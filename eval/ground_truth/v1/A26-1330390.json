@@ -30,8 +30,7 @@
       "claim": "buying you time",
       "rules": [
         "15.1",
-        "15.1.1",
-        "15.2"
+        "15.1.1"
       ],
       "points": [
         1
@@ -41,8 +40,7 @@
       "claim": "protecting your DNA",
       "rules": [
         "15.1",
-        "15.1.1",
-        "15.2"
+        "15.1.1"
       ],
       "points": [
         1
@@ -52,8 +50,7 @@
       "claim": "slowing down aging at the cellular level",
       "rules": [
         "15.1",
-        "15.1.1",
-        "15.2"
+        "15.1.1"
       ],
       "points": [
         1
@@ -63,15 +60,14 @@
       "claim": "it was most likely coffee’s polyphenols protecting telomeres because they’re powerful antioxidants",
       "rules": [
         "15.1",
-        "15.1.1",
-        "15.2"
+        "15.1.1"
       ],
       "points": [
         1
       ]
     },
     {
-      "claim": "the healthiest",
+      "claim": "Polyphenols to support gut and brain health",
       "rules": [
         "15.1",
         "15.1.1",
@@ -82,10 +78,8 @@
       ]
     },
     {
-      "claim": "polyphenols to support gut and brain health",
+      "claim": "the healthiest […] coffee on earth",
       "rules": [
-        "15.1",
-        "15.1.1",
         "15.2"
       ],
       "points": [
@@ -93,10 +87,8 @@
       ]
     },
     {
-      "claim": "how long you have left to live",
+      "claim": "amazing health benefits",
       "rules": [
-        "15.1",
-        "15.1.1",
         "15.2"
       ],
       "points": [
@@ -104,16 +96,27 @@
       ]
     },
     {
-      "claim": "overseen by Dr Rupy",
+      "claim": "HIGH levels of antioxidants",
       "rules": [
-        "15.6.3"
+        "15.1",
+        "15.1.1"
       ],
       "points": [
-        2
+        1
       ]
     },
     {
-      "claim": "our Director and Chief Science Officer",
+      "claim": "high in polyphenols and antioxidants",
+      "rules": [
+        "15.1",
+        "15.1.1"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "Overseen by Dr Rupy",
       "rules": [
         "15.6.3"
       ],

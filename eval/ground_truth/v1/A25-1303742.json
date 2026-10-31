@@ -10,10 +10,14 @@
         "12.1",
         "12.11",
         "15.6",
-        "15.6.2"
+        "15.6.2",
+        "15.1",
+        "15.1.1",
+        "15.7"
       ],
       "points": [
-        1
+        1,
+        2
       ]
     },
     {
@@ -29,7 +33,7 @@
       ]
     },
     {
-      "claim": "[…] give your child the gift of a calmer, more balanced life",
+      "claim": "Give your child the gift of a calmer, more balanced life",
       "rules": [
         "12.1",
         "12.11",
@@ -41,7 +45,7 @@
       ]
     },
     {
-      "claim": "Each sachet delivers 8 Billion CFUs of PS23™ psychobiotics and essential nutrients that work through the gut-brain axis, balancing gut microbiota to reduce anxiety, enhance brain function, and promote emotional well-being",
+      "claim": "70% feel less irritated from sights, sounds or tastes",
       "rules": [
         "12.1",
         "12.11",
@@ -53,35 +57,98 @@
       ]
     },
     {
-      "claim": "Each sachet delivers 8 Billion CFUs of PS23™ psychobiotics and essential nutrients that work through the gut-brain axis, balancing gut microbiota to",
+      "claim": "68% are able to engaged [sic] in conversations",
       "rules": [
+        "12.1",
+        "12.11",
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "65% feel comfortable adapting with routine changes",
+      "rules": [
+        "12.1",
+        "12.11",
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "No Meltdowns & Tantrums With AURA7™",
+      "rules": [
+        "12.1",
+        "12.11",
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "balancing gut microbiota",
+      "rules": [
+        "12.1",
+        "12.11",
+        "15.6",
+        "15.6.2",
         "15.1",
         "15.1.1",
         "15.7"
       ],
       "points": [
+        1,
         2
       ]
     },
     {
-      "claim": "enhance brain function, and promote emotional well-being",
+      "claim": "reduce anxiety",
       "rules": [
+        "12.1",
+        "12.11",
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "enhance brain function",
+      "rules": [
+        "12.1",
+        "12.11",
+        "15.6",
+        "15.6.2",
         "15.1",
         "15.1.1",
         "15.7"
       ],
       "points": [
+        1,
         2
       ]
     },
     {
-      "claim": "emotional well-being",
+      "claim": "promote emotional well-being",
       "rules": [
+        "12.1",
+        "12.11",
+        "15.6",
+        "15.6.2",
         "15.1",
         "15.1.1",
         "15.7"
       ],
       "points": [
+        1,
         2
       ]
     },

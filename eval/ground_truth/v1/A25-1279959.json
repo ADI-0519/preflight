@@ -5,115 +5,126 @@
   "outcome": "upheld",
   "claims": [
     {
-      "claim": "MENTAL CLARITY",
+      "claim": "poor focus or restless nights",
       "rules": [
         "15.6",
-        "15.6.2",
-        "12.1",
-        "12.11",
-        "15.1",
-        "15.1.1"
+        "15.6.2"
       ],
       "points": [
-        1
+        1,
+        3
       ]
     },
     {
-      "claim": "LASER FOCUS",
+      "claim": "helps you recharge, refocus, and enjoy a deeper, more restful sleep",
       "rules": [
         "15.6",
-        "15.6.2",
-        "12.1",
-        "12.11",
-        "15.1",
-        "15.1.1"
+        "15.6.2"
       ],
       "points": [
-        1
-      ]
-    },
-    {
-      "claim": "HAPPY MOOD",
-      "rules": [
-        "15.6",
-        "15.6.2",
-        "12.1",
-        "12.11",
-        "15.1",
-        "15.1.1"
-      ],
-      "points": [
-        1
+        1,
+        3
       ]
     },
     {
       "claim": "THIS IS NOT SPEED",
       "rules": [
         "15.6",
-        "15.6.2",
-        "12.1",
-        "12.11",
-        "15.1",
-        "15.1.1"
+        "15.6.2"
       ],
       "points": [
-        1
+        1,
+        3
       ]
     },
     {
-      "claim": "speed",
+      "claim": "MENTAL CLARITY",
       "rules": [
         "15.6",
-        "15.6.2",
-        "12.1",
-        "12.11",
-        "15.1",
-        "15.1.1"
+        "15.6.2"
       ],
       "points": [
-        1
+        1,
+        3
       ]
     },
     {
-      "claim": "THIS IS NOT ADDERALL",
+      "claim": "LASER FOCUS",
       "rules": [
         "15.6",
-        "15.6.2",
-        "12.1",
-        "12.11",
-        "15.1",
-        "15.1.1"
+        "15.6.2"
       ],
       "points": [
-        1
+        1,
+        3
       ]
     },
     {
-      "claim": "ADDERALL",
+      "claim": "HAPPY MOOD",
       "rules": [
         "15.6",
-        "15.6.2",
-        "12.1",
-        "12.11",
-        "15.1",
-        "15.1.1"
+        "15.6.2"
       ],
       "points": [
-        1
+        1,
+        3
       ]
     },
     {
       "claim": "INCREASED ENERGY",
       "rules": [
-        "15.6",
-        "15.6.2",
-        "12.1",
-        "12.11",
         "15.1",
         "15.1.1"
       ],
       "points": [
-        1
+        2,
+        4
+      ]
+    },
+    {
+      "claim": "Elevate Your Energy",
+      "rules": [
+        "15.1",
+        "15.1.1"
+      ],
+      "points": [
+        2,
+        4
+      ]
+    },
+    {
+      "claim": "Enhance Sleep",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1,
+        3
+      ]
+    },
+    {
+      "claim": "Increase Stamina",
+      "rules": [
+        "15.1",
+        "15.1.1"
+      ],
+      "points": [
+        2,
+        4
+      ]
+    },
+    {
+      "claim": "THIS IS NOT ADDERALL",
+      "rules": [
+        "12.1",
+        "12.11",
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1,
+        3
       ]
     }
   ],

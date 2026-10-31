@@ -5,7 +5,19 @@
   "outcome": "upheld",
   "claims": [
     {
-      "claim": "Rejuvit Menopause Relief",
+      "claim": "Around 2-8 weeks after my first capsule, I already had extra room in my pants",
+      "rules": [
+        "15.6",
+        "15.6.2",
+        "15.6.6"
+      ],
+      "points": [
+        1,
+        2
+      ]
+    },
+    {
+      "claim": "everyone was asking how I lost weight",
       "rules": [
         "15.6",
         "15.6.2"
@@ -15,7 +27,17 @@
       ]
     },
     {
-      "claim": "Around 2-8 weeks after my first capsule, I already had extra room in my pants (everyone was asking how I lost weight), I felt more energized, and the hot flashes [sic] were gone",
+      "claim": "I felt more energized",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "the hot flashes [sic] were gone",
       "rules": [
         "15.6",
         "15.6.2"
@@ -35,7 +57,7 @@
       ]
     },
     {
-      "claim": "Not just about maintaining shape, but unlocking clarity, energy, and daily consistency […] It’s not too late to take charge of our well-being. Let’s prioritize our health",
+      "claim": "maintaining shape",
       "rules": [
         "15.6",
         "15.6.2"
@@ -45,7 +67,7 @@
       ]
     },
     {
-      "claim": "I’m 55",
+      "claim": "unlocking clarity, energy, and daily consistency",
       "rules": [
         "15.6",
         "15.6.2"
@@ -55,7 +77,7 @@
       ]
     },
     {
-      "claim": "Menopause sucks so bad! Not to mention the hot flashes [sic] and joint pain I’ve had for over 7 years",
+      "claim": "the hot flashes [sic] and joint pain I’ve had for over 7 years",
       "rules": [
         "15.6",
         "15.6.2"
@@ -75,7 +97,7 @@
       ]
     },
     {
-      "claim": "That’s precisely how Katy felt when she entered menopause",
+      "claim": "Many women think weight gain and muffin tops during menopause are typical and can’t be stopped",
       "rules": [
         "15.6",
         "15.6.2"
@@ -85,7 +107,7 @@
       ]
     },
     {
-      "claim": "Many women think weight gain and muffin tops during menopause are typical and can’t be stopped. Along with bloating, low energy, and digestive issues",
+      "claim": "Along with bloating, low energy, and digestive issues",
       "rules": [
         "15.6",
         "15.6.2"
@@ -95,7 +117,7 @@
       ]
     },
     {
-      "claim": "I have an energy level like you can’t imagine. The weight gain is getting better, but the bloat is what I noticed a significant difference in",
+      "claim": "I have an energy level like you can’t imagine",
       "rules": [
         "15.6",
         "15.6.2"
@@ -105,7 +127,99 @@
       ]
     },
     {
-      "claim": "My first week was crazy good […] And the weight… went from 193 to 187",
+      "claim": "The weight gain is getting better, but the bloat is what I noticed a significant difference in",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "And the weight… went from 193 to 187",
+      "rules": [
+        "15.6",
+        "15.6.2",
+        "15.6.6"
+      ],
+      "points": [
+        1,
+        2
+      ]
+    },
+    {
+      "claim": "helps women to rebalance their estrogen [sic] levels naturally",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "supports weight control, digestion, joint pain & cools hot flashes [sic]",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "During menopause, Magnesium levels drop severely, leading to anxiety, mood swings, and brain fog",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "helps women with low energy feel recharged in the morning",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "Manage weight gain",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "Reduce MenoPot",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "Manage bloating",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "Ease hot flashes [sic]/night sweats",
       "rules": [
         "15.6",
         "15.6.2"
@@ -125,7 +239,7 @@
       ]
     },
     {
-      "claim": "Reduces bloating and fluid retention in 1 to 3 days; Eliminates hot flashes [sic] in as little as 4 to 7 days; Induces deep, uninterrupted sleep in 5 to 7 days; Starts shifting hormonal weight in 15 to 30 days",
+      "claim": "Reduces bloating and fluid retention in 1 to 3 days",
       "rules": [
         "15.6",
         "15.6.2"
@@ -135,12 +249,34 @@
       ]
     },
     {
-      "claim": "Around 2-8 weeks after my first capsule, I already had extra room in my pants",
+      "claim": "Eliminates hot flashes [sic] in as little as 4 to 7 days",
       "rules": [
         "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "Induces deep, uninterrupted sleep in 5 to 7 days",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "Starts shifting hormonal weight in 15 to 30 days",
+      "rules": [
+        "15.6",
+        "15.6.2",
         "15.6.6"
       ],
       "points": [
+        1,
         2
       ]
     }

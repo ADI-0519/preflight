@@ -5,6 +5,26 @@
   "outcome": "upheld",
   "claims": [
     {
+      "claim": "combat stress",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "Reduce stress and anxiety",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
       "claim": "Strengthen muscles",
       "rules": [
         "15.1",
@@ -49,7 +69,7 @@
       ]
     },
     {
-      "claim": "enhance memory",
+      "claim": "Enhance memory",
       "rules": [
         "15.1",
         "15.1.1",
@@ -60,7 +80,7 @@
       ]
     },
     {
-      "claim": "unlock a stronger body and state of mind",
+      "claim": "Unlock a stronger body and state of mind",
       "rules": [
         "15.2",
         "15.7"

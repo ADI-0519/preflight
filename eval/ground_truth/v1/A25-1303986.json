@@ -5,7 +5,7 @@
   "outcome": "upheld",
   "claims": [
     {
-      "claim": "delighted customer",
+      "claim": "The perfect gift for anyone with ADHD",
       "rules": [
         "12.1",
         "12.11",
@@ -17,31 +17,7 @@
       ]
     },
     {
-      "claim": "the perfect gift for anyone with ADHD",
-      "rules": [
-        "12.1",
-        "12.11",
-        "15.6",
-        "15.6.2"
-      ],
-      "points": [
-        1
-      ]
-    },
-    {
-      "claim": "neurodivergent",
-      "rules": [
-        "12.1",
-        "12.11",
-        "15.6",
-        "15.6.2"
-      ],
-      "points": [
-        1
-      ]
-    },
-    {
-      "claim": "designed to support mental clarity, energy, and focus for fast-paced, active minds, including neurodivergent thinkers",
+      "claim": "including neurodivergent thinkers",
       "rules": [
         "12.1",
         "12.11",
@@ -55,80 +31,112 @@
     {
       "claim": "support mental clarity, energy, and focus for fast-paced, active minds",
       "rules": [
+        "12.1",
+        "12.11",
+        "15.6",
+        "15.6.2",
         "15.1",
-        "15.1.1"
+        "15.1.1",
+        "15.7"
       ],
       "points": [
+        1,
         2
       ]
     },
     {
-      "claim": "focus your attention",
+      "claim": "Focus your attention",
       "rules": [
+        "12.1",
+        "12.11",
+        "15.6",
+        "15.6.2",
         "15.1",
-        "15.1.1"
+        "15.1.1",
+        "15.7"
       ],
       "points": [
+        1,
         2
       ]
     },
     {
       "claim": "Maintain steady mood & energy levels",
       "rules": [
+        "12.1",
+        "12.11",
+        "15.6",
+        "15.6.2",
         "15.1",
-        "15.1.1"
+        "15.1.1",
+        "15.7"
       ],
       "points": [
+        1,
         2
       ]
     },
     {
       "claim": "Encourage memory and recall",
       "rules": [
+        "12.1",
+        "12.11",
+        "15.6",
+        "15.6.2",
         "15.1",
-        "15.1.1"
+        "15.1.1",
+        "15.7"
       ],
       "points": [
+        1,
         2
       ]
     },
     {
       "claim": "Elevate cognitive performance",
       "rules": [
+        "12.1",
+        "12.11",
+        "15.6",
+        "15.6.2",
         "15.1",
-        "15.1.1"
+        "15.1.1",
+        "15.7"
       ],
       "points": [
-        2
-      ]
-    },
-    {
-      "claim": "managing wild fluctuations in energy, or tackling brain fog",
-      "rules": [
-        "15.1",
-        "15.1.1"
-      ],
-      "points": [
-        2
-      ]
-    },
-    {
-      "claim": "neurodivergent thinkers",
-      "rules": [
-        "15.1",
-        "15.1.1"
-      ],
-      "points": [
+        1,
         2
       ]
     },
     {
       "claim": "managing wild fluctuations in energy",
       "rules": [
+        "12.1",
+        "12.11",
+        "15.6",
+        "15.6.2",
         "15.1",
-        "15.1.1"
+        "15.1.1",
+        "15.7"
       ],
       "points": [
+        1,
+        2
+      ]
+    },
+    {
+      "claim": "tackling brain fog",
+      "rules": [
+        "12.1",
+        "12.11",
+        "15.6",
+        "15.6.2",
+        "15.1",
+        "15.1.1",
+        "15.7"
+      ],
+      "points": [
+        1,
         2
       ]
     }

@@ -17,7 +17,31 @@
       ]
     },
     {
-      "claim": "Nature’s GLP-1: Fibre is a 100% natural way to stimulate GLP-1, the hormone that keeps you fuller for longer",
+      "claim": "Nature’s GLP-1",
+      "rules": [
+        "12.1",
+        "12.11",
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "Fibre is a 100% natural way to stimulate GLP-1, the hormone that keeps you fuller for longer",
+      "rules": [
+        "12.1",
+        "12.11",
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "Curb Your Cravings",
       "rules": [
         "12.1",
         "12.11",
@@ -41,7 +65,19 @@
       ]
     },
     {
-      "claim": "control cravings, and stay fuller longer",
+      "claim": "control cravings",
+      "rules": [
+        "12.1",
+        "12.11",
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "stay fuller longer",
       "rules": [
         "12.1",
         "12.11",
@@ -193,7 +229,7 @@
       ]
     },
     {
-      "claim": "Anti-Snack drink",
+      "claim": "Anti-Snack Drink",
       "rules": [
         "15.1",
         "15.1.1",

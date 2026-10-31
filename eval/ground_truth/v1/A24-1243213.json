@@ -5,7 +5,7 @@
   "outcome": "upheld",
   "claims": [
     {
-      "claim": "CBD for Children",
+      "claim": "CBD SAFE FOR CHILDREN?",
       "rules": [
         "3.1",
         "3.7"
@@ -35,12 +35,76 @@
       ]
     },
     {
+      "claim": "no possibility of overdosing on CBD",
+      "rules": [
+        "3.1",
+        "3.7"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "Great for children as you can add these to their drink",
+      "rules": [
+        "3.1",
+        "3.7"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
       "claim": "safe and natural way to help balance the wellbeing of your child",
       "rules": [
+        "3.1",
+        "3.7",
         "15.2"
       ],
       "points": [
+        1,
         3
+      ]
+    },
+    {
+      "claim": "In the UK they say not to exceed 70 mg a day",
+      "rules": [
+        "3.1",
+        "3.7"
+      ],
+      "points": [
+        2
+      ]
+    },
+    {
+      "claim": "Not that there is [sic] any side effects",
+      "rules": [
+        "3.1",
+        "3.7"
+      ],
+      "points": [
+        2
+      ]
+    },
+    {
+      "claim": "you can’t overdose on CBD",
+      "rules": [
+        "3.1",
+        "3.7"
+      ],
+      "points": [
+        1,
+        2
+      ]
+    },
+    {
+      "claim": "They just say 70 mg, I’m not sure why, but that’s just what they say",
+      "rules": [
+        "3.1",
+        "3.7"
+      ],
+      "points": [
+        2
       ]
     }
   ],

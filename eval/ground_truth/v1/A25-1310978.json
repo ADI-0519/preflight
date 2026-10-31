@@ -5,7 +5,18 @@
   "outcome": "upheld",
   "claims": [
     {
-      "claim": "Introducing the NEW NAD+ Patch – your secret to youthful energy and vitality",
+      "claim": "your secret to youthful energy and vitality",
+      "rules": [
+        "3.1",
+        "3.7",
+        "12.1"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "Reverse the signs of aging naturally",
       "rules": [
         "3.1",
         "3.7",
@@ -28,6 +39,50 @@
     },
     {
       "claim": "Revitalize your skin with enhanced collagen production",
+      "rules": [
+        "3.1",
+        "3.7",
+        "12.1"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "supports DNA repair, cellular energy, and healthy aging",
+      "rules": [
+        "3.1",
+        "3.7",
+        "12.1"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "feel younger, longer",
+      "rules": [
+        "3.1",
+        "3.7",
+        "12.1"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "boosting your NAD+ levels and powering your body from within",
+      "rules": [
+        "3.1",
+        "3.7",
+        "12.1"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "a natural, convenient way to support your emotional wellbeing",
       "rules": [
         "3.1",
         "3.7",
@@ -82,7 +137,7 @@
       ]
     },
     {
-      "claim": "drive",
+      "claim": "Just steady support for your mood, focus, and drive",
       "rules": [
         "3.1",
         "3.7",
@@ -104,7 +159,29 @@
       ]
     },
     {
-      "claim": "Just a little patch that keeps me feeling awake and clear…It just makes me feel like myself again",
+      "claim": "designed to boost your energy levels and leave you feeling more energized every day",
+      "rules": [
+        "3.1",
+        "3.7",
+        "12.1"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "Just a little patch that keeps me feeling awake and clear",
+      "rules": [
+        "3.1",
+        "3.7",
+        "12.1"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "It just makes me feel like myself again",
       "rules": [
         "3.1",
         "3.7",

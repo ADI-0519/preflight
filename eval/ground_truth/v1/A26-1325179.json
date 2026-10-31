@@ -58,10 +58,14 @@
         "12.1",
         "12.11",
         "15.6",
-        "15.6.2"
+        "15.6.2",
+        "15.1",
+        "15.1.1",
+        "15.7"
       ],
       "points": [
-        1
+        1,
+        2
       ]
     },
     {
@@ -98,10 +102,14 @@
         "12.1",
         "12.11",
         "15.6",
-        "15.6.2"
+        "15.6.2",
+        "15.1",
+        "15.1.1",
+        "15.7"
       ],
       "points": [
-        1
+        1,
+        2
       ]
     },
     {
@@ -117,15 +125,19 @@
       ]
     },
     {
-      "claim": "mental clarity",
+      "claim": "Increase energy, motivation, and mental clarity",
       "rules": [
         "12.1",
         "12.11",
         "15.6",
-        "15.6.2"
+        "15.6.2",
+        "15.1",
+        "15.1.1",
+        "15.7"
       ],
       "points": [
-        1
+        1,
+        2
       ]
     },
     {
@@ -141,7 +153,7 @@
       ]
     },
     {
-      "claim": "proven to enhance circulation and blood flow",
+      "claim": "proven to enhance circulation and blood flow so you can get plenty of it where and when you need it",
       "rules": [
         "12.1",
         "12.11",
@@ -153,19 +165,7 @@
       ]
     },
     {
-      "claim": "when and where you need it",
-      "rules": [
-        "12.1",
-        "12.11",
-        "15.6",
-        "15.6.2"
-      ],
-      "points": [
-        1
-      ]
-    },
-    {
-      "claim": "Enhance endurance and stamina all day and night",
+      "claim": "enhance endurance and stamina all day and night",
       "rules": [
         "12.1",
         "12.11",
@@ -205,7 +205,7 @@
       ]
     },
     {
-      "claim": "Nitro",
+      "claim": "My swelling in my lower legs and ankles are almost completely gone!",
       "rules": [
         "12.1",
         "12.11",
@@ -217,19 +217,7 @@
       ]
     },
     {
-      "claim": "wood",
-      "rules": [
-        "12.1",
-        "12.11",
-        "15.6",
-        "15.6.2"
-      ],
-      "points": [
-        1
-      ]
-    },
-    {
-      "claim": "My swelling in my lower legs and ankles are almost completely gone! My circulation has significantly improved",
+      "claim": "My circulation has significantly improved",
       "rules": [
         "12.1",
         "12.11",
@@ -246,14 +234,17 @@
         "12.1",
         "12.11",
         "15.6",
-        "15.6.2"
+        "15.6.2",
+        "12.18",
+        "15.6.3"
       ],
       "points": [
-        1
+        1,
+        3
       ]
     },
     {
-      "claim": "I’ve been struggling with high blood pressure",
+      "claim": "I’ve been struggling with high blood pressure for years and hate taking prescription meds. Love that Nitro has natural ingredients to help. Doc even told me to keep doing what I’m doing because my BP is healthy again",
       "rules": [
         "12.1",
         "12.11",
@@ -265,15 +256,19 @@
       ]
     },
     {
-      "claim": "Nitro Wood contains key ingredients proven to expand the blood vessels and accelerate healthy circulation",
+      "claim": "Nitro wood contains key ingredients proven to expand the blood vessels and accelerate healthy circulation",
       "rules": [
         "12.1",
         "12.11",
         "15.6",
-        "15.6.2"
+        "15.6.2",
+        "15.1",
+        "15.1.1",
+        "15.7"
       ],
       "points": [
-        1
+        1,
+        2
       ]
     },
     {
@@ -282,10 +277,14 @@
         "12.1",
         "12.11",
         "15.6",
-        "15.6.2"
+        "15.6.2",
+        "15.1",
+        "15.1.1",
+        "15.7"
       ],
       "points": [
-        1
+        1,
+        2
       ]
     },
     {
@@ -311,7 +310,40 @@
       ]
     },
     {
-      "claim": "helps rebalance hormones naturally",
+      "claim": "My hormones FINALLY feel balanced",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.7"
+      ],
+      "points": [
+        2
+      ]
+    },
+    {
+      "claim": "My energy, drive, and motivation are all sky high!",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.7"
+      ],
+      "points": [
+        2
+      ]
+    },
+    {
+      "claim": "help calm cortisol, balance hormones",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.7"
+      ],
+      "points": [
+        2
+      ]
+    },
+    {
+      "claim": "Support healthy cortisol levels and hormone balance",
       "rules": [
         "15.1",
         "15.1.1",
@@ -333,7 +365,29 @@
       ]
     },
     {
-      "claim": "proven",
+      "claim": "More Nitric Oxide = Expansion of the blood vessels and healthier and smoother circulation",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.7"
+      ],
+      "points": [
+        2
+      ]
+    },
+    {
+      "claim": "proven to not only boost blood flow, but also cleanse and purify it to flow smoother",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.7"
+      ],
+      "points": [
+        2
+      ]
+    },
+    {
+      "claim": "Substantially boosts blood flow and Nitric Oxide production",
       "rules": [
         "15.1",
         "15.1.1",
@@ -345,17 +399,6 @@
     },
     {
       "claim": "increase natural energy and mental cognition",
-      "rules": [
-        "15.1",
-        "15.1.1",
-        "15.7"
-      ],
-      "points": [
-        2
-      ]
-    },
-    {
-      "claim": "Increase energy, motivation, and mental clarity",
       "rules": [
         "15.1",
         "15.1.1",
@@ -381,29 +424,8 @@
       "rules": [
         "15.1",
         "15.1.1",
-        "15.7"
-      ],
-      "points": [
-        2
-      ]
-    },
-    {
-      "claim": "Say Goodbye to Hormonal Weight Gain with Inno Drive For Her!",
-      "rules": [
-        "15.1",
-        "15.1.1",
-        "15.7"
-      ],
-      "points": [
-        2
-      ]
-    },
-    {
-      "claim": "within just a few weeks",
-      "rules": [
-        "15.1",
-        "15.1.1",
-        "15.7"
+        "15.7",
+        "15.6.6"
       ],
       "points": [
         2
@@ -414,14 +436,27 @@
       "rules": [
         "15.1",
         "15.1.1",
-        "15.7"
+        "15.7",
+        "15.6.6"
       ],
       "points": [
         2
       ]
     },
     {
-      "claim": "as a board-certified MD, I see this all the time",
+      "claim": "Most women notice more energy, a better mood and less bloating within just a few weeks",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.7",
+        "15.6.6"
+      ],
+      "points": [
+        2
+      ]
+    },
+    {
+      "claim": "DR. ANIKA ACKERMAN BOARD-CERTIFIED UROLOGIST",
       "rules": [
         "12.18",
         "15.6.3"
@@ -431,7 +466,7 @@
       ]
     },
     {
-      "claim": "That’s exactly why Inno Drive For Her is the doctor’s choice for women battling cortisol-related puffiness and hormonal weight gain",
+      "claim": "As a board-certified MD, I see this all the time",
       "rules": [
         "12.18",
         "15.6.3"
@@ -441,7 +476,7 @@
       ]
     },
     {
-      "claim": "doctor’s choice",
+      "claim": "Inno Drive For Her is the doctor’s choice for women battling cortisol-related puffiness and hormonal weight gain",
       "rules": [
         "12.18",
         "15.6.3"
@@ -461,6 +496,56 @@
       ]
     },
     {
+      "claim": "Board Certified Doctor Recommended",
+      "rules": [
+        "12.18",
+        "15.6.3"
+      ],
+      "points": [
+        3
+      ]
+    },
+    {
+      "claim": "Nitro Wood is incredibly effective at naturally increasing circulation and lowering swelling, especially in the lower legs and feet",
+      "rules": [
+        "12.18",
+        "15.6.3"
+      ],
+      "points": [
+        3
+      ]
+    },
+    {
+      "claim": "I highly recommend that both Males and Females 40+ take this product daily to optimize [sic] their circulatory health!",
+      "rules": [
+        "12.18",
+        "15.6.3"
+      ],
+      "points": [
+        3
+      ]
+    },
+    {
+      "claim": "partnered with World Renowned Cedar Sinai Cardiologist Dr. David Filsoof to promote this product",
+      "rules": [
+        "12.18",
+        "15.6.3"
+      ],
+      "points": [
+        3
+      ]
+    },
+    {
+      "claim": "DR DAVID FILSOOF BOARD-CERTIFIED CARDIOLOGIST",
+      "rules": [
+        "12.18",
+        "15.6.3"
+      ],
+      "points": [
+        3
+      ]
+    },
+    {
       "claim": "the heart might not be functioning very well",
       "rules": [
         "12.18",
@@ -471,7 +556,7 @@
       ]
     },
     {
-      "claim": "find the right supplements",
+      "claim": "find the right supplements, find the right regimen to improve and restore blood flow naturally",
       "rules": [
         "12.18",
         "15.6.3"
@@ -481,17 +566,7 @@
       ]
     },
     {
-      "claim": "to improve and restore blood flow naturally",
-      "rules": [
-        "12.18",
-        "15.6.3"
-      ],
-      "points": [
-        3
-      ]
-    },
-    {
-      "claim": "Nitro Wood is a very good supplement to start with because it’s natural, it’s effective, it works at improving your blood flow and the health of your vascular system […]",
+      "claim": "Board Certified Cardiologist Recommended",
       "rules": [
         "12.18",
         "15.6.3"

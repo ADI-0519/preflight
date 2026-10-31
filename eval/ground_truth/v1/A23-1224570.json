@@ -15,6 +15,16 @@
       ]
     },
     {
+      "claim": "We out-vitamin the competition",
+      "rules": [
+        "15.1",
+        "15.1.1"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
       "claim": "dump the sugars",
       "rules": [
         "15.1",
@@ -34,7 +44,7 @@
       ]
     },
     {
-      "claim": "Dump the sugars, chemicals and fillers. It’s a simple solution to make you feel you",
+      "claim": "Dump the sugars, chemicals and fillers",
       "rules": [
         "3.42"
       ],
@@ -43,7 +53,7 @@
       ]
     },
     {
-      "claim": "bad boys",
+      "claim": "the bad boys Berocca sent an official complaint to the ASA because they don’t like the fact that we’re telling you what’s in their product and what the facts are for what’s healthy",
       "rules": [
         "3.42"
       ],
@@ -53,24 +63,6 @@
     },
     {
       "claim": "They don’t want to look after your health like we do",
-      "rules": [
-        "3.42"
-      ],
-      "points": [
-        3
-      ]
-    },
-    {
-      "claim": "sugars, chemicals and fillers",
-      "rules": [
-        "3.42"
-      ],
-      "points": [
-        3
-      ]
-    },
-    {
-      "claim": "junk",
       "rules": [
         "3.42"
       ],

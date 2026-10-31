@@ -1,0 +1,792 @@
+{
+  "$defs": {
+    "Ad": {
+      "additionalProperties": false,
+      "properties": {
+        "content_hash": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Content Hash",
+          "type": "string"
+        },
+        "media": {
+          "enum": [
+            "video",
+            "image",
+            "page"
+          ],
+          "title": "Media",
+          "type": "string"
+        },
+        "width": {
+          "exclusiveMinimum": 0,
+          "title": "Width",
+          "type": "integer"
+        },
+        "height": {
+          "exclusiveMinimum": 0,
+          "title": "Height",
+          "type": "integer"
+        },
+        "duration": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Duration"
+        },
+        "fps": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Fps"
+        }
+      },
+      "required": [
+        "content_hash",
+        "media",
+        "width",
+        "height",
+        "duration",
+        "fps"
+      ],
+      "title": "Ad",
+      "type": "object"
+    },
+    "CapRuleRef": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "const": "cap_rule",
+          "default": "cap_rule",
+          "title": "Kind",
+          "type": "string"
+        },
+        "rule": {
+          "pattern": "^\\d+(\\.\\d+)*$",
+          "title": "Rule",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "rule"
+      ],
+      "title": "CapRuleRef",
+      "type": "object"
+    },
+    "Claim": {
+      "additionalProperties": false,
+      "properties": {
+        "claim_id": {
+          "title": "Claim Id",
+          "type": "string"
+        },
+        "text": {
+          "title": "Text",
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "explicit",
+            "implied"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "substance": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Substance"
+        },
+        "evidence": {
+          "items": {
+            "discriminator": {
+              "mapping": {
+                "on_screen": "#/$defs/OnScreenEvidence",
+                "region": "#/$defs/RegionEvidence",
+                "transcript": "#/$defs/TranscriptEvidence"
+              },
+              "propertyName": "kind"
+            },
+            "oneOf": [
+              {
+                "$ref": "#/$defs/TranscriptEvidence"
+              },
+              {
+                "$ref": "#/$defs/OnScreenEvidence"
+              },
+              {
+                "$ref": "#/$defs/RegionEvidence"
+              }
+            ]
+          },
+          "minItems": 1,
+          "title": "Evidence",
+          "type": "array"
+        }
+      },
+      "required": [
+        "claim_id",
+        "text",
+        "kind",
+        "substance",
+        "evidence"
+      ],
+      "title": "Claim",
+      "type": "object"
+    },
+    "Flag": {
+      "additionalProperties": false,
+      "properties": {
+        "flag_id": {
+          "title": "Flag Id",
+          "type": "string"
+        },
+        "claim_id": {
+          "title": "Claim Id",
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "possible_breach",
+            "on_hold"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "reason": {
+          "title": "Reason",
+          "type": "string"
+        },
+        "sources": {
+          "items": {
+            "discriminator": {
+              "mapping": {
+                "cap_rule": "#/$defs/CapRuleRef",
+                "on_hold": "#/$defs/OnHoldRef",
+                "register": "#/$defs/RegisterRef",
+                "ruling": "#/$defs/RulingRef"
+              },
+              "propertyName": "kind"
+            },
+            "oneOf": [
+              {
+                "$ref": "#/$defs/RegisterRef"
+              },
+              {
+                "$ref": "#/$defs/OnHoldRef"
+              },
+              {
+                "$ref": "#/$defs/CapRuleRef"
+              },
+              {
+                "$ref": "#/$defs/RulingRef"
+              }
+            ]
+          },
+          "minItems": 1,
+          "title": "Sources",
+          "type": "array"
+        },
+        "suggested_wording": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/SuggestedWording"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "flag_id",
+        "claim_id",
+        "kind",
+        "reason",
+        "sources",
+        "suggested_wording"
+      ],
+      "title": "Flag",
+      "type": "object"
+    },
+    "OnHoldRef": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "const": "on_hold",
+          "default": "on_hold",
+          "title": "Kind",
+          "type": "string"
+        },
+        "on_hold_id": {
+          "title": "On Hold Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "on_hold_id"
+      ],
+      "title": "OnHoldRef",
+      "type": "object"
+    },
+    "OnScreenEvidence": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "const": "on_screen",
+          "default": "on_screen",
+          "title": "Kind",
+          "type": "string"
+        },
+        "text_id": {
+          "title": "Text Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "text_id"
+      ],
+      "title": "OnScreenEvidence",
+      "type": "object"
+    },
+    "OnScreenText": {
+      "additionalProperties": false,
+      "properties": {
+        "start": {
+          "minimum": 0,
+          "title": "Start",
+          "type": "number"
+        },
+        "end": {
+          "minimum": 0,
+          "title": "End",
+          "type": "number"
+        },
+        "text_id": {
+          "title": "Text Id",
+          "type": "string"
+        },
+        "text": {
+          "title": "Text",
+          "type": "string"
+        },
+        "box": {
+          "anyOf": [
+            {
+              "maxItems": 4,
+              "minItems": 4,
+              "prefixItems": [
+                {
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                {
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                {
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                {
+                  "minimum": 0,
+                  "type": "integer"
+                }
+              ],
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Box"
+        }
+      },
+      "required": [
+        "start",
+        "end",
+        "text_id",
+        "text",
+        "box"
+      ],
+      "title": "OnScreenText",
+      "type": "object"
+    },
+    "Region": {
+      "additionalProperties": false,
+      "properties": {
+        "frame_time": {
+          "minimum": 0,
+          "title": "Frame Time",
+          "type": "number"
+        },
+        "box": {
+          "maxItems": 4,
+          "minItems": 4,
+          "prefixItems": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "minimum": 0,
+              "type": "integer"
+            }
+          ],
+          "title": "Box",
+          "type": "array"
+        },
+        "crop": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Crop"
+        }
+      },
+      "required": [
+        "frame_time",
+        "box",
+        "crop"
+      ],
+      "title": "Region",
+      "type": "object"
+    },
+    "RegionEvidence": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "const": "region",
+          "default": "region",
+          "title": "Kind",
+          "type": "string"
+        },
+        "track_id": {
+          "title": "Track Id",
+          "type": "string"
+        },
+        "frame_time": {
+          "minimum": 0,
+          "title": "Frame Time",
+          "type": "number"
+        }
+      },
+      "required": [
+        "kind",
+        "track_id",
+        "frame_time"
+      ],
+      "title": "RegionEvidence",
+      "type": "object"
+    },
+    "RegisterRef": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "const": "register",
+          "default": "register",
+          "title": "Kind",
+          "type": "string"
+        },
+        "register_id": {
+          "title": "Register Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "register_id"
+      ],
+      "title": "RegisterRef",
+      "type": "object"
+    },
+    "RulingRef": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "const": "ruling",
+          "default": "ruling",
+          "title": "Kind",
+          "type": "string"
+        },
+        "ruling_id": {
+          "title": "Ruling Id",
+          "type": "string"
+        },
+        "date": {
+          "format": "date",
+          "title": "Date",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "ruling_id",
+        "date"
+      ],
+      "title": "RulingRef",
+      "type": "object"
+    },
+    "Segment": {
+      "additionalProperties": false,
+      "properties": {
+        "start": {
+          "minimum": 0,
+          "title": "Start",
+          "type": "number"
+        },
+        "end": {
+          "minimum": 0,
+          "title": "End",
+          "type": "number"
+        },
+        "segment_id": {
+          "title": "Segment Id",
+          "type": "string"
+        },
+        "turn": {
+          "minimum": 0,
+          "title": "Turn",
+          "type": "integer"
+        },
+        "text": {
+          "title": "Text",
+          "type": "string"
+        },
+        "timing": {
+          "enum": [
+            "word",
+            "turn"
+          ],
+          "title": "Timing",
+          "type": "string"
+        }
+      },
+      "required": [
+        "start",
+        "end",
+        "segment_id",
+        "turn",
+        "text",
+        "timing"
+      ],
+      "title": "Segment",
+      "type": "object"
+    },
+    "Snapshots": {
+      "additionalProperties": false,
+      "properties": {
+        "gb_register": {
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+          "title": "Gb Register",
+          "type": "string"
+        },
+        "on_hold": {
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+          "title": "On Hold",
+          "type": "string"
+        },
+        "cap_rules": {
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+          "title": "Cap Rules",
+          "type": "string"
+        },
+        "rulings": {
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+          "title": "Rulings",
+          "type": "string"
+        }
+      },
+      "required": [
+        "gb_register",
+        "on_hold",
+        "cap_rules",
+        "rulings"
+      ],
+      "title": "Snapshots",
+      "type": "object"
+    },
+    "StageRun": {
+      "additionalProperties": false,
+      "properties": {
+        "stage": {
+          "title": "Stage",
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "done",
+            "failed",
+            "skipped"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "model": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Model"
+        },
+        "prompt": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Prompt"
+        },
+        "effort": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Effort"
+        }
+      },
+      "required": [
+        "stage",
+        "status",
+        "model",
+        "prompt",
+        "effort"
+      ],
+      "title": "StageRun",
+      "type": "object"
+    },
+    "SuggestedWording": {
+      "additionalProperties": false,
+      "properties": {
+        "register_id": {
+          "title": "Register Id",
+          "type": "string"
+        },
+        "wording": {
+          "title": "Wording",
+          "type": "string"
+        }
+      },
+      "required": [
+        "register_id",
+        "wording"
+      ],
+      "title": "SuggestedWording",
+      "type": "object"
+    },
+    "Track": {
+      "additionalProperties": false,
+      "properties": {
+        "track_id": {
+          "title": "Track Id",
+          "type": "string"
+        },
+        "prompt": {
+          "title": "Prompt",
+          "type": "string"
+        },
+        "regions": {
+          "items": {
+            "$ref": "#/$defs/Region"
+          },
+          "minItems": 1,
+          "title": "Regions",
+          "type": "array"
+        }
+      },
+      "required": [
+        "track_id",
+        "prompt",
+        "regions"
+      ],
+      "title": "Track",
+      "type": "object"
+    },
+    "TranscriptEvidence": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "const": "transcript",
+          "default": "transcript",
+          "title": "Kind",
+          "type": "string"
+        },
+        "segment_id": {
+          "title": "Segment Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "segment_id"
+      ],
+      "title": "TranscriptEvidence",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": "1",
+      "default": "1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "screening_id": {
+      "title": "Screening Id",
+      "type": "string"
+    },
+    "previous_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Previous Id"
+    },
+    "ad": {
+      "$ref": "#/$defs/Ad"
+    },
+    "snapshots": {
+      "$ref": "#/$defs/Snapshots"
+    },
+    "stages": {
+      "items": {
+        "$ref": "#/$defs/StageRun"
+      },
+      "minItems": 1,
+      "title": "Stages",
+      "type": "array"
+    },
+    "screened_at": {
+      "format": "date-time",
+      "title": "Screened At",
+      "type": "string"
+    },
+    "segments": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/Segment"
+      },
+      "title": "Segments",
+      "type": "array"
+    },
+    "on_screen": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/OnScreenText"
+      },
+      "title": "On Screen",
+      "type": "array"
+    },
+    "tracks": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/Track"
+      },
+      "title": "Tracks",
+      "type": "array"
+    },
+    "claims": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/Claim"
+      },
+      "title": "Claims",
+      "type": "array"
+    },
+    "flags": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/Flag"
+      },
+      "title": "Flags",
+      "type": "array"
+    },
+    "notice": {
+      "const": "PreFlight screens ads against the dated sources named in this report. It is not legal advice, and it does not decide whether an ad may run: a person makes that call.",
+      "default": "PreFlight screens ads against the dated sources named in this report. It is not legal advice, and it does not decide whether an ad may run: a person makes that call.",
+      "title": "Notice",
+      "type": "string"
+    },
+    "headline": {
+      "readOnly": true,
+      "title": "Headline",
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema_version",
+    "screening_id",
+    "previous_id",
+    "ad",
+    "snapshots",
+    "stages",
+    "screened_at",
+    "segments",
+    "on_screen",
+    "tracks",
+    "claims",
+    "flags",
+    "notice",
+    "headline"
+  ],
+  "title": "Screening",
+  "type": "object"
+}

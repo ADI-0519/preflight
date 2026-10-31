@@ -36,6 +36,8 @@ def replay(monkeypatch):
 
     monkeypatch.setattr(socket.socket, "connect", refuse)
     monkeypatch.setenv("META_API_KEY", "dummy")
+    monkeypatch.setenv("BASETEN_API_KEY", "dummy")
+    monkeypatch.setenv("GLIMMER_MODEL", "glimmer-fixture")
     return from_env(Store(FIXTURES, "replay"))
 
 
@@ -140,6 +142,11 @@ def test_sam_unparsed_output_raises(tmp_path):
 def test_image_generate_replay(replay):
     png = replay.image.generate("a plain white tub labelled Brightleaf Daily D")
     assert png[:8] == b"\x89PNG\r\n\x1a\n"
+
+
+def test_glimmer_replay(replay):
+    r = replay.glimmer.ask("Say hello.", prompt_version=PV)
+    assert r.text == "Hello."
 
 
 class EmptyStream:
@@ -259,6 +266,8 @@ def test_upload_has_expiry_and_is_deleted(tmp_path):
 
 def test_key_not_in_repr_or_cache(tmp_path, monkeypatch):
     monkeypatch.setenv("META_API_KEY", SENTINEL)
+    monkeypatch.setenv("BASETEN_API_KEY", SENTINEL)
+    monkeypatch.setenv("GLIMMER_MODEL", "glimmer-fixture")
     models = from_env(Store(tmp_path))
     assert SENTINEL not in repr(models)
     models.spark.api = FakeApi()
@@ -320,3 +329,9 @@ def test_image_live(tmp_path):
     png = models.image.generate("a plain white tub labelled Brightleaf Daily D")
     assert png[:4] == b"\x89PNG"
     assert models.image.edit(FRAME, "make the background blue")[:4] == b"\x89PNG"
+
+
+@pytest.mark.live
+@need("META_API_KEY", "BASETEN_API_KEY", "GLIMMER_MODEL")
+def test_glimmer_live(tmp_path):
+    assert from_env(Store(tmp_path)).glimmer.ask("Reply with one word.", prompt_version=PV).text

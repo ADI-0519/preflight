@@ -96,6 +96,8 @@ def main() -> None:
     if "image" in steps:
         m.image.generate("a plain white tub labelled Brightleaf Daily D")
         shrink_image_fixture()
+    if "glimmer" in steps and m.glimmer:
+        print(m.glimmer.ask("Say hello.", prompt_version=PROMPT_VERSION))
 
 
 if __name__ == "__main__":

@@ -15,6 +15,7 @@ from openai import OpenAI
 from preflight.models.store import UPLOAD_TTL_SECONDS, Store, digest, encode_bytes, with_retry
 
 BASE_URL = "https://api.meta.ai/v1"
+GLIMMER_BASE_URL = "https://inference.baseten.co/v1"
 SPARK = "muse-spark-1.3"
 TRANSCRIBE = "muse-voice-transcribe-1.0"
 SAM = "sam-3.1"
@@ -58,6 +59,13 @@ class SamFrame:
 @dataclass
 class SamResult:
     frames: list[SamFrame]
+    usage: dict
+
+
+@dataclass
+class ChatResult:
+    model: str
+    text: str
     usage: dict
 
 
@@ -248,11 +256,38 @@ class Image:
 
 
 @dataclass
+class Glimmer:
+    store: Store
+    model: str
+    api: OpenAI = field(repr=False)
+    sleep: Callable[[float], None] = time.sleep
+
+    def ask(
+        self, text: str, *, prompt_version: str, image: bytes | None = None, image_mime: str = "image/png"
+    ) -> ChatResult:
+        parts = {
+            "kind": "glimmer", "text": text, "prompt_version": prompt_version,
+            "image": image and digest(image), "image_mime": image and image_mime,
+        }
+        content = [{"type": "text", "text": text}]
+        if image is not None:
+            content.append({"type": "image_url", "image_url": {"url": data_url(image, image_mime)}})
+
+        def call() -> dict:
+            r = self.api.chat.completions.create(model=self.model, messages=[{"role": "user", "content": content}])
+            return {"model": r.model, "text": r.choices[0].message.content, "usage": usage_of(r)}
+
+        r = self.store.fetch(self.model, parts, lambda: with_retry(call, self.sleep))
+        return ChatResult(r["model"], r["text"], r["usage"])
+
+
+@dataclass
 class Models:
     spark: Spark
     transcribe: VoiceTranscribe
     sam: Sam
     image: Image
+    glimmer: Glimmer | None
 
 
 def from_env(store: Store | None = None, sleep: Callable[[float], None] = time.sleep) -> Models:
@@ -260,9 +295,18 @@ def from_env(store: Store | None = None, sleep: Callable[[float], None] = time.s
     store = store or Store()
     key = os.environ["META_API_KEY"]
     meta = OpenAI(base_url=BASE_URL, api_key=key, max_retries=0)
+    glimmer = None
+    if os.environ.get("GLIMMER_MODEL") and os.environ.get("BASETEN_API_KEY"):
+        baseten = OpenAI(
+            base_url=os.environ.get("GLIMMER_BASE_URL", GLIMMER_BASE_URL),
+            api_key=os.environ["BASETEN_API_KEY"],
+            max_retries=0,
+        )
+        glimmer = Glimmer(store, os.environ["GLIMMER_MODEL"], baseten, sleep)
     return Models(
         Spark(store, meta, sleep),
         VoiceTranscribe(store, key, sleep=sleep),
         Sam(store, meta, sleep),
         Image(store, meta, sleep),
+        glimmer,
     )

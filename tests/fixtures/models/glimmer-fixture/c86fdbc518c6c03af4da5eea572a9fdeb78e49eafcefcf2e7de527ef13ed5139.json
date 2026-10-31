@@ -1,0 +1,1 @@
+{"key": "c86fdbc518c6c03af4da5eea572a9fdeb78e49eafcefcf2e7de527ef13ed5139", "response": {"model": "glimmer-fixture", "text": "Hello.", "usage": {"prompt_tokens": 5, "completion_tokens": 2, "total_tokens": 7}}, "note": "hand-written in the recorded format; no Glimmer endpoint was available to record"}

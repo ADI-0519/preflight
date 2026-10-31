@@ -1,4 +1,6 @@
 from preflight.models.clients import (
+    ChatResult,
+    Glimmer,
     Image,
     Models,
     Sam,
@@ -14,17 +16,6 @@ from preflight.models.clients import (
 from preflight.models.store import CacheMiss, Store
 
 __all__ = [
-    "CacheMiss",
-    "Image",
-    "Models",
-    "Sam",
-    "SamFrame",
-    "SamObject",
-    "SamResult",
-    "Spark",
-    "SparkResult",
-    "Store",
-    "Turn",
-    "VoiceTranscribe",
-    "from_env",
+    "CacheMiss", "ChatResult", "Glimmer", "Image", "Models", "Sam", "SamFrame", "SamObject", "SamResult", "Spark",
+    "SparkResult", "Store", "Turn", "VoiceTranscribe", "from_env",
 ]

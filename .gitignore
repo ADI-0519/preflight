@@ -28,6 +28,7 @@ Thumbs.db
 # raw data: scraped rulings, customer ads, downloads
 data/raw/
 data/cache/
+data/work/
 
 # media and model weights
 *.mp4

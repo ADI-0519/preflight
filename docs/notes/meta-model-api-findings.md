@@ -27,6 +27,7 @@ Costs are the measured usage multiplied by the published prices. The account's b
 - **Video:** upload with `files.create(purpose="user_data")`, then pass `{"type": "input_file", "file_id": ...}`. A 30-second 720p clip with audio cost 8,210 input tokens.
 - **Spark reads on-screen text from video well.** All three timed overlays and the footnote were read with start and end times correct to the second.
 - **Spark's timing of speech in video is wrong.** It spread the voiceover across the full 30 seconds; in fact it ends at 16.2 s. Its spoken text was right. The docs say audio is not fully supported on 1.3.
+- **Spark can give a box for each on-screen text** (31 Oct 2026, P25), as 0–1000 shares of the frame, at no extra output tokens. On a still (1920x1280, three texts drawn over the product shot) every edge was within 29 px. On the 30-second video the unboxed footnote was within a few pixels horizontally at the left edge, but the three boxed captions came back about 45 px (6% of 720) too high. P25 therefore pads Spark's box by 5% of the frame and replaces it with SAM's box where a caption box sits behind the text. Local OCR (RapidOCR) gave tighter boxes on clean text (2 px) but misread a yellow italic line printed over the label, so it is not used.
 
 ## Muse Voice Transcribe
 
@@ -43,6 +44,23 @@ Costs are the measured usage multiplied by the published prices. The account's b
 - `usage` reports `images_processed` or `video_frames_processed`. A 15-frame clip at 5 fps was billed 50 frames, the per-request minimum.
 - **Video is billed on every frame the server decodes.** Our 30-second clip at 25 fps was billed 750 frames ($0.15), and each request is billed at least 50 frames. Re-encoding at a lower frame rate before upload is the only way to cut this. The plan's estimate of 60 frames per 30-second ad assumed we chose the frames.
 - Accepted video: MP4 or MOV with H.264, H.265 or MPEG-4; up to 15,000 frames; up to 16 objects per frame.
+
+**31 Oct 2026 (P25), prompts for captions on a semi-transparent box.** The smoke ad's captions are drawtext boxes at `black@0.5`, and the 30-second clip was sent at 2 fps (60 frames).
+
+- "dark rectangle" finds semi-transparent caption boxes where "black rectangle" does not. The boxes fit each caption (x 207-1070, then about 321-957, then 392-885; y about 503-563).
+
+| Prompt | Frames with a hit, of 60 |
+|---|---|
+| dark rectangle | 60 |
+| rectangle | 35 |
+| black rectangle | 0 |
+| grey rectangle | 0 |
+| text box | 0 |
+| banner | 0 |
+| subtitle bar | 0 |
+
+- SAM keeps one object ID across back-to-back captions (ID 0 for the whole 30 seconds), so tracks are also split where the box jumps between consecutive frames.
+- Text with no box behind it gets no region. Its evidence is Spark's on-screen text with start and end only.
 
 ## Muse Image
 

@@ -42,19 +42,23 @@ def eligible(ruling: Ruling) -> bool:
     return not any(r.startswith("18.") for r in ruling.cap_rules)
 
 
-def points(assessment: str) -> list[tuple[int, str, str]]:
-    """(number, outcome, text) for each numbered point; a ruling with one issue has no numbers."""
-    parts = re.split(r"^\s*(\d+)\.\s*(Upheld|Not upheld)\s*$", assessment, flags=re.M | re.I)
+def points(assessment: str) -> list[tuple[list[int], str, str]]:
+    """(numbers, outcome, text) for each numbered point; a ruling with one issue has no numbers."""
+    # the ASA sometimes judges points together under one heading, e.g. "1. & 3. Upheld"
+    parts = re.split(r"^\s*(\d+\.(?:\s*&\s*\d+\.)*)\s*(Upheld|Not upheld)\s*$", assessment, flags=re.M | re.I)
     if len(parts) < 4:
-        return [(1, "upheld", assessment)]
-    return [(int(parts[i]), parts[i + 1].lower(), parts[i + 2]) for i in range(1, len(parts) - 2, 3)]
+        return [([1], "upheld", assessment)]
+    return [
+        ([int(n) for n in re.findall(r"\d+", parts[i])], parts[i + 1].lower(), parts[i + 2])
+        for i in range(1, len(parts) - 2, 3)
+    ]
 
 
 def draft_claims(ruling: Ruling) -> list[BreachingClaim]:
     """Quoted text in each upheld point that also appears verbatim in the ad description, with that point's rules."""
     description = norm(ruling.ad_description)
     claims: dict[str, BreachingClaim] = {}
-    for number, outcome, body in points(ruling.assessment):
+    for numbers, outcome, body in points(ruling.assessment):
         if outcome != "upheld":
             continue
         breach_sentences = " ".join(s for s in re.split(r"(?<=[.;])\s", body) if "breach" in s.lower())
@@ -76,7 +80,7 @@ def draft_claims(ruling: Ruling) -> list[BreachingClaim]:
                 claims[key] = BreachingClaim(
                     claim=seen.claim,
                     rules=list(dict.fromkeys([*seen.rules, *rules])),
-                    points=list(dict.fromkeys([*seen.points, number])),
+                    points=list(dict.fromkeys([*seen.points, *numbers])),
                 )
     return list(claims.values())
 

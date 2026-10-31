@@ -2,6 +2,8 @@
 
 One dated line per decision the founders take. Changing a product rule needs all three founders and a line here.
 
+The P05 decisions below were taken by one founder (NEESAY) on 31 Oct 2026 and await confirmation by the other two. Until both confirm, the product rules stand as confirmed by one founder only.
+
 - **31 Oct 2026 (P05).** Keep and reframe PreFlight. Gate 2 passed (`docs/notes/ruling-rebuildability-sample.md`) and gate 1 is unclear but has not failed (`docs/notes/hackathon-rules.md`), so there is no switch to DampTrace. The organisers' answer on gate 1 is still needed before P15.
 - **31 Oct 2026 (P05).** Product rules 1–10 confirmed as drafted; `docs/product-rules.md` is no longer a draft.
 - **31 Oct 2026 (P05).** Stack confirmed as in `docs/plan.md`, "Stack", with one change: the front end is React with TypeScript built by Vite, served as static files by FastAPI, in place of a single plain HTML page.

@@ -10,7 +10,9 @@
         "3.1",
         "3.7"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "Dopamine Patch",
@@ -18,7 +20,9 @@
         "3.1",
         "3.7"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "Increase dopamine",
@@ -26,7 +30,29 @@
         "3.1",
         "3.7"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "levels",
+      "rules": [
+        "3.1",
+        "3.7"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "Increase",
+      "rules": [
+        "3.1",
+        "3.7"
+      ],
+      "points": [
+        1
+      ]
     },
     {
       "claim": "serotonin levels",
@@ -34,7 +60,9 @@
         "3.1",
         "3.7"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "doesn't know I put a dopamine patch on him",
@@ -42,7 +70,9 @@
         "1.3",
         "4.4"
       ],
-      "point": 2
+      "points": [
+        2
+      ]
     },
     {
       "claim": "he wonders why the road trip is going so well",
@@ -50,7 +80,9 @@
         "1.3",
         "4.4"
       ],
-      "point": 2
+      "points": [
+        2
+      ]
     }
   ],
   "written_by": "draft: scripts/draft_split_v1.py",

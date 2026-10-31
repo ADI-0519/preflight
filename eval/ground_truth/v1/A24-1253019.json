@@ -12,7 +12,9 @@
         "15.2",
         "15.7"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "Most […] supplements, you take it, you don’t feel any different. With CBD after, like, a few days, you feel a big difference. Then you really, really get the benefits",
@@ -22,7 +24,9 @@
         "15.2",
         "15.7"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     }
   ],
   "written_by": "draft: scripts/draft_split_v1.py",

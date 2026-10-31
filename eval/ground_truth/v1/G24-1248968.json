@@ -10,7 +10,9 @@
         "15.6",
         "15.6.2"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "ignite your energy",
@@ -19,7 +21,9 @@
         "15.1.1",
         "15.2"
       ],
-      "point": 2
+      "points": [
+        2
+      ]
     },
     {
       "claim": "robust immunity",
@@ -28,7 +32,9 @@
         "15.1.1",
         "15.2"
       ],
-      "point": 2
+      "points": [
+        2
+      ]
     },
     {
       "claim": "discover the secret to sharper focus",
@@ -37,7 +43,9 @@
         "15.1.1",
         "15.2"
       ],
-      "point": 2
+      "points": [
+        2
+      ]
     },
     {
       "claim": "Feeling foggy and forgetful",
@@ -46,7 +54,9 @@
         "15.1.1",
         "15.2"
       ],
-      "point": 2
+      "points": [
+        2
+      ]
     },
     {
       "claim": "known for its potential to support cognitive function, focus, and memory",
@@ -55,7 +65,20 @@
         "15.1.1",
         "15.2"
       ],
-      "point": 2
+      "points": [
+        2
+      ]
+    },
+    {
+      "claim": "unlock",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.2"
+      ],
+      "points": [
+        2
+      ]
     },
     {
       "claim": "mental potential",
@@ -64,7 +87,9 @@
         "15.1.1",
         "15.2"
       ],
-      "point": 2
+      "points": [
+        2
+      ]
     },
     {
       "claim": "a sharper mind",
@@ -73,7 +98,9 @@
         "15.1.1",
         "15.2"
       ],
-      "point": 2
+      "points": [
+        2
+      ]
     },
     {
       "claim": "LITERALLY REGROW BRAIN CELLS",
@@ -82,7 +109,9 @@
         "15.1.1",
         "15.2"
       ],
-      "point": 2
+      "points": [
+        2
+      ]
     },
     {
       "claim": "support your brain health",
@@ -91,7 +120,9 @@
         "15.1.1",
         "15.2"
       ],
-      "point": 2
+      "points": [
+        2
+      ]
     },
     {
       "claim": "youthful vitality",
@@ -100,7 +131,9 @@
         "15.1.1",
         "15.2"
       ],
-      "point": 2
+      "points": [
+        2
+      ]
     },
     {
       "claim": "peak wellness",
@@ -109,7 +142,9 @@
         "15.1.1",
         "15.2"
       ],
-      "point": 2
+      "points": [
+        2
+      ]
     },
     {
       "claim": "transform your life today",
@@ -118,7 +153,20 @@
         "15.1.1",
         "15.2"
       ],
-      "point": 2
+      "points": [
+        2
+      ]
+    },
+    {
+      "claim": "#VitaShroomMagic",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.2"
+      ],
+      "points": [
+        2
+      ]
     },
     {
       "claim": "superstar mushroom",
@@ -127,7 +175,9 @@
         "15.1.1",
         "15.2"
       ],
-      "point": 2
+      "points": [
+        2
+      ]
     }
   ],
   "written_by": "draft: scripts/draft_split_v1.py",

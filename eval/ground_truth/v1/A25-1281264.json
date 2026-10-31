@@ -12,7 +12,9 @@
         "15.6",
         "15.6.2"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "Nature’s GLP-1: Fibre is a 100% natural way to stimulate GLP-1, the hormone that keeps you fuller for longer",
@@ -22,7 +24,9 @@
         "15.6",
         "15.6.2"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "help stop cravings before they start",
@@ -32,7 +36,9 @@
         "15.6",
         "15.6.2"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "control cravings, and stay fuller longer",
@@ -42,7 +48,9 @@
         "15.6",
         "15.6.2"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "No more cravings",
@@ -52,7 +60,9 @@
         "15.6",
         "15.6.2"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "No side effects, no injections",
@@ -62,7 +72,9 @@
         "15.6",
         "15.6.2"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "like GLP-1 drugs just natural",
@@ -72,7 +84,9 @@
         "15.6",
         "15.6.2"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "Boosts GLP1-production",
@@ -82,7 +96,9 @@
         "15.6",
         "15.6.2"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "reduce blood sugar spikes",
@@ -90,9 +106,15 @@
         "12.1",
         "12.11",
         "15.6",
-        "15.6.2"
+        "15.6.2",
+        "15.1",
+        "15.1.1",
+        "15.7"
       ],
-      "point": 1
+      "points": [
+        1,
+        2
+      ]
     },
     {
       "claim": "Reduces blood sugar spikes",
@@ -100,9 +122,15 @@
         "12.1",
         "12.11",
         "15.6",
-        "15.6.2"
+        "15.6.2",
+        "15.1",
+        "15.1.1",
+        "15.7"
       ],
-      "point": 1
+      "points": [
+        1,
+        2
+      ]
     },
     {
       "claim": "improve DIGESTION",
@@ -110,9 +138,15 @@
         "12.1",
         "12.11",
         "15.6",
-        "15.6.2"
+        "15.6.2",
+        "15.1",
+        "15.1.1",
+        "15.7"
       ],
-      "point": 1
+      "points": [
+        1,
+        2
+      ]
     },
     {
       "claim": "Metabolic Booster",
@@ -121,7 +155,9 @@
         "15.1.1",
         "15.7"
       ],
-      "point": 2
+      "points": [
+        2
+      ]
     },
     {
       "claim": "support metabolism",
@@ -130,7 +166,9 @@
         "15.1.1",
         "15.7"
       ],
-      "point": 2
+      "points": [
+        2
+      ]
     },
     {
       "claim": "Fuel your metabolism",
@@ -139,7 +177,9 @@
         "15.1.1",
         "15.7"
       ],
-      "point": 2
+      "points": [
+        2
+      ]
     },
     {
       "claim": "Stable energy levels",
@@ -148,7 +188,9 @@
         "15.1.1",
         "15.7"
       ],
-      "point": 2
+      "points": [
+        2
+      ]
     },
     {
       "claim": "Anti-Snack drink",
@@ -157,7 +199,9 @@
         "15.1.1",
         "15.7"
       ],
-      "point": 2
+      "points": [
+        2
+      ]
     },
     {
       "claim": "Stable appetite",
@@ -166,34 +210,9 @@
         "15.1.1",
         "15.7"
       ],
-      "point": 2
-    },
-    {
-      "claim": "reduce blood sugar spikes",
-      "rules": [
-        "15.1",
-        "15.1.1",
-        "15.7"
-      ],
-      "point": 2
-    },
-    {
-      "claim": "Reduces blood sugar spikes",
-      "rules": [
-        "15.1",
-        "15.1.1",
-        "15.7"
-      ],
-      "point": 2
-    },
-    {
-      "claim": "improve DIGESTION",
-      "rules": [
-        "15.1",
-        "15.1.1",
-        "15.7"
-      ],
-      "point": 2
+      "points": [
+        2
+      ]
     }
   ],
   "written_by": "draft: scripts/draft_split_v1.py",

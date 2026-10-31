@@ -5,12 +5,24 @@
   "outcome": "upheld",
   "claims": [
     {
+      "claim": "Karl",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
       "claim": "I was hard hit with COVID. Now my hair’s growing back & the brain fog started to lift",
       "rules": [
         "15.6",
         "15.6.2"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "brain fog",
@@ -18,7 +30,22 @@
         "15.6",
         "15.6.2"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "focus",
+      "rules": [
+        "15.6",
+        "15.6.2",
+        "15.1",
+        "15.7"
+      ],
+      "points": [
+        1,
+        2
+      ]
     },
     {
       "claim": "joint relief",
@@ -26,7 +53,22 @@
         "15.6",
         "15.6.2"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "energy",
+      "rules": [
+        "15.6",
+        "15.6.2",
+        "15.1",
+        "15.7"
+      ],
+      "points": [
+        1,
+        2
+      ]
     },
     {
       "claim": "mental health",
@@ -34,7 +76,19 @@
         "15.6",
         "15.6.2"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "COVID",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
     }
   ],
   "written_by": "draft: scripts/draft_split_v1.py",

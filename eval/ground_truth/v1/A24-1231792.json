@@ -11,7 +11,9 @@
         "15.1.1",
         "15.7"
       ],
-      "point": 2
+      "points": [
+        2
+      ]
     },
     {
       "claim": "FOR PEOPLE WITH",
@@ -20,7 +22,9 @@
         "15.1.1",
         "15.7"
       ],
-      "point": 2
+      "points": [
+        2
+      ]
     },
     {
       "claim": "BRAIN FOG",
@@ -29,7 +33,9 @@
         "15.1.1",
         "15.7"
       ],
-      "point": 2
+      "points": [
+        2
+      ]
     },
     {
       "claim": "banish your mental barriers",
@@ -38,7 +44,9 @@
         "15.1.1",
         "15.7"
       ],
-      "point": 2
+      "points": [
+        2
+      ]
     }
   ],
   "written_by": "draft: scripts/draft_split_v1.py",

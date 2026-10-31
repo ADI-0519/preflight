@@ -10,7 +10,9 @@
         "15.1",
         "15.1.1"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     }
   ],
   "written_by": "draft: scripts/draft_split_v1.py",

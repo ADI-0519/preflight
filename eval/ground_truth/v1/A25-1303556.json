@@ -12,7 +12,9 @@
         "15.6",
         "15.6.2"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "Out of 100s of prostate supplements for urine flow, we rated these 5 higher",
@@ -22,7 +24,9 @@
         "15.6",
         "15.6.2"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "Our experts rated these 5 prostate supplements above cranberry for",
@@ -32,7 +36,21 @@
         "15.6",
         "15.6.2"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "effectiveness",
+      "rules": [
+        "12.1",
+        "12.11",
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
     },
     {
       "claim": "5 Best for Bladder Urges",
@@ -42,7 +60,9 @@
         "15.6",
         "15.6.2"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "5 Best for Urinary Urges",
@@ -52,7 +72,9 @@
         "15.6",
         "15.6.2"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "prostate supplements",
@@ -62,7 +84,21 @@
         "15.6",
         "15.6.2"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "Prostacor",
+      "rules": [
+        "12.1",
+        "12.11",
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
     },
     {
       "claim": "Top 5 Supplements www.top5supplements.com/prostate-health",
@@ -72,7 +108,9 @@
         "3.1",
         "3.9"
       ],
-      "point": 2
+      "points": [
+        2
+      ]
     },
     {
       "claim": "Our experts rated these 5 brands higher",
@@ -82,7 +120,9 @@
         "3.1",
         "3.9"
       ],
-      "point": 2
+      "points": [
+        2
+      ]
     },
     {
       "claim": "we rated these 5 higher",
@@ -92,7 +132,21 @@
         "3.1",
         "3.9"
       ],
-      "point": 2
+      "points": [
+        2
+      ]
+    },
+    {
+      "claim": "experts",
+      "rules": [
+        "2.1",
+        "2.3",
+        "3.1",
+        "3.9"
+      ],
+      "points": [
+        2
+      ]
     }
   ],
   "written_by": "draft: scripts/draft_split_v1.py",

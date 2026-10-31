@@ -11,7 +11,9 @@
         "3.7",
         "3.11"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "each little pack contains a powerful daily nutritional fix",
@@ -20,7 +22,9 @@
         "3.7",
         "3.11"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "Each powerful little pack",
@@ -28,7 +32,9 @@
         "15.1",
         "15.1.1"
       ],
-      "point": 2
+      "points": [
+        2
+      ]
     },
     {
       "claim": "1DERS contains equivalent nutrition to 1 portion of your 5-a-day",
@@ -36,7 +42,9 @@
         "15.1",
         "15.1.1"
       ],
-      "point": 2
+      "points": [
+        2
+      ]
     }
   ],
   "written_by": "draft: scripts/draft_split_v1.py",

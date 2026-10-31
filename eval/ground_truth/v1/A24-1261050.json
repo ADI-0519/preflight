@@ -9,28 +9,81 @@
       "rules": [
         "3.1"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "Daily30+",
+      "rules": [
+        "3.1"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "pills",
+      "rules": [
+        "3.1"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "shakes",
+      "rules": [
+        "3.1"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "wholefood",
+      "rules": [
+        "3.1"
+      ],
+      "points": [
+        1
+      ]
     },
     {
       "claim": "real food",
       "rules": [
         "3.1"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "ultra-processed",
+      "rules": [
+        "3.1"
+      ],
+      "points": [
+        1
+      ]
     },
     {
       "claim": "just real food",
       "rules": [
         "3.1"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "wholefood supplement",
       "rules": [
         "3.1"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     }
   ],
   "written_by": "draft: scripts/draft_split_v1.py",

@@ -12,7 +12,9 @@
         "12.1",
         "12.11"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "Feel Like You Again With 2 Capsules Daily",
@@ -22,7 +24,9 @@
         "12.1",
         "12.11"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "Say goodbye to hot flashes",
@@ -32,7 +36,9 @@
         "12.1",
         "12.11"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "I can’t believe how much better I have been feeling generally since I started taking these supplements",
@@ -42,7 +48,9 @@
         "12.1",
         "12.11"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "better sleep quality",
@@ -52,7 +60,9 @@
         "12.1",
         "12.11"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "Natural Menopause Relief. Supports Hormonal Balance and Metabolism",
@@ -62,7 +72,9 @@
         "12.1",
         "12.11"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "supplements for menopause",
@@ -72,7 +84,9 @@
         "12.1",
         "12.11"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "all-in-one natural menopause supplement",
@@ -82,7 +96,9 @@
         "12.1",
         "12.11"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "helps support hormonal balance, cognitive and physiological functions",
@@ -92,7 +108,9 @@
         "12.1",
         "12.11"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "anxiety, low mood, fatigue, bloating, sleep, hot flushes, sluggish metabolism, night sweats and skin",
@@ -102,7 +120,9 @@
         "12.1",
         "12.11"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "adaptogenic herbs",
@@ -110,7 +130,19 @@
         "15.1",
         "15.1.1"
       ],
-      "point": 2
+      "points": [
+        2
+      ]
+    },
+    {
+      "claim": "adaptogenic",
+      "rules": [
+        "15.1",
+        "15.1.1"
+      ],
+      "points": [
+        2
+      ]
     }
   ],
   "written_by": "draft: scripts/draft_split_v1.py",

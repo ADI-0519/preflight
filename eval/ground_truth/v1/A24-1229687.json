@@ -8,52 +8,43 @@
       "claim": "10 kg GONE (and I didn’t even try)",
       "rules": [
         "15.1",
-        "15.1.1"
+        "15.1.1",
+        "13.9",
+        "15.6",
+        "15.6.6"
       ],
-      "point": 1
+      "points": [
+        1,
+        2
+      ]
     },
     {
       "claim": "I lost 10 kg without even trying!",
       "rules": [
         "15.1",
-        "15.1.1"
+        "15.1.1",
+        "13.9",
+        "15.6",
+        "15.6.6"
       ],
-      "point": 1
+      "points": [
+        1,
+        2
+      ]
     },
     {
       "claim": "Hormonal weight around the waist and hips is gone",
       "rules": [
         "15.1",
-        "15.1.1"
-      ],
-      "point": 1
-    },
-    {
-      "claim": "10 kg GONE (and I didn’t even try)",
-      "rules": [
+        "15.1.1",
         "13.9",
         "15.6",
         "15.6.6"
       ],
-      "point": 2
-    },
-    {
-      "claim": "I lost 10 kg without even trying!",
-      "rules": [
-        "13.9",
-        "15.6",
-        "15.6.6"
-      ],
-      "point": 2
-    },
-    {
-      "claim": "Hormonal weight around the waist and hips is gone",
-      "rules": [
-        "13.9",
-        "15.6",
-        "15.6.6"
-      ],
-      "point": 2
+      "points": [
+        1,
+        2
+      ]
     },
     {
       "claim": "around the waist and hips",
@@ -62,7 +53,9 @@
         "15.6",
         "15.6.6"
       ],
-      "point": 2
+      "points": [
+        2
+      ]
     }
   ],
   "written_by": "draft: scripts/draft_split_v1.py",

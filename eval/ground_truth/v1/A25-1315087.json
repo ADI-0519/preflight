@@ -10,7 +10,9 @@
         "15.6",
         "15.6.2"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "75% of people are chronically dehydrated, resulting in brain fog, low energy, headaches, inflammation, dry skin, and more",
@@ -18,7 +20,9 @@
         "15.6",
         "15.6.2"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "Meet Humantra: the cleanest, most effective way to hydrate",
@@ -27,7 +31,9 @@
         "15.1.1",
         "15.2"
       ],
-      "point": 2
+      "points": [
+        2
+      ]
     }
   ],
   "written_by": "draft: scripts/draft_split_v1.py",

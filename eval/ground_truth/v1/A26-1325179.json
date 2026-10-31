@@ -12,7 +12,9 @@
         "15.6",
         "15.6.2"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "Target the Root Cause of Hormonal Weight Gain",
@@ -22,7 +24,9 @@
         "15.6",
         "15.6.2"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "Support Healthy Hormone Balance",
@@ -32,7 +36,9 @@
         "15.6",
         "15.6.2"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "Lower Cortisol to Curb Fat Storage",
@@ -42,7 +48,9 @@
         "15.6",
         "15.6.2"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "rebalance hormones naturally",
@@ -52,7 +60,9 @@
         "15.6",
         "15.6.2"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "Reduce stress and stabilize [sic] mood",
@@ -60,9 +70,15 @@
         "12.1",
         "12.11",
         "15.6",
-        "15.6.2"
+        "15.6.2",
+        "15.1",
+        "15.1.1",
+        "15.7"
       ],
-      "point": 1
+      "points": [
+        1,
+        2
+      ]
     },
     {
       "claim": "fight stubborn hormonal weight gain",
@@ -72,7 +88,9 @@
         "15.6",
         "15.6.2"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "Enhance circulation for daily vitality and overall performance",
@@ -82,7 +100,9 @@
         "15.6",
         "15.6.2"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "mood swings and cravings",
@@ -92,7 +112,9 @@
         "15.6",
         "15.6.2"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "mental clarity",
@@ -102,7 +124,9 @@
         "15.6",
         "15.6.2"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "boost in my blood flow (if you know what I mean)",
@@ -112,7 +136,9 @@
         "15.6",
         "15.6.2"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "proven to enhance circulation and blood flow",
@@ -122,7 +148,9 @@
         "15.6",
         "15.6.2"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "when and where you need it",
@@ -132,7 +160,9 @@
         "15.6",
         "15.6.2"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "Enhance endurance and stamina all day and night",
@@ -140,9 +170,15 @@
         "12.1",
         "12.11",
         "15.6",
-        "15.6.2"
+        "15.6.2",
+        "15.1",
+        "15.1.1",
+        "15.7"
       ],
-      "point": 1
+      "points": [
+        1,
+        2
+      ]
     },
     {
       "claim": "I’M GOING LONGER AND HARDER NOW",
@@ -152,7 +188,9 @@
         "15.6",
         "15.6.2"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "Nitro Wood",
@@ -162,7 +200,33 @@
         "15.6",
         "15.6.2"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "Nitro",
+      "rules": [
+        "12.1",
+        "12.11",
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "wood",
+      "rules": [
+        "12.1",
+        "12.11",
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
     },
     {
       "claim": "My swelling in my lower legs and ankles are almost completely gone! My circulation has significantly improved",
@@ -172,7 +236,9 @@
         "15.6",
         "15.6.2"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "it works at improving your blood flow and the health of your vascular system",
@@ -182,7 +248,9 @@
         "15.6",
         "15.6.2"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "I’ve been struggling with high blood pressure",
@@ -192,7 +260,9 @@
         "15.6",
         "15.6.2"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "Nitro Wood contains key ingredients proven to expand the blood vessels and accelerate healthy circulation",
@@ -202,7 +272,9 @@
         "15.6",
         "15.6.2"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "Gives the body numerous cardiovascular boosting benefits along with rapidly increasing blood flow",
@@ -212,7 +284,9 @@
         "15.6",
         "15.6.2"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "boost mental drive",
@@ -221,7 +295,9 @@
         "15.1.1",
         "15.7"
       ],
-      "point": 2
+      "points": [
+        2
+      ]
     },
     {
       "claim": "lift mood",
@@ -230,7 +306,9 @@
         "15.1.1",
         "15.7"
       ],
-      "point": 2
+      "points": [
+        2
+      ]
     },
     {
       "claim": "helps rebalance hormones naturally",
@@ -239,7 +317,9 @@
         "15.1.1",
         "15.7"
       ],
-      "point": 2
+      "points": [
+        2
+      ]
     },
     {
       "claim": "S7: Proven to boost Nitric Oxide levels by up to 230%",
@@ -248,16 +328,20 @@
         "15.1.1",
         "15.7"
       ],
-      "point": 2
+      "points": [
+        2
+      ]
     },
     {
-      "claim": "enhance endurance and stamina all day and night",
+      "claim": "proven",
       "rules": [
         "15.1",
         "15.1.1",
         "15.7"
       ],
-      "point": 2
+      "points": [
+        2
+      ]
     },
     {
       "claim": "increase natural energy and mental cognition",
@@ -266,7 +350,9 @@
         "15.1.1",
         "15.7"
       ],
-      "point": 2
+      "points": [
+        2
+      ]
     },
     {
       "claim": "Increase energy, motivation, and mental clarity",
@@ -275,16 +361,9 @@
         "15.1.1",
         "15.7"
       ],
-      "point": 2
-    },
-    {
-      "claim": "Reduce stress and stabilize [sic] mood",
-      "rules": [
-        "15.1",
-        "15.1.1",
-        "15.7"
-      ],
-      "point": 2
+      "points": [
+        2
+      ]
     },
     {
       "claim": "reset your body naturally",
@@ -293,7 +372,9 @@
         "15.1.1",
         "15.7"
       ],
-      "point": 2
+      "points": [
+        2
+      ]
     },
     {
       "claim": "I even lost 11 lbs!",
@@ -302,7 +383,9 @@
         "15.1.1",
         "15.7"
       ],
-      "point": 2
+      "points": [
+        2
+      ]
     },
     {
       "claim": "Say Goodbye to Hormonal Weight Gain with Inno Drive For Her!",
@@ -311,7 +394,9 @@
         "15.1.1",
         "15.7"
       ],
-      "point": 2
+      "points": [
+        2
+      ]
     },
     {
       "claim": "within just a few weeks",
@@ -320,7 +405,9 @@
         "15.1.1",
         "15.7"
       ],
-      "point": 2
+      "points": [
+        2
+      ]
     },
     {
       "claim": "Say Goodbye to Hormonal Weight Gain",
@@ -329,7 +416,9 @@
         "15.1.1",
         "15.7"
       ],
-      "point": 2
+      "points": [
+        2
+      ]
     },
     {
       "claim": "as a board-certified MD, I see this all the time",
@@ -337,7 +426,9 @@
         "12.18",
         "15.6.3"
       ],
-      "point": 3
+      "points": [
+        3
+      ]
     },
     {
       "claim": "That’s exactly why Inno Drive For Her is the doctor’s choice for women battling cortisol-related puffiness and hormonal weight gain",
@@ -345,7 +436,9 @@
         "12.18",
         "15.6.3"
       ],
-      "point": 3
+      "points": [
+        3
+      ]
     },
     {
       "claim": "doctor’s choice",
@@ -353,7 +446,9 @@
         "12.18",
         "15.6.3"
       ],
-      "point": 3
+      "points": [
+        3
+      ]
     },
     {
       "claim": "Doctor-Approved Formula",
@@ -361,7 +456,9 @@
         "12.18",
         "15.6.3"
       ],
-      "point": 3
+      "points": [
+        3
+      ]
     },
     {
       "claim": "the heart might not be functioning very well",
@@ -369,7 +466,9 @@
         "12.18",
         "15.6.3"
       ],
-      "point": 3
+      "points": [
+        3
+      ]
     },
     {
       "claim": "find the right supplements",
@@ -377,7 +476,9 @@
         "12.18",
         "15.6.3"
       ],
-      "point": 3
+      "points": [
+        3
+      ]
     },
     {
       "claim": "to improve and restore blood flow naturally",
@@ -385,7 +486,9 @@
         "12.18",
         "15.6.3"
       ],
-      "point": 3
+      "points": [
+        3
+      ]
     },
     {
       "claim": "Nitro Wood is a very good supplement to start with because it’s natural, it’s effective, it works at improving your blood flow and the health of your vascular system […]",
@@ -393,7 +496,9 @@
         "12.18",
         "15.6.3"
       ],
-      "point": 3
+      "points": [
+        3
+      ]
     }
   ],
   "written_by": "draft: scripts/draft_split_v1.py",

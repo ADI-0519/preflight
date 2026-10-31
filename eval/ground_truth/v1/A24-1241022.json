@@ -10,7 +10,9 @@
         "15.6",
         "15.6.2"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "Around 2-8 weeks after my first capsule, I already had extra room in my pants (everyone was asking how I lost weight), I felt more energized, and the hot flashes [sic] were gone",
@@ -18,7 +20,9 @@
         "15.6",
         "15.6.2"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "I just keep feeling better, healthier, and happier",
@@ -26,7 +30,9 @@
         "15.6",
         "15.6.2"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "Not just about maintaining shape, but unlocking clarity, energy, and daily consistency […] It’s not too late to take charge of our well-being. Let’s prioritize our health",
@@ -34,7 +40,9 @@
         "15.6",
         "15.6.2"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "I’m 55",
@@ -42,7 +50,9 @@
         "15.6",
         "15.6.2"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "Menopause sucks so bad! Not to mention the hot flashes [sic] and joint pain I’ve had for over 7 years",
@@ -50,7 +60,9 @@
         "15.6",
         "15.6.2"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "the tummy or gut area is so bloated and big",
@@ -58,7 +70,9 @@
         "15.6",
         "15.6.2"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "That’s precisely how Katy felt when she entered menopause",
@@ -66,7 +80,9 @@
         "15.6",
         "15.6.2"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "Many women think weight gain and muffin tops during menopause are typical and can’t be stopped. Along with bloating, low energy, and digestive issues",
@@ -74,7 +90,9 @@
         "15.6",
         "15.6.2"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "I have an energy level like you can’t imagine. The weight gain is getting better, but the bloat is what I noticed a significant difference in",
@@ -82,7 +100,9 @@
         "15.6",
         "15.6.2"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "My first week was crazy good […] And the weight… went from 193 to 187",
@@ -90,7 +110,9 @@
         "15.6",
         "15.6.2"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "1 BOTTLE shrinks meno-belly",
@@ -98,7 +120,9 @@
         "15.6",
         "15.6.2"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "Reduces bloating and fluid retention in 1 to 3 days; Eliminates hot flashes [sic] in as little as 4 to 7 days; Induces deep, uninterrupted sleep in 5 to 7 days; Starts shifting hormonal weight in 15 to 30 days",
@@ -106,7 +130,9 @@
         "15.6",
         "15.6.2"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "Around 2-8 weeks after my first capsule, I already had extra room in my pants",
@@ -114,7 +140,9 @@
         "15.6",
         "15.6.6"
       ],
-      "point": 2
+      "points": [
+        2
+      ]
     }
   ],
   "written_by": "draft: scripts/draft_split_v1.py",

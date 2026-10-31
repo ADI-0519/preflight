@@ -10,7 +10,9 @@
         "15.6",
         "15.6.2"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "Boosts my energy, mood and desire",
@@ -18,7 +20,9 @@
         "15.6",
         "15.6.2"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "Zero brain fog and I feel calmer",
@@ -26,7 +30,9 @@
         "15.6",
         "15.6.2"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "I get no hot flashes [sic] – sleep like a baby",
@@ -34,7 +40,9 @@
         "15.6",
         "15.6.2"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "All my energy is back – feel like my old self again",
@@ -42,7 +50,9 @@
         "15.6",
         "15.6.2"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "I’ve lost 8kgs [sic], have zero bloating (used to look 9 months pregnant daily!)",
@@ -50,7 +60,9 @@
         "15.6",
         "15.6.2"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "Bloating is GONE & my pants fit better",
@@ -58,7 +70,9 @@
         "15.6",
         "15.6.2"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "I see a difference on my hips and waist",
@@ -66,7 +80,9 @@
         "15.6",
         "15.6.2"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "Hormone Harmony",
@@ -74,7 +90,19 @@
         "15.6",
         "15.6.2"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "MenoDaily",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
     },
     {
       "claim": "I’ve lost 8kgs",
@@ -82,7 +110,9 @@
         "15.6",
         "15.6.6"
       ],
-      "point": 2
+      "points": [
+        2
+      ]
     }
   ],
   "written_by": "draft: scripts/draft_split_v1.py",

@@ -12,7 +12,9 @@
         "15.6",
         "15.6.2"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "The FASTEST Way To Eliminate Sugar Cravings",
@@ -22,7 +24,9 @@
         "15.6",
         "15.6.2"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "Food Craving Control",
@@ -32,7 +36,9 @@
         "15.6",
         "15.6.2"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "CURB CRAVE",
@@ -40,9 +46,27 @@
         "12.1",
         "12.11",
         "15.6",
+        "15.6.2",
+        "15.1",
+        "15.1.1",
+        "15.7"
+      ],
+      "points": [
+        1,
+        2
+      ]
+    },
+    {
+      "claim": "OZEMP*C",
+      "rules": [
+        "12.1",
+        "12.11",
+        "15.6",
         "15.6.2"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "‘I was close on [sic] getting on prescription weight loss medication but decided to give these a try and I am amazed",
@@ -52,7 +76,9 @@
         "15.6",
         "15.6.2"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "I hardly get hungry throughout the day",
@@ -62,7 +88,9 @@
         "15.6",
         "15.6.2"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "It works",
@@ -72,7 +100,9 @@
         "15.6",
         "15.6.2"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "Helps preserve lean muscle mass as you lose weight Supports healthy digestion instead of disrupting it Keeps your face looking youthful and vibrant",
@@ -80,9 +110,15 @@
         "12.1",
         "12.11",
         "15.6",
-        "15.6.2"
+        "15.6.2",
+        "15.1",
+        "15.1.1",
+        "15.7"
       ],
-      "point": 1
+      "points": [
+        1,
+        2
+      ]
     },
     {
       "claim": "I Notice [sic] a good energy boost from them",
@@ -90,36 +126,25 @@
         "12.1",
         "12.11",
         "15.6",
-        "15.6.2"
-      ],
-      "point": 1
-    },
-    {
-      "claim": "Helps preserve lean muscle mass as you lose weight Supports healthy digestion instead of disrupting it Keeps your face looking youthful and vibrant",
-      "rules": [
+        "15.6.2",
         "15.1",
         "15.1.1",
         "15.7"
       ],
-      "point": 2
+      "points": [
+        1,
+        2
+      ]
     },
     {
-      "claim": "I Notice [sic] a good energy boost from them",
+      "claim": "doctor-approved",
       "rules": [
-        "15.1",
-        "15.1.1",
-        "15.7"
+        "12.18",
+        "15.6.3"
       ],
-      "point": 2
-    },
-    {
-      "claim": "Curb Crave",
-      "rules": [
-        "15.1",
-        "15.1.1",
-        "15.7"
-      ],
-      "point": 2
+      "points": [
+        3
+      ]
     }
   ],
   "written_by": "draft: scripts/draft_split_v1.py",

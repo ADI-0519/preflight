@@ -11,7 +11,9 @@
         "15.1.1",
         "15.2"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "Moderate coffee drinkers had telomeres equivalent to people five years younger",
@@ -20,7 +22,9 @@
         "15.1.1",
         "15.2"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "buying you time",
@@ -29,7 +33,9 @@
         "15.1.1",
         "15.2"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "protecting your DNA",
@@ -38,7 +44,9 @@
         "15.1.1",
         "15.2"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "slowing down aging at the cellular level",
@@ -47,7 +55,9 @@
         "15.1.1",
         "15.2"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "it was most likely coffee’s polyphenols protecting telomeres because they’re powerful antioxidants",
@@ -56,7 +66,9 @@
         "15.1.1",
         "15.2"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "the healthiest",
@@ -65,7 +77,9 @@
         "15.1.1",
         "15.2"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "polyphenols to support gut and brain health",
@@ -74,7 +88,9 @@
         "15.1.1",
         "15.2"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "how long you have left to live",
@@ -83,21 +99,27 @@
         "15.1.1",
         "15.2"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "overseen by Dr Rupy",
       "rules": [
         "15.6.3"
       ],
-      "point": 2
+      "points": [
+        2
+      ]
     },
     {
       "claim": "our Director and Chief Science Officer",
       "rules": [
         "15.6.3"
       ],
-      "point": 2
+      "points": [
+        2
+      ]
     }
   ],
   "written_by": "draft: scripts/draft_split_v1.py",

@@ -11,7 +11,9 @@
         "15.1.1",
         "15.7"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "FROM PANCAKE TO PEACH",
@@ -20,7 +22,9 @@
         "15.1.1",
         "15.7"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "Creatine fuels the muscle your protein can’t build alone",
@@ -29,7 +33,9 @@
         "15.1.1",
         "15.7"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "Muscle Definition",
@@ -38,7 +44,9 @@
         "15.1.1",
         "15.7"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "support muscle strength",
@@ -47,7 +55,9 @@
         "15.1.1",
         "15.7"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     }
   ],
   "written_by": "draft: scripts/draft_split_v1.py",

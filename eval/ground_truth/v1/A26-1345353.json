@@ -10,7 +10,9 @@
         "15.1",
         "15.1.1"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "Eat nuts. Live longer",
@@ -18,7 +20,9 @@
         "15.1",
         "15.1.1"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "pecans can help lower cholesterol",
@@ -26,7 +30,9 @@
         "15.6",
         "15.6.2"
       ],
-      "point": 2
+      "points": [
+        2
+      ]
     },
     {
       "claim": "regular nut consumption is linked to a lower risk of heart disease and premature death",
@@ -34,7 +40,9 @@
         "15.6",
         "15.6.2"
       ],
-      "point": 2
+      "points": [
+        2
+      ]
     },
     {
       "claim": "If everyone in the UK added a daily portion of nuts, we estimate it could help save up to 20,000 lives every year",
@@ -42,7 +50,9 @@
         "15.6",
         "15.6.2"
       ],
-      "point": 2
+      "points": [
+        2
+      ]
     }
   ],
   "written_by": "draft: scripts/draft_split_v1.py",

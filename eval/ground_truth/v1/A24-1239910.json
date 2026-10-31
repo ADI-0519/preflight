@@ -11,7 +11,20 @@
         "15.1.1",
         "15.7"
       ],
-      "point": 2
+      "points": [
+        2
+      ]
+    },
+    {
+      "claim": "fatigue",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.7"
+      ],
+      "points": [
+        2
+      ]
     },
     {
       "claim": "increased energy",
@@ -20,7 +33,9 @@
         "15.1.1",
         "15.7"
       ],
-      "point": 2
+      "points": [
+        2
+      ]
     },
     {
       "claim": "I feel so sharp and focused",
@@ -29,7 +44,9 @@
         "15.1.1",
         "15.7"
       ],
-      "point": 2
+      "points": [
+        2
+      ]
     },
     {
       "claim": "improve focus",
@@ -38,7 +55,9 @@
         "15.1.1",
         "15.7"
       ],
-      "point": 2
+      "points": [
+        2
+      ]
     },
     {
       "claim": "struggling with memory fog",
@@ -47,7 +66,9 @@
         "15.1.1",
         "15.7"
       ],
-      "point": 2
+      "points": [
+        2
+      ]
     },
     {
       "claim": "obliterate brain fog",
@@ -56,7 +77,31 @@
         "15.1.1",
         "15.7"
       ],
-      "point": 2
+      "points": [
+        2
+      ]
+    },
+    {
+      "claim": "nootropic",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.7"
+      ],
+      "points": [
+        2
+      ]
+    },
+    {
+      "claim": "adaptogen",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.7"
+      ],
+      "points": [
+        2
+      ]
     },
     {
       "claim": "just two of these gummies can transform your life in ways you wouldn’t believe",
@@ -64,7 +109,9 @@
         "15.2",
         "15.7"
       ],
-      "point": 3
+      "points": [
+        3
+      ]
     },
     {
       "claim": "super mushroom",
@@ -72,7 +119,9 @@
         "15.2",
         "15.7"
       ],
-      "point": 3
+      "points": [
+        3
+      ]
     },
     {
       "claim": "powerful super mushroom",
@@ -80,7 +129,9 @@
         "15.2",
         "15.7"
       ],
-      "point": 3
+      "points": [
+        3
+      ]
     }
   ],
   "written_by": "draft: scripts/draft_split_v1.py",

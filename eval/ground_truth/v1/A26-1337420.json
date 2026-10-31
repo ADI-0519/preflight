@@ -5,12 +5,34 @@
   "outcome": "upheld",
   "claims": [
     {
+      "claim": "cured",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "halved",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
       "claim": "very much reduced",
       "rules": [
         "15.6",
         "15.6.2"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "nowhere near as bad",
@@ -18,7 +40,9 @@
         "15.6",
         "15.6.2"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "Blurry here. Crystal clear on Trustpilot. Regulations mean we can’t show everything on this page, but you can read the lot over there",
@@ -26,7 +50,9 @@
         "15.6",
         "15.6.2"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     }
   ],
   "written_by": "draft: scripts/draft_split_v1.py",

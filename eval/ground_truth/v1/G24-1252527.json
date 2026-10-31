@@ -11,7 +11,9 @@
         "15.1.1",
         "15.7"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "Food Craving Control",
@@ -20,7 +22,9 @@
         "15.1.1",
         "15.7"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "Feel Full Faster & Stay Full Longer",
@@ -29,7 +33,9 @@
         "15.1.1",
         "15.7"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "Reduction in Overall Appetite",
@@ -38,7 +44,9 @@
         "15.1.1",
         "15.7"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "Optimize fat burning Efficiency Blood Sugar",
@@ -47,7 +55,9 @@
         "15.1.1",
         "15.7"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "BURN HARD TO LOSE AREAS",
@@ -56,7 +66,9 @@
         "15.1.1",
         "15.7"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "APPETITE SUPPRESSION",
@@ -65,7 +77,9 @@
         "15.1.1",
         "15.7"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "BOOST METABOLISM",
@@ -74,7 +88,9 @@
         "15.1.1",
         "15.7"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "Curb Crave",
@@ -83,7 +99,9 @@
         "15.1.1",
         "15.7"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "LOSE 15-20% OF BODY WEIGHT",
@@ -91,7 +109,9 @@
         "15.6",
         "15.6.6"
       ],
-      "point": 2
+      "points": [
+        2
+      ]
     },
     {
       "claim": "prescription weight loss medication",
@@ -101,7 +121,9 @@
         "15.6",
         "15.6.2"
       ],
-      "point": 3
+      "points": [
+        3
+      ]
     },
     {
       "claim": "ozemp*c dupe pills",
@@ -111,7 +133,9 @@
         "15.6",
         "15.6.2"
       ],
-      "point": 3
+      "points": [
+        3
+      ]
     }
   ],
   "written_by": "draft: scripts/draft_split_v1.py",

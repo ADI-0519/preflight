@@ -11,7 +11,9 @@
         "15.1.1",
         "15.7"
       ],
-      "point": 3
+      "points": [
+        3
+      ]
     },
     {
       "claim": "my energy’s better",
@@ -20,7 +22,9 @@
         "15.1.1",
         "15.7"
       ],
-      "point": 3
+      "points": [
+        3
+      ]
     },
     {
       "claim": "I’ve got energy to get up and do stuff",
@@ -29,7 +33,9 @@
         "15.1.1",
         "15.7"
       ],
-      "point": 3
+      "points": [
+        3
+      ]
     }
   ],
   "written_by": "draft: scripts/draft_split_v1.py",

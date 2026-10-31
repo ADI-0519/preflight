@@ -37,7 +37,7 @@ class BreachingClaim(BaseModel):
 
     claim: str  # quoted exactly as it appears in the ruling's ad description
     rules: list[str]  # CAP rules the assessment found this claim to breach
-    point: int | None = None  # the numbered point of the assessment it comes from
+    points: list[int]  # the numbered points of the assessment it comes from
 
 
 class GroundTruth(BaseModel):

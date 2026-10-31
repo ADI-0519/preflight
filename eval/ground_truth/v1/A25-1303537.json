@@ -12,7 +12,9 @@
         "15.6",
         "15.6.2"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "As men age, the prostate can enlarge – causing frequent urination, weak flow, and sleepless nights",
@@ -22,7 +24,9 @@
         "15.6",
         "15.6.2"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "our doctor-formulated natural prostate supplement",
@@ -32,7 +36,9 @@
         "15.6",
         "15.6.2"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "helps: Reduce nighttime bathroom trips Improve urine flow & bladder emptying",
@@ -42,7 +48,9 @@
         "15.6",
         "15.6.2"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "Support healthy prostate size",
@@ -52,7 +60,9 @@
         "15.6",
         "15.6.2"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "Impact Prostate Health",
@@ -62,7 +72,9 @@
         "15.6",
         "15.6.2"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "our doctor-formulated natural prostate supplement that helps",
@@ -70,7 +82,9 @@
         "12.18",
         "15.6.3"
       ],
-      "point": 2
+      "points": [
+        2
+      ]
     }
   ],
   "written_by": "draft: scripts/draft_split_v1.py",

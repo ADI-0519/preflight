@@ -11,7 +11,9 @@
         "15.1.1",
         "15.7"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "strengthening your immune system",
@@ -20,7 +22,31 @@
         "15.1.1",
         "15.7"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "supports",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.7"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "strengthening",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.7"
+      ],
+      "points": [
+        1
+      ]
     },
     {
       "claim": "boosts bone health",
@@ -29,7 +55,9 @@
         "15.1.1",
         "15.7"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "promoting healthy bones",
@@ -38,7 +66,9 @@
         "15.1.1",
         "15.7"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "improves mood",
@@ -47,7 +77,9 @@
         "15.1.1",
         "15.7"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "enhancing mood",
@@ -56,7 +88,20 @@
         "15.1.1",
         "15.7"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "improves",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.7"
+      ],
+      "points": [
+        1
+      ]
     },
     {
       "claim": "mental clarity",
@@ -65,7 +110,9 @@
         "15.1.1",
         "15.7"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "enhances energy levels",
@@ -74,7 +121,20 @@
         "15.1.1",
         "15.7"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "enhancing",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.7"
+      ],
+      "points": [
+        1
+      ]
     },
     {
       "claim": "energy levels",
@@ -83,14 +143,18 @@
         "15.1.1",
         "15.7"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "always recommend",
       "rules": [
         "15.6.3"
       ],
-      "point": 2
+      "points": [
+        2
+      ]
     }
   ],
   "written_by": "draft: scripts/draft_split_v1.py",

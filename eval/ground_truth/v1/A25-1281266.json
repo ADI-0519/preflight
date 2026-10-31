@@ -5,6 +5,22 @@
   "outcome": "upheld",
   "claims": [
     {
+      "claim": "faux-zempic",
+      "rules": [
+        "12.1",
+        "12.11",
+        "15.6",
+        "15.6.2",
+        "15.1",
+        "15.1.1",
+        "15.7"
+      ],
+      "points": [
+        1,
+        2
+      ]
+    },
+    {
       "claim": "Meet MB-1 by Arrae, your all-natural Faux-Zempic!",
       "rules": [
         "12.1",
@@ -12,7 +28,9 @@
         "15.6",
         "15.6.2"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "Arrae MB-1 provides comprehensize [sic] metabolic support by activating AMPK and key enzymes to support",
@@ -22,7 +40,9 @@
         "15.6",
         "15.6.2"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "craving control, blood sugar + cholesterol regulation",
@@ -32,7 +52,9 @@
         "15.6",
         "15.6.2"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "Meet MB-1 by Arrae, your all-natural Faux-Zempic",
@@ -42,7 +64,9 @@
         "15.6",
         "15.6.2"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "nature’s faux-zempic",
@@ -52,7 +76,9 @@
         "15.6",
         "15.6.2"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "a clinically backed supplement with seven natural ingredients that work with your body to",
@@ -62,7 +88,9 @@
         "15.6",
         "15.6.2"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "curb cravings",
@@ -72,7 +100,9 @@
         "15.6",
         "15.6.2"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "it helped quiet food noise",
@@ -82,7 +112,9 @@
         "15.6",
         "15.6.2"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "support weight management",
@@ -90,9 +122,15 @@
         "12.1",
         "12.11",
         "15.6",
-        "15.6.2"
+        "15.6.2",
+        "15.1",
+        "15.1.1",
+        "15.7"
       ],
-      "point": 1
+      "points": [
+        1,
+        2
+      ]
     },
     {
       "claim": "reduce stubborn body fat",
@@ -100,9 +138,15 @@
         "12.1",
         "12.11",
         "15.6",
-        "15.6.2"
+        "15.6.2",
+        "15.1",
+        "15.1.1",
+        "15.7"
       ],
-      "point": 1
+      "points": [
+        1,
+        2
+      ]
     },
     {
       "claim": "supercharge your metabolism",
@@ -111,25 +155,9 @@
         "15.1.1",
         "15.7"
       ],
-      "point": 2
-    },
-    {
-      "claim": "support weight management",
-      "rules": [
-        "15.1",
-        "15.1.1",
-        "15.7"
-      ],
-      "point": 2
-    },
-    {
-      "claim": "reduce stubborn body fat",
-      "rules": [
-        "15.1",
-        "15.1.1",
-        "15.7"
-      ],
-      "point": 2
+      "points": [
+        2
+      ]
     },
     {
       "claim": "I was able to achieve my goal weight in three months",
@@ -137,7 +165,9 @@
         "15.6",
         "15.6.6"
       ],
-      "point": 3
+      "points": [
+        3
+      ]
     },
     {
       "claim": "these jeans used to be so tight on me and now look",
@@ -145,7 +175,9 @@
         "15.6",
         "15.6.6"
       ],
-      "point": 3
+      "points": [
+        3
+      ]
     }
   ],
   "written_by": "draft: scripts/draft_split_v1.py",

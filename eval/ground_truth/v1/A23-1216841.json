@@ -10,7 +10,9 @@
         "15.6",
         "15.6.2"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "I have only been taking these ‘miracle’ tablets a short while and can’t tell you the difference they have made to my life",
@@ -18,7 +20,9 @@
         "15.6",
         "15.6.2"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "I first noticed the difference a few days later when I felt more confident",
@@ -26,21 +30,27 @@
         "15.6",
         "15.6.2"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "advanced bladder support",
       "rules": [
         "15.2"
       ],
-      "point": 2
+      "points": [
+        2
+      ]
     },
     {
       "claim": "promote a healthy urinary tract",
       "rules": [
         "15.2"
       ],
-      "point": 2
+      "points": [
+        2
+      ]
     },
     {
       "claim": "Act now. 50% off",
@@ -50,7 +60,9 @@
         "3.17",
         "3.40"
       ],
-      "point": 3
+      "points": [
+        3
+      ]
     },
     {
       "claim": "HALF PRICE! CRANBERRY TABLETS. RRP £29.99 NOW ONLY £14.99",
@@ -60,7 +72,9 @@
         "3.17",
         "3.40"
       ],
-      "point": 3
+      "points": [
+        3
+      ]
     }
   ],
   "written_by": "draft: scripts/draft_split_v1.py",

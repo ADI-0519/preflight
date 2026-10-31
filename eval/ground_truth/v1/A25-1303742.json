@@ -12,7 +12,9 @@
         "15.6",
         "15.6.2"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "Ease the challenges of autism",
@@ -22,7 +24,9 @@
         "15.6",
         "15.6.2"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "[…] give your child the gift of a calmer, more balanced life",
@@ -32,7 +36,9 @@
         "15.6",
         "15.6.2"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "Each sachet delivers 8 Billion CFUs of PS23™ psychobiotics and essential nutrients that work through the gut-brain axis, balancing gut microbiota to reduce anxiety, enhance brain function, and promote emotional well-being",
@@ -42,7 +48,9 @@
         "15.6",
         "15.6.2"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "Each sachet delivers 8 Billion CFUs of PS23™ psychobiotics and essential nutrients that work through the gut-brain axis, balancing gut microbiota to",
@@ -51,7 +59,9 @@
         "15.1.1",
         "15.7"
       ],
-      "point": 2
+      "points": [
+        2
+      ]
     },
     {
       "claim": "enhance brain function, and promote emotional well-being",
@@ -60,7 +70,9 @@
         "15.1.1",
         "15.7"
       ],
-      "point": 2
+      "points": [
+        2
+      ]
     },
     {
       "claim": "emotional well-being",
@@ -69,7 +81,20 @@
         "15.1.1",
         "15.7"
       ],
-      "point": 2
+      "points": [
+        2
+      ]
+    },
+    {
+      "claim": "psychobiotics",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.7"
+      ],
+      "points": [
+        2
+      ]
     }
   ],
   "written_by": "draft: scripts/draft_split_v1.py",

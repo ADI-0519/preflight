@@ -10,7 +10,9 @@
         "12.1",
         "12.11"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "a natural joint and tendon rejuvenation boost",
@@ -18,7 +20,9 @@
         "12.1",
         "12.11"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "Over 100,000+ women have transformed their joint health",
@@ -26,7 +30,9 @@
         "12.1",
         "12.11"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "80% of menopausal women suffer from hormone starvation – don’t wait until it’s too late!",
@@ -34,7 +40,9 @@
         "12.1",
         "12.11"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "Healing Joints & Tendons",
@@ -42,7 +50,9 @@
         "12.1",
         "12.11"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "Saving money on painkillers",
@@ -50,7 +60,9 @@
         "12.1",
         "12.11"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "Heal your Joint pain in 60 days",
@@ -58,7 +70,9 @@
         "12.1",
         "12.11"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "The Special probiotic fixing hip pain",
@@ -66,7 +80,9 @@
         "12.1",
         "12.11"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "The hip pain started slowly - just a little stiffness getting out of bed. But within months, I was limping everywhere, avoiding stairs, and sleeping in our guest room because I couldn't stop tossing and turning",
@@ -74,7 +90,9 @@
         "12.1",
         "12.11"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "Three doctors, zero answers",
@@ -82,7 +100,9 @@
         "12.1",
         "12.11"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "That's when I learned something that blew my mind: when estrogen drops during menopause, it literally inflames your hip tendons. It's called gluteal tendinopathy, and most doctors have never heard of it",
@@ -90,7 +110,9 @@
         "12.1",
         "12.11"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "I found women raving about this supplement called Her Again with something called L. gasseri. Apparently, it's the only probiotic clinically proven to help your body produce estrogen naturally",
@@ -98,7 +120,9 @@
         "12.1",
         "12.11"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "clinically-proven ingredients that help restore estrogen production naturally",
@@ -106,7 +130,9 @@
         "15.1",
         "15.1.1"
       ],
-      "point": 2
+      "points": [
+        2
+      ]
     },
     {
       "claim": "L. gasseri",
@@ -114,7 +140,9 @@
         "15.1",
         "15.1.1"
       ],
-      "point": 2
+      "points": [
+        2
+      ]
     },
     {
       "claim": "the only probiotic clinically proven to help your body produce estrogen naturally",
@@ -122,7 +150,9 @@
         "15.1",
         "15.1.1"
       ],
-      "point": 2
+      "points": [
+        2
+      ]
     },
     {
       "claim": "helping your gut make what it used to",
@@ -130,7 +160,9 @@
         "15.1",
         "15.1.1"
       ],
-      "point": 2
+      "points": [
+        2
+      ]
     }
   ],
   "written_by": "draft: scripts/draft_split_v1.py",

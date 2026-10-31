@@ -9,14 +9,18 @@
       "rules": [
         "15.6.2"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "Winning Battle WITH ANOREXIA",
       "rules": [
         "15.6.2"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     }
   ],
   "written_by": "draft: scripts/draft_split_v1.py",

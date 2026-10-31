@@ -11,7 +11,9 @@
         "15.6.2",
         "15.9"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "Taking just 1-2 tsp Spirulina a day can … reverse gray [sic] hair …",
@@ -20,7 +22,9 @@
         "15.6.2",
         "15.9"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     }
   ],
   "written_by": "draft: scripts/draft_split_v1.py",

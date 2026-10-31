@@ -10,7 +10,9 @@
         "15.6",
         "15.6.2"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "my stress levels are finally stable",
@@ -18,7 +20,9 @@
         "15.6",
         "15.6.2"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "Reduced stress and anxiety",
@@ -26,7 +30,9 @@
         "15.6",
         "15.6.2"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "more energy",
@@ -35,7 +41,9 @@
         "15.1.1",
         "15.7"
       ],
-      "point": 2
+      "points": [
+        2
+      ]
     },
     {
       "claim": "No more mid day crashes",
@@ -44,7 +52,9 @@
         "15.1.1",
         "15.7"
       ],
-      "point": 2
+      "points": [
+        2
+      ]
     },
     {
       "claim": "All-Day Energy",
@@ -53,7 +63,9 @@
         "15.1.1",
         "15.7"
       ],
-      "point": 2
+      "points": [
+        2
+      ]
     },
     {
       "claim": "Calm Energy",
@@ -62,7 +74,9 @@
         "15.1.1",
         "15.7"
       ],
-      "point": 2
+      "points": [
+        2
+      ]
     },
     {
       "claim": "Sustained energy",
@@ -71,7 +85,9 @@
         "15.1.1",
         "15.7"
       ],
-      "point": 2
+      "points": [
+        2
+      ]
     },
     {
       "claim": "Wanting to be more productive",
@@ -80,7 +96,9 @@
         "15.1.1",
         "15.7"
       ],
-      "point": 2
+      "points": [
+        2
+      ]
     },
     {
       "claim": "stay focused",
@@ -89,7 +107,9 @@
         "15.1.1",
         "15.7"
       ],
-      "point": 2
+      "points": [
+        2
+      ]
     },
     {
       "claim": "improving brain function",
@@ -98,7 +118,9 @@
         "15.1.1",
         "15.7"
       ],
-      "point": 2
+      "points": [
+        2
+      ]
     },
     {
       "claim": "more focused and productive",
@@ -107,7 +129,9 @@
         "15.1.1",
         "15.7"
       ],
-      "point": 2
+      "points": [
+        2
+      ]
     },
     {
       "claim": "feeling pretty focused",
@@ -116,7 +140,9 @@
         "15.1.1",
         "15.7"
       ],
-      "point": 2
+      "points": [
+        2
+      ]
     },
     {
       "claim": "more productive",
@@ -125,7 +151,9 @@
         "15.1.1",
         "15.7"
       ],
-      "point": 2
+      "points": [
+        2
+      ]
     },
     {
       "claim": "improve your focus",
@@ -134,7 +162,9 @@
         "15.1.1",
         "15.7"
       ],
-      "point": 2
+      "points": [
+        2
+      ]
     },
     {
       "claim": "Reduced brain fog",
@@ -143,7 +173,9 @@
         "15.1.1",
         "15.7"
       ],
-      "point": 2
+      "points": [
+        2
+      ]
     },
     {
       "claim": "Improved focus",
@@ -152,7 +184,9 @@
         "15.1.1",
         "15.7"
       ],
-      "point": 2
+      "points": [
+        2
+      ]
     },
     {
       "claim": "Mental Clarity",
@@ -161,7 +195,9 @@
         "15.1.1",
         "15.7"
       ],
-      "point": 2
+      "points": [
+        2
+      ]
     },
     {
       "claim": "improved immunity",
@@ -170,7 +206,9 @@
         "15.1.1",
         "15.7"
       ],
-      "point": 2
+      "points": [
+        2
+      ]
     },
     {
       "claim": "sleeping really well",
@@ -179,7 +217,31 @@
         "15.1.1",
         "15.7"
       ],
-      "point": 2
+      "points": [
+        2
+      ]
+    },
+    {
+      "claim": "adaptogen",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.7"
+      ],
+      "points": [
+        2
+      ]
+    },
+    {
+      "claim": "antioxidant",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.7"
+      ],
+      "points": [
+        2
+      ]
     },
     {
       "claim": "functional mushroom gummies",
@@ -187,7 +249,9 @@
         "15.2",
         "15.7"
       ],
-      "point": 3
+      "points": [
+        3
+      ]
     },
     {
       "claim": "Feel Güd gummies",
@@ -195,7 +259,19 @@
         "15.2",
         "15.7"
       ],
-      "point": 3
+      "points": [
+        3
+      ]
+    },
+    {
+      "claim": "functional",
+      "rules": [
+        "15.2",
+        "15.7"
+      ],
+      "points": [
+        3
+      ]
     },
     {
       "claim": "Feel Güd",
@@ -203,7 +279,9 @@
         "15.2",
         "15.7"
       ],
-      "point": 3
+      "points": [
+        3
+      ]
     }
   ],
   "written_by": "draft: scripts/draft_split_v1.py",

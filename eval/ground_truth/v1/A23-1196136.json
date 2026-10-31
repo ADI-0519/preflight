@@ -11,7 +11,9 @@
         "3.7",
         "12.1"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "reduce the appearance of fine lines and wrinkles",
@@ -20,7 +22,9 @@
         "3.7",
         "12.1"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "thicker hair",
@@ -29,7 +33,9 @@
         "3.7",
         "12.1"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "fine lines and wrinkles",
@@ -38,7 +44,9 @@
         "3.7",
         "12.1"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "your skin being more hydrated",
@@ -48,7 +56,9 @@
         "15.2",
         "15.7"
       ],
-      "point": 2
+      "points": [
+        2
+      ]
     },
     {
       "claim": "stronger nails",
@@ -58,7 +68,9 @@
         "15.2",
         "15.7"
       ],
-      "point": 2
+      "points": [
+        2
+      ]
     },
     {
       "claim": "improved joint health",
@@ -68,7 +80,9 @@
         "15.2",
         "15.7"
       ],
-      "point": 2
+      "points": [
+        2
+      ]
     }
   ],
   "written_by": "draft: scripts/draft_split_v1.py",

@@ -50,7 +50,7 @@ def points(assessment: str) -> list[tuple[int, str, str]]:
 def draft_claims(ruling: Ruling) -> list[BreachingClaim]:
     """Quoted text in each upheld point that also appears verbatim in the ad description, with that point's rules."""
     description = norm(ruling.ad_description)
-    claims = []
+    claims: dict[str, BreachingClaim] = {}
     for number, outcome, body in points(ruling.assessment):
         if outcome != "upheld":
             continue
@@ -64,9 +64,18 @@ def draft_claims(ruling: Ruling) -> list[BreachingClaim]:
             parts = [quote] if norm(quote) in description else ELISION.split(quote)
             for part in parts:
                 part = part.strip(" .,;:")
-                if len(part.split()) >= 2 and norm(part) in description:
-                    claims.append(BreachingClaim(claim=part, rules=rules, point=number))
-    return list({(c.claim, c.point): c for c in claims}.values())
+                key = norm(part)
+                # single words count ("nootropic", "cured"); under 3 characters is a stray fragment
+                if len(part) < 3 or key not in description:
+                    continue
+                # a claim upheld under several points is listed once, with every point and rule
+                seen = claims.get(key, BreachingClaim(claim=part, rules=[], points=[]))
+                claims[key] = BreachingClaim(
+                    claim=seen.claim,
+                    rules=list(dict.fromkeys([*seen.rules, *rules])),
+                    points=list(dict.fromkeys([*seen.points, number])),
+                )
+    return list(claims.values())
 
 
 def main() -> None:

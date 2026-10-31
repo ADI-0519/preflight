@@ -9,9 +9,13 @@
       "rules": [
         "3.1",
         "3.3",
-        "3.7"
+        "3.7",
+        "3.42"
       ],
-      "point": 1
+      "points": [
+        1,
+        2
+      ]
     },
     {
       "claim": "Pure Vitamins",
@@ -20,7 +24,9 @@
         "3.3",
         "3.7"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "Pure: If an ingredients [sic] is there, it's there for a reason",
@@ -29,7 +35,9 @@
         "3.3",
         "3.7"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "Our supplements contain 100% active ingredients in the highest natural potency with no fillers, binders, glues, irradiation or lubricants from mass production - nothing!",
@@ -38,7 +46,9 @@
         "3.3",
         "3.7"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "up to 50% Ultra-Processed Junk",
@@ -47,7 +57,9 @@
         "3.3",
         "3.7"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "Ultra Processed Supplements",
@@ -56,7 +68,9 @@
         "3.3",
         "3.7"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "Many supplements contain ineffective fillers, Viridian only uses pure and active ingredients",
@@ -65,34 +79,70 @@
         "3.3",
         "3.7"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
-      "claim": "pure vitamins",
+      "claim": "junk",
       "rules": [
         "3.1",
         "3.3",
-        "3.7"
+        "3.7",
+        "3.42"
       ],
-      "point": 1
+      "points": [
+        1,
+        2
+      ]
     },
     {
       "claim": "ineffective fillers",
       "rules": [
         "3.1",
         "3.3",
-        "3.7"
+        "3.7",
+        "3.42"
       ],
-      "point": 1
+      "points": [
+        1,
+        2
+      ]
     },
     {
-      "claim": "no junk",
+      "claim": "pure",
+      "rules": [
+        "3.1",
+        "3.3",
+        "3.7",
+        "3.42"
+      ],
+      "points": [
+        1,
+        2
+      ]
+    },
+    {
+      "claim": "ultra-processed",
       "rules": [
         "3.1",
         "3.3",
         "3.7"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "active",
+      "rules": [
+        "3.1",
+        "3.3",
+        "3.7"
+      ],
+      "points": [
+        1
+      ]
     },
     {
       "claim": "Viridian only uses pure and active ingredients",
@@ -101,7 +151,9 @@
         "3.3",
         "3.7"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "100% active ingredients",
@@ -110,7 +162,9 @@
         "3.3",
         "3.7"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "only uses",
@@ -119,7 +173,9 @@
         "3.3",
         "3.7"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "active ingredients",
@@ -128,7 +184,9 @@
         "3.3",
         "3.7"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "ultra processed",
@@ -137,49 +195,54 @@
         "3.3",
         "3.7"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "Mass produced supplements",
       "rules": [
         "3.42"
       ],
-      "point": 2
+      "points": [
+        2
+      ]
     },
     {
       "claim": "Say No to Ultra Processed Supplements",
       "rules": [
         "3.42"
       ],
-      "point": 2
-    },
-    {
-      "claim": "No Junk",
-      "rules": [
-        "3.42"
-      ],
-      "point": 2
+      "points": [
+        2
+      ]
     },
     {
       "claim": "Shockingly, Mass Produced Supplements Contain Up to 50% Ultra-Processed Junk!",
       "rules": [
         "3.42"
       ],
-      "point": 2
+      "points": [
+        2
+      ]
     },
     {
-      "claim": "ineffective fillers",
+      "claim": "fillers",
       "rules": [
         "3.42"
       ],
-      "point": 2
+      "points": [
+        2
+      ]
     },
     {
       "claim": "What On Earth is in Your Supplement?",
       "rules": [
         "3.42"
       ],
-      "point": 2
+      "points": [
+        2
+      ]
     }
   ],
   "written_by": "draft: scripts/draft_split_v1.py",

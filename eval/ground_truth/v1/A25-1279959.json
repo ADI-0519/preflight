@@ -14,7 +14,9 @@
         "15.1",
         "15.1.1"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "LASER FOCUS",
@@ -26,7 +28,9 @@
         "15.1",
         "15.1.1"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "HAPPY MOOD",
@@ -38,7 +42,9 @@
         "15.1",
         "15.1.1"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     },
     {
       "claim": "THIS IS NOT SPEED",
@@ -50,7 +56,23 @@
         "15.1",
         "15.1.1"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "speed",
+      "rules": [
+        "15.6",
+        "15.6.2",
+        "12.1",
+        "12.11",
+        "15.1",
+        "15.1.1"
+      ],
+      "points": [
+        1
+      ]
     },
     {
       "claim": "THIS IS NOT ADDERALL",
@@ -62,7 +84,23 @@
         "15.1",
         "15.1.1"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "ADDERALL",
+      "rules": [
+        "15.6",
+        "15.6.2",
+        "12.1",
+        "12.11",
+        "15.1",
+        "15.1.1"
+      ],
+      "points": [
+        1
+      ]
     },
     {
       "claim": "INCREASED ENERGY",
@@ -74,7 +112,9 @@
         "15.1",
         "15.1.1"
       ],
-      "point": 1
+      "points": [
+        1
+      ]
     }
   ],
   "written_by": "draft: scripts/draft_split_v1.py",

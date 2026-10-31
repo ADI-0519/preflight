@@ -98,7 +98,7 @@ Measured in P03: a 30-second 720p ad costs about $0.15 in SAM at 25 fps (about $
 
 ## Evaluation protocol (contract for P14 and P31)
 
-1. **Items.** Positives are recent ASA rulings on food supplement health claims, chosen by date (most recent first) and capped at two per advertiser. Negatives are not-upheld rulings in the same topics, ads the team writes using only verbatim register wording, and partners' approved ads where consent exists. Each item carries a ground-truth list of breaching claims (empty for negatives) written from the ruling's assessment by one founder and checked by another.
+1. **Items.** Positives are recent ASA rulings on food supplement ads, covering health claims and any other CAP Code breach the rulings uphold (misleading or comparative claims under section 3, for example), chosen by date (most recent first) and capped at two per advertiser. Negatives are not-upheld rulings in the same topics, ads the team writes using only verbatim register wording, and partners' approved ads where consent exists. Each item carries a ground-truth list of breaching claims (empty for negatives), drafted from the ruling's assessment by `scripts/draft_split_v1.py` and corrected by a founder, who sets `checked_by`. The split is frozen only when every item is checked. **Labelling rule (P14):** a breaching claim is the smallest passage of the ad description that an upheld point of the assessment found in breach, quoted verbatim, with that point's CAP rules. The draft takes every passage the point quotes that appears in the ad description (an elided quote counts as its matching fragments). A claim upheld under several points is listed once, with all its points and rules. The checker splits a quote that covers several claims, drops a fragment inside another claim unless it is a breach on its own, and removes quoted text that is not a claim (names, hashtags).
 2. **Split.** `eval/splits/v1.yaml` lists item IDs in `dev` and `test`. Prompts and thresholds are tuned on `dev` only. `test` runs once per final configuration. Changing either list means `v2`, never an edit.
 3. **Reconstructions.** Built only from the ruling's "Ad description" section. The builder's input type holds that section and nothing else, and a test enforces it. Every reconstruction is labelled "AI reconstruction from ASA ruling text" in its metadata and on screen.
 4. **Leakage.** The precedent index, few-shot examples and prompts are built with every `test` and `dev` ruling excluded. The index builder reads the split manifest and refuses to build if an excluded ID is present.
@@ -138,13 +138,14 @@ Tasks in lane `all` need every founder: reading logged-in pages, contacting part
 | P13 | Build the ASA rulings corpus | A | P02, P04 | 29 Oct |
 | P14 | Freeze evaluation split v1 with ground truth | A | P11, P13 | 29 Oct |
 | P15 | Build reconstructions from ad descriptions | A | P03, P14 | 30 Oct |
+| P16 | Extend the CAP rule pack to every rule split v1 cites | A | P12, P14 | 1 Nov |
 | P21 | Define the output schema v1 | C | P04 | 28 Oct |
 | P22 | Write the model clients with caching and replay | B | P03, P04 | 28 Oct |
 | P23 | Ingest video, images and page screenshots | B | P04 | 29 Oct |
 | P24 | Transcription stage | B | P21, P22, P23 | 29 Oct |
 | P25 | On-screen evidence stage with SAM 3.1 | B | P21, P22, P23 | 30 Oct |
 | P26 | Claim extraction prompt and parser | B | P24, P25 | 30 Oct |
-| P27 | Checker: register, CAP rules, precedent, judge | C | P11, P12, P13, P14, P21, P26 | 31 Oct |
+| P27 | Checker: register, CAP rules, precedent, judge | C | P11, P12, P13, P14, P16, P21, P26 | 31 Oct |
 | P28 | Report rendering and the `preflight screen` CLI | C | P27 | 31 Oct |
 | P31 | Evaluation harness and run registry | A | P14, P15, P28 | 31 Oct |
 | P32 | Keyword and register-lookup baseline | A | P11, P31 | 1 Nov |

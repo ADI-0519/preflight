@@ -1,0 +1,264 @@
+{
+  "item_id": "A24-1239904",
+  "kind": "ruling",
+  "label": "positive",
+  "outcome": "upheld",
+  "claims": [
+    {
+      "claim": "Anti-Stress",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "Stress Relief",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "Fights Stress",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "If someone with ADHD ate these three mushrooms, this is what would happen to their body",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "reduces symptoms of anxiety and depression",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "prevent future diseases",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "clears acne",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "All-day Energy",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.7"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "Energy & Stamina",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.7"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "Zen Energy",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.7"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "increases energy as it battles fatigue",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.7"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "sharp and focused",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.7"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "Laser Focus",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.7"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "Focus & Memory",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.7"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "Boosts Focus",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.7"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "improving focus and concentration",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.7"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "destroys brain fog",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.7"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "enhances cognitive ability",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.7"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "Digestion",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.7"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "Immunity",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.7"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "boosts your immune system",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.7"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "Well Gummies",
+      "rules": [
+        "15.2",
+        "15.7"
+      ],
+      "points": [
+        3
+      ]
+    },
+    {
+      "claim": "Refuel your brain naturally",
+      "rules": [
+        "15.2",
+        "15.7"
+      ],
+      "points": [
+        3
+      ]
+    },
+    {
+      "claim": "promoting a healthy heart",
+      "rules": [
+        "15.2",
+        "15.7"
+      ],
+      "points": [
+        3
+      ]
+    }
+  ],
+  "written_by": "draft: scripts/draft_split_v1.py",
+  "checked_by": "NEESAY"
+}

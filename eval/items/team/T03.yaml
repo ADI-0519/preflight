@@ -1,0 +1,14 @@
+# Team-written negative: claims are authorised GB register wording, copied exactly (register 2026-05-19).
+# Written before any v1 positive was selected or read.
+item_id: T03
+format: image
+product: vitamin D gummies
+register_ids:
+- gbhc-8ed4428d48ae
+- gbhc-e08f0e25cb22
+on_screen_text:
+- Vitamin d gummies
+- Vitamin D contributes to the normal function of the immune system
+- Vitamin D contributes to the maintenance of normal bones
+- Food supplements should not be used as a substitute for a varied and balanced diet and a healthy lifestyle.
+voiceover: ''

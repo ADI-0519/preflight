@@ -1,0 +1,14 @@
+# Team-written negative: claims are authorised GB register wording, copied exactly (register 2026-05-19).
+# Written before any v1 positive was selected or read.
+item_id: T01
+format: image
+product: magnesium tablets
+register_ids:
+- gbhc-e1f78000ec6b
+- gbhc-63277e369bb5
+on_screen_text:
+- Magnesium tablets
+- Magnesium contributes to a reduction of tiredness and fatigue
+- Magnesium contributes to normal functioning of the nervous system
+- Food supplements should not be used as a substitute for a varied and balanced diet and a healthy lifestyle.
+voiceover: ''

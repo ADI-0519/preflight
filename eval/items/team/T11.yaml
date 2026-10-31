@@ -1,0 +1,12 @@
+# Team-written negative: claims are authorised GB register wording, copied exactly (register 2026-05-19).
+# Written before any v1 positive was selected or read.
+item_id: T11
+format: video
+product: folic acid tablets
+register_ids:
+- gbhc-6c10232277d5
+- gbhc-855506d034cc
+on_screen_text:
+- Folic acid tablets
+- Food supplements should not be used as a substitute for a varied and balanced diet and a healthy lifestyle.
+voiceover: Folate contributes to normal blood formation. Folate contributes to the reduction of tiredness and fatigue.

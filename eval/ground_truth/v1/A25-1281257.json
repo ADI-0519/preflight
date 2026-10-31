@@ -1,0 +1,343 @@
+{
+  "item_id": "A25-1281257",
+  "kind": "ruling",
+  "label": "positive",
+  "outcome": "upheld",
+  "claims": [
+    {
+      "claim": "Quiet The Food Noise",
+      "rules": [
+        "12.1",
+        "12.11",
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "Rapidly Boost GLP-1 Production",
+      "rules": [
+        "12.1",
+        "12.11",
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "Prime the gut to burn fat more efficiently",
+      "rules": [
+        "12.1",
+        "12.11",
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "Decrease cravings",
+      "rules": [
+        "12.1",
+        "12.11",
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "An almost immediate reduction of cravings",
+      "rules": [
+        "12.1",
+        "12.11",
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "Boost GLP-1 Production Naturally",
+      "rules": [
+        "12.1",
+        "12.11",
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "Combat Cravings & Bloating",
+      "rules": [
+        "12.1",
+        "12.11",
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "Rapidly Boost GLP-1",
+      "rules": [
+        "12.1",
+        "12.11",
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "Improving Gut Health",
+      "rules": [
+        "15.2",
+        "15.7"
+      ],
+      "points": [
+        2
+      ]
+    },
+    {
+      "claim": "Improved Digestion",
+      "rules": [
+        "12.1",
+        "12.11",
+        "15.6",
+        "15.6.2",
+        "15.1",
+        "15.1.1",
+        "15.7"
+      ],
+      "points": [
+        1,
+        2
+      ]
+    },
+    {
+      "claim": "Support Healthy Blood Sugar Levels",
+      "rules": [
+        "12.1",
+        "12.11",
+        "15.6",
+        "15.6.2",
+        "15.1",
+        "15.1.1",
+        "15.7"
+      ],
+      "points": [
+        1,
+        2
+      ]
+    },
+    {
+      "claim": "Supercharge Metabolism & Weight Loss",
+      "rules": [
+        "12.1",
+        "12.11",
+        "15.6",
+        "15.6.2",
+        "15.1",
+        "15.1.1",
+        "15.7"
+      ],
+      "points": [
+        1,
+        2
+      ]
+    },
+    {
+      "claim": "natural GLP-1 boosting ingredients",
+      "rules": [
+        "12.1",
+        "12.11",
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "Just like the popular injections such as Ozempic, Mounjaro and Wegovy",
+      "rules": [
+        "12.1",
+        "12.11",
+        "15.6",
+        "15.6.2",
+        "12.18",
+        "15.6.3"
+      ],
+      "points": [
+        1,
+        3
+      ]
+    },
+    {
+      "claim": "Trim Biome GLP-1 activates your anti-hunger hormone naturally",
+      "rules": [
+        "12.1",
+        "12.11",
+        "15.6",
+        "15.6.2",
+        "12.18",
+        "15.6.3"
+      ],
+      "points": [
+        1,
+        3
+      ]
+    },
+    {
+      "claim": "ignite weight loss",
+      "rules": [
+        "12.1",
+        "12.11",
+        "15.6",
+        "15.6.2",
+        "15.1",
+        "15.1.1",
+        "15.7",
+        "12.18",
+        "15.6.3"
+      ],
+      "points": [
+        1,
+        2,
+        3
+      ]
+    },
+    {
+      "claim": "curb cravings without painful injections",
+      "rules": [
+        "12.1",
+        "12.11",
+        "15.6",
+        "15.6.2",
+        "12.18",
+        "15.6.3"
+      ],
+      "points": [
+        1,
+        3
+      ]
+    },
+    {
+      "claim": "turn your gut into a fat burning furnace to help you lose weight",
+      "rules": [
+        "12.1",
+        "12.11",
+        "15.6",
+        "15.6.2",
+        "15.1",
+        "15.1.1",
+        "15.7",
+        "12.18",
+        "15.6.3"
+      ],
+      "points": [
+        1,
+        2,
+        3
+      ]
+    },
+    {
+      "claim": "transform weight loss",
+      "rules": [
+        "12.1",
+        "12.11",
+        "15.6",
+        "15.6.2",
+        "15.1",
+        "15.1.1",
+        "15.7",
+        "12.18",
+        "15.6.3"
+      ],
+      "points": [
+        1,
+        2,
+        3
+      ]
+    },
+    {
+      "claim": "Improve mood and cognition",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.7"
+      ],
+      "points": [
+        2
+      ]
+    },
+    {
+      "claim": "Improved Mental Clarity",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.7"
+      ],
+      "points": [
+        2
+      ]
+    },
+    {
+      "claim": "Enhance Gut Health",
+      "rules": [
+        "15.2",
+        "15.7"
+      ],
+      "points": [
+        2
+      ]
+    },
+    {
+      "claim": "Rapidly improve gut health",
+      "rules": [
+        "15.2",
+        "15.7"
+      ],
+      "points": [
+        2
+      ]
+    },
+    {
+      "claim": "Trim Biome is going to transform weight loss and gut health for millions across the globe",
+      "rules": [
+        "15.2",
+        "15.7",
+        "12.18",
+        "15.6.3"
+      ],
+      "points": [
+        2,
+        3
+      ]
+    },
+    {
+      "claim": "DR. ALI KAZEMI BOARD-CERTIFIED GASTOENTEROLOGIST",
+      "rules": [
+        "12.18",
+        "15.6.3"
+      ],
+      "points": [
+        3
+      ]
+    }
+  ],
+  "written_by": "draft: scripts/draft_split_v1.py",
+  "checked_by": "NEESAY"
+}

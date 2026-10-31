@@ -1,0 +1,51 @@
+{
+  "item_id": "A24-1229687",
+  "kind": "ruling",
+  "label": "positive",
+  "outcome": "upheld",
+  "claims": [
+    {
+      "claim": "10 kg GONE (and I didn’t even try)",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.7",
+        "15.6",
+        "15.6.6"
+      ],
+      "points": [
+        1,
+        2
+      ]
+    },
+    {
+      "claim": "I lost 10 kg without even trying!",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.7",
+        "15.6",
+        "15.6.6"
+      ],
+      "points": [
+        1,
+        2
+      ]
+    },
+    {
+      "claim": "Hormonal weight around the waist and hips is gone",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.7",
+        "13.9"
+      ],
+      "points": [
+        1,
+        2
+      ]
+    }
+  ],
+  "written_by": "draft: scripts/draft_split_v1.py",
+  "checked_by": "NEESAY"
+}

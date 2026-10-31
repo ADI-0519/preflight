@@ -1,0 +1,40 @@
+{
+  "item_id": "A23-1191380",
+  "kind": "ruling",
+  "label": "positive",
+  "outcome": "upheld",
+  "claims": [
+    {
+      "claim": "One of the known reasons for early grey hair is Vitamin B12 deficiency",
+      "rules": [
+        "15.6.2",
+        "15.9"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "a very effective and absorbable form of Vitamin B12",
+      "rules": [
+        "15.6.2",
+        "15.9"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "Taking just 1-2 tsp Spirulina a day can … reverse gray [sic] hair",
+      "rules": [
+        "15.6.2",
+        "15.9"
+      ],
+      "points": [
+        1
+      ]
+    }
+  ],
+  "written_by": "draft: scripts/draft_split_v1.py",
+  "checked_by": "NEESAY"
+}

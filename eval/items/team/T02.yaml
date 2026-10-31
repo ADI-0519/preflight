@@ -1,0 +1,13 @@
+# Team-written negative: claims are authorised GB register wording, copied exactly (register 2026-05-19).
+# Written before any v1 positive was selected or read.
+item_id: T02
+format: video
+product: magnesium powder drink
+register_ids:
+- gbhc-ec4ca7e01201
+- gbhc-725c02d5211f
+- gbhc-df87ed8a40c9
+on_screen_text:
+- Magnesium powder drink
+- Food supplements should not be used as a substitute for a varied and balanced diet and a healthy lifestyle.
+voiceover: Magnesium contributes to normal muscle function. Magnesium contributes to normal psychological function. Magnesium contributes to normal energy-yielding metabolism.

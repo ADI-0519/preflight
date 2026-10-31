@@ -5,6 +5,7 @@ What each source's terms let us fetch, store and show (`docs/product-rules.md`, 
 | Source | Fetch | Store | Show or quote | Rate | Licence | Read |
 |---|---|---|---|---|---|---|
 | asa.org.uk (rulings) | Allowed for ruling pages. `robots.txt` disallows only `*/type/capcode/code_rule/*`, `*/type/bcapcode/code_rule/*` and `*/account/*` for all user agents. | Locally under `data/raw/` (git-ignored) only. The site states no reuse terms, so copyright is reserved by default. | Ruling ID, date, advertiser, outcome, rules cited, URL and short attributed quotes. No full ruling text in the repo, the page or the video until the ASA gives permission. | No crawl delay for generic agents (`Crawl-delay: 120` for Slurp, 60 for BLEXBot and MJ12bot). In practice the server reset connections and refused new ones after bursts at 6 s spacing: use at least 10 s between requests, with back-off. | None stated. Footer: "Copyright © 2026 ASA and CAP". No Open Government Licence statement. | 31 Oct 2026 |
+| gov.uk (GB nutrition and health claims register) | Allowed: a single published file, downloaded once per release. | Raw XLSX under `data/raw/register/` (git-ignored); processed snapshot committed under `data/snapshots/`. | Allowed in full with attribution, including verbatim claim wording. | One request per release. | Open Government Licence v3.0. Page footer: "All content is available under the Open Government Licence v3.0, except where otherwise stated"; no exception stated for this file. © Crown copyright. | 31 Oct 2026 |
 
 ## asa.org.uk
 

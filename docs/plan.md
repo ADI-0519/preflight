@@ -30,7 +30,8 @@ ad file (video | image | page screenshot)
   │
   ├─ ingest ─────────── ffmpeg: audio track, frames at a fixed rate, change-detected keyframes
   │
-  ├─ transcribe ─────── Muse Voice Transcribe → segments with turn timestamps (no word timestamps; P24 decides how to refine)
+  ├─ transcribe ─────── Muse Voice Transcribe → segments with turn timestamps
+  │                     → local forced aligner → word timestamps (turn timing kept where alignment fails)
   ├─ read on-screen ─── Muse Spark on the video → on-screen text with start and end times
   ├─ find regions ───── SAM 3.1, shape and object prompts ("label", "bottle", "black rectangle") → tracks in one call → crops
   │
@@ -63,7 +64,7 @@ The package is `preflight` (src layout). Stages exchange schema objects only, so
 | `preflight.agent` | Fix loop, audit log, tool interface | via `models` |
 | `preflight.eval` | Split manifests, reconstructions, scoring, run registry, baseline | via `models` (reconstruction only) |
 | `preflight.api` | FastAPI app: upload, screen, progress over SSE, fix, approve, retention | no |
-| `web/` | One static page: player, claim timeline, crops, flags, approval; demo mode with ruling reveal and scoreboard | no |
+| `web/` | React front end, built to static files that FastAPI serves: player, claim timeline, crops, flags, approval; demo mode with ruling reveal and scoreboard | no |
 
 Prompts live in `prompts/` as versioned text files; the prompt version is part of the cache key and of every run record.
 
@@ -86,13 +87,14 @@ Checked by calling each model in P03; details in `docs/notes/meta-model-api-find
 
 Measured in P03: a 30-second 720p ad costs about $0.15 in SAM at 25 fps (about $0.03 if re-encoded at 5 fps before upload) and about $0.02–0.05 in Spark at low or medium reasoning effort, so a 60-item benchmark run stays under $15.
 
-### Stack (recommended; founders to confirm in P05)
+### Stack (confirmed in P05, 31 Oct)
 
 - **Python 3.12 managed by uv.** The machine has 3.14, but nothing here needs it and 3.12 has the widest wheel support. Pydantic v2 for the schema, the OpenAI Python SDK pointed at `https://api.meta.ai/v1` for the Meta models (the docs say the API is OpenAI-compatible; P03 confirms which endpoints are), httpx, ffmpeg through subprocess, `rank-bm25` for precedent retrieval, FastAPI with server-sent events, pytest with recorded responses, ruff, GitHub Actions.
-- **Web page:** one HTML file with plain JavaScript and CSS. No build step.
+- **Front end:** React with TypeScript, built with Vite, in `web/`. `npm run build` writes static files that FastAPI serves, so the demo runs as one process; during development the Vite dev server proxies to the API. Progress arrives over server-sent events. CI adds a Node job (install, lint, build). No API key or model call reaches the browser bundle.
+- **Word timestamps:** Voice Transcribe returns turn-level times only (P03). P24 aligns its transcript to the audio with a local open-source forced aligner (Meta's MMS aligner is the first candidate) to get word times, and keeps the turn's start and end where alignment fails or scores low, marking that evidence as turn-level. The aligner and its PyTorch dependency are an optional extra, so CI and the rest of the pipeline do not need them. Splitting on silences was rejected because ads usually keep music under the voiceover.
 - **Storage:** files on disk. Screenings as JSON under a runs directory, evaluation runs registered in `results/runs.csv`, uploads under `data/raw/` with a retention log. No database until something needs one.
 - **No hosted deployment** before submission. The video and a public repo are what the rules ask for; a deployment is a post-hackathon task.
-- **Open decision (P05): voiceover for reconstructions.** Meta offers no text-to-speech. Options: (a) a local open-source TTS (e.g. Piper) used only by the fixture builder, so the screening path stays entirely on Meta models; (b) reconstructions without voiceover, carrying claims in captions and stills only. Recommendation: (a), because the voiceover is where half the claims in real ads sit, and a benchmark without it would not exercise Voice Transcribe.
+- **Voiceover for reconstructions (decided in P05).** Meta offers no text-to-speech, so a local open-source TTS (e.g. Piper) is used only by the fixture builder, and the screening path stays entirely on Meta models. Reconstructions without voiceover were rejected: the voiceover is where half the claims in real ads sit, and a benchmark without it would not exercise Voice Transcribe.
 
 ## Evaluation protocol (contract for P14 and P31)
 
@@ -110,7 +112,7 @@ The ten rules in `docs/product-rules.md` govern every task. Rules 8–10 were ad
 
 ## Lanes
 
-Work is split into three lanes so that each founder owns a chain of dependencies:
+Work is split into three lanes, each a chain of dependencies. Lanes have no fixed owner (P05): a founder takes any ready task and becomes its issue's assignee when they claim it.
 
 | Lane | Owns |
 |---|---|
@@ -161,12 +163,14 @@ Tasks in lane `all` need every founder: reading logged-in pages, contacting part
 
 ## Open decisions
 
-| Decision | Recommendation | Decided in |
-|---|---|---|
-| Keep, reframe or switch | Reframe; switch to DampTrace only if a P01 or P02 gate fails | P05 |
-| Confirm product rules 1–10 | Confirm as drafted | P05 |
-| Stack | As above | P05 |
-| Two topics built fully | Mushroom and magnesium supplements (both inside the register and CAP s.15), ADHD-claim supplements as the hook | P05 |
-| Reconstruction voiceover | Local TTS in the fixture builder only | P05 |
-| Lane owners | One founder per lane | P05 |
-| Repo visibility | Private until P55, then public | P55 |
+| Decision | Recommendation | Answer | Decided in |
+|---|---|---|---|
+| Keep, reframe or switch | Reframe; switch to DampTrace only if a P01 or P02 gate fails | Reframe: gate 2 passed, gate 1 is unclear but has not failed | P05, 31 Oct |
+| Confirm product rules 1–10 | Confirm as drafted | Confirmed as drafted | P05, 31 Oct |
+| Stack | As above | As above, with a React front end in place of the plain page | P05, 31 Oct |
+| Two topics built fully | Mushroom and magnesium supplements (both inside the register and CAP s.15), ADHD-claim supplements as the hook | Deferred until P13 reports ruling counts per topic; mushroom and magnesium held provisionally, ADHD-claim supplements as the hook | P05, 31 Oct; final in P14 |
+| Reconstruction voiceover | Local TTS in the fixture builder only | Local TTS in the fixture builder only | P05, 31 Oct |
+| Word timestamps for P24 | – | Local forced aligner over the Voice Transcribe transcript, turn timing as fallback | P05, 31 Oct |
+| Lane owners | One founder per lane | No fixed owners; whoever claims a task is its assignee | P05, 31 Oct |
+| Ask the ASA to store and show ruling excerpts | – | Not for now | P05, 31 Oct |
+| Repo visibility | Private until P55, then public | – | P55 |

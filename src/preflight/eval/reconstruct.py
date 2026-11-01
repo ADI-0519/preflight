@@ -220,7 +220,7 @@ def _font() -> str:
     return ""
 
 
-def overlay_filter(on_screen_text: list[str]) -> str:
+def overlay_filter(on_screen_text: list[str], label: str = LABEL) -> str:
     font = _font()
     # every quoted line must reach the screen, so long text gets a smaller font rather than being cut
     for size in (34, 28, 24, 20, 17, 14):
@@ -239,7 +239,7 @@ def overlay_filter(on_screen_text: list[str]) -> str:
             f"box=1:boxcolor=black@0.6:boxborderw={size // 4}:x=(w-text_w)/2:y={top + step * i}"
         )
     filters.append(
-        f"drawtext={font}text='{_escape(LABEL)}':fontsize=22:fontcolor=yellow:"
+        f"drawtext={font}text='{_escape(label)}':fontsize=22:fontcolor=yellow:"
         "box=1:boxcolor=black@0.7:boxborderw=6:x=20:y=20"
     )
     return ",".join(filters)
@@ -254,11 +254,11 @@ def _duration(path: Path) -> float:
         return f.getnframes() / f.getframerate()
 
 
-def render_scene(still: Path, scene: Scene, audio: Path | None, out: Path, fmt: str) -> Path:
+def render_scene(still: Path, scene: Scene, audio: Path | None, out: Path, fmt: str, label: str = LABEL) -> Path:
     seconds = max(scene.duration_seconds, _duration(audio) + 0.5 if audio else 0, 2.0)
     cmd = ["ffmpeg", "-y", "-loop", "1", "-t", f"{seconds:.2f}", "-i", str(still)]
     cmd += ["-i", str(audio)] if audio else ["-f", "lavfi", "-t", f"{seconds:.2f}", "-i", "anullsrc=r=24000:cl=mono"]
-    cmd += ["-vf", overlay_filter(scene.on_screen_text), "-r", "25", "-c:v", "libx264", "-pix_fmt", "yuv420p"]
+    cmd += ["-vf", overlay_filter(scene.on_screen_text, label), "-r", "25", "-c:v", "libx264", "-pix_fmt", "yuv420p"]
     cmd += ["-c:a", "aac", "-ar", "24000", "-ac", "1", "-af", "apad", "-t", f"{seconds:.2f}", str(out)]
     _run(*cmd)
     return out

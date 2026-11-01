@@ -134,6 +134,8 @@ def parse(
     authorised = {e.register_id: e for e in found.register if e.status == "authorised"}
     dates = {r.ruling_id: r.date for r in rulings}
     allowed_rules = {r.rule for r in rules}
+    register_ids = {e.register_id for e in found.register}
+    on_hold_ids = {e.on_hold_id for e in found.on_hold}
     judged = [v.claim_id for v in parsed.verdicts]
     # a claim left unjudged would read as no issue
     if sorted(judged) != sorted(c.claim_id for c in claims):
@@ -148,24 +150,25 @@ def parse(
             continue
         if set(v.cap_rules) - allowed_rules:
             raise ValueError(f"{claim.claim_id} cites a CAP rule outside the screenable candidates")
-        candidates = shortlist([claim], found.register, found.on_hold)
-        if set(v.register_ids) - {e.register_id for e in candidates.register}:
-            raise ValueError(f"{claim.claim_id} cites a register entry outside its candidates")
-        if set(v.on_hold_ids) - {e.on_hold_id for e in candidates.on_hold}:
-            raise ValueError(f"{claim.claim_id} cites an on-hold entry outside its candidates")
+        if set(v.register_ids) - register_ids:
+            raise ValueError(f"{claim.claim_id} cites a register entry outside the shortlist")
+        if set(v.on_hold_ids) - on_hold_ids:
+            raise ValueError(f"{claim.claim_id} cites an on-hold entry outside the shortlist")
         if set(v.ruling_ids) - dates.keys():
             raise ValueError(f"{claim.claim_id} cites a ruling outside the retrieved candidates")
+        if v.suggested_register_id and v.suggested_register_id not in authorised:
+            raise ValueError(f"{claim.claim_id} suggests wording outside the authorised shortlist")
+        own = shortlist([claim], found.register, found.on_hold)
+        # a claim naming a substance keeps only that substance's entries; one naming none may cite the ad's
+        own_register = {e.register_id for e in own.register} if own.register or own.on_hold else register_ids
+        own_on_hold = {e.on_hold_id for e in own.on_hold} if own.register or own.on_hold else on_hold_ids
         sources: list[SourceRef] = [CapRuleRef(rule=r) for r in v.cap_rules]
-        sources += [RegisterRef(register_id=i) for i in v.register_ids]
-        sources += [OnHoldRef(on_hold_id=i) for i in v.on_hold_ids]
+        sources += [RegisterRef(register_id=i) for i in v.register_ids if i in own_register]
+        sources += [OnHoldRef(on_hold_id=i) for i in v.on_hold_ids if i in own_on_hold]
         sources += [RulingRef(ruling_id=i, date=dates[i]) for i in v.ruling_ids]
-        suggested = v.suggested_register_id
         # rule 2: section 3 and other non-health claims never get wording
         health = v.verdict == "on_hold" or any(r.startswith("15.") for r in v.cap_rules)
-        if health and suggested and suggested not in {
-            e.register_id for e in candidates.register if e.status == "authorised"
-        }:
-            raise ValueError(f"{claim.claim_id} suggests register wording outside its authorised candidates")
+        suggested = v.suggested_register_id if health and v.suggested_register_id in own_register else None
         flags.append(Flag(
             flag_id=f"flag-{len(flags)}",
             claim_id=claim.claim_id,
@@ -173,7 +176,7 @@ def parse(
             reason=v.reason,
             # a breach or on-hold verdict citing nothing fails validation here (rule 3)
             sources=tuple(dict.fromkeys(sources)),
-            suggested_wording=SuggestedWording.from_entry(authorised[suggested]) if health and suggested else None,
+            suggested_wording=SuggestedWording.from_entry(authorised[suggested]) if suggested else None,
         ))
     return flags
 

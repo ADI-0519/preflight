@@ -170,18 +170,39 @@ def test_precedents_must_come_from_the_screenings_snapshot():
         check(screening(), FakeSpark({}), Other())
 
 
-def test_suggestion_cannot_borrow_another_claims_substance():
-    with pytest.raises(ValueError, match="claim-1.*register"):
+def test_suggestion_for_another_claims_substance_is_dropped_and_the_flag_kept():
+    out, _ = run({
+        "claim-0": verdict(),
+        "claim-1": verdict("possible_breach", ["15.1.1"], [TIREDNESS], suggested=TIREDNESS),
+        "claim-2": verdict(),
+    })
+    (flag,) = out.flags
+    assert flag.suggested_wording is None and [s.kind for s in flag.sources] == ["cap_rule"]
+
+
+def test_on_hold_citation_for_another_claims_substance_is_dropped():
+    with pytest.raises(ValidationError):
+        run({"claim-0": verdict("on_hold", on_hold=[ASHWAGANDHA]), "claim-1": verdict(), "claim-2": verdict()})
+
+
+def test_claim_naming_no_substance_may_cite_the_ads_entries():
+    out, _ = run({
+        "claim-0": verdict(),
+        "claim-1": verdict(),
+        "claim-2": verdict("possible_breach", ["15.1.1"], [TIREDNESS], suggested=TIREDNESS),
+    })
+    (flag,) = out.flags
+    assert flag.suggested_wording.register_id == TIREDNESS
+    assert any(getattr(s, "register_id", None) == TIREDNESS for s in flag.sources)
+
+
+def test_replayed_suggestion_outside_the_authorised_shortlist_is_rejected():
+    with pytest.raises(ValueError, match="authorised shortlist"):
         run({
-            "claim-0": verdict(),
-            "claim-1": verdict("possible_breach", ["15.1.1"], suggested=TIREDNESS),
+            "claim-0": verdict("possible_breach", ["15.1.1"], suggested=NON_AUTHORISED),
+            "claim-1": verdict(),
             "claim-2": verdict(),
         })
-
-
-def test_on_hold_citation_cannot_borrow_another_claims_substance():
-    with pytest.raises(ValueError, match="claim-0.*on-hold"):
-        run({"claim-0": verdict("on_hold", on_hold=[ASHWAGANDHA]), "claim-1": verdict(), "claim-2": verdict()})
 
 
 def test_no_issue_cannot_silently_discard_sources():

@@ -2,7 +2,7 @@
 
 Measured 1 Nov 2026 on dev split v1. Every number below comes from a run registered in `results/runs.csv`; per-item rows are in `results/runs/<run_id>.csv`.
 
-**Integration note (1 Nov):** The measurements below predate the adi-branch integration safeguards. The integrated parser also validates cached/replayed verdicts locally, restricts register and on-hold citations and suggested wording to candidates for the individual claim, and rejects sources or wording on a `no_issue` verdict. Invalid decisions fail the check stage rather than silently losing a flag or suggestion. Candidate matching alone does not establish semantic suitability or fulfilment of a register entry's conditions. No new live measurement was made for these changes; do not attribute the numbers below to the integrated version.
+**Since these runs (1 Nov):** judge answers are validated when parsed, including cached ones, and a `no_issue` verdict citing sources is an error. A claim that names a substance keeps only the register and on-hold citations, and the suggested wording, shortlisted for that substance; one naming none may cite any entry shortlisted for the ad. A citation or suggestion that fails this is dropped and the flag kept. The numbers below predate this and need a fresh dev run (`docs/notes/decisions.md`, 1 Nov, P27).
 
 ## What the stage does
 

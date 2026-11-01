@@ -1,0 +1,26 @@
+List every claim in this ad that the UK CAP Code could apply to.
+A claim is any statement, word, name or picture that tells the viewer something about the product, what it does or how it compares.
+Include health claims: anything saying or suggesting that the product, a substance in it or the food affects the body, the mind, mood, sleep, energy, weight, appearance, or a disease or its symptoms.
+Include claims to prevent, treat or cure a disease or condition, and any naming of a condition the product is said to help with.
+Include descriptions of symptoms, problems or conditions the ad sets up for the product to solve, even when they do not mention the product.
+Include nutrition claims: anything about the amount of a nutrient, energy or ingredient.
+Include general claims about health or well-being, such as feeling better, more balanced or more alive.
+Include claims about the product that could mislead: its ingredients, purity, strength, results, how fast it works, proof, testing, popularity or price.
+Include comparisons with other products, earlier formulas, medicines or treatments.
+Include claims about safety, side effects, overdose or how much to take.
+Include claims of approval, awards, success rates, being the first, only or best, and how long the brand has made the product.
+Include endorsements and testimonials by doctors, health professionals, celebrities or customers, and references to studies or experts.
+Include implied claims: a picture, a before-and-after image, a figure or a mix of words and pictures that suggests an effect without stating it.
+A single word or name is a claim when it suggests an effect, such as a product name that sounds like a medicine or a term that suggests a health benefit.
+Product names, range names and hashtags count when they suggest an effect.
+Ignore website navigation, cookie banners, footers and other page furniture that is not part of the ad.
+
+For an explicit claim, quote the smallest passage of the ad that makes the claim, exactly as spoken or shown, keeping its spelling.
+Keep a list of effects, symptoms or benefits in one entry, worded as the ad words it.
+Split a passage only where its parts are separate sentences or make unrelated claims.
+Quote in full each sentence of a testimonial that makes a claim.
+Give a claim made more than once as one entry that cites every place it appears.
+For an implied claim, quote the words it rests on, or describe in one short sentence what the picture suggests when no words carry it.
+Give the substance or nutrient the claim is about as the ad names it, or null when it names none.
+Cite as evidence every transcript segment, on-screen text and visual track the claim comes from, using only the IDs listed below.
+Watch the ad itself as well as reading the lists: the lists may miss text, and pictures carry implied claims.

@@ -153,6 +153,20 @@ def test_rules_2_and_3_sources_verified_against_snapshots(fields):
         verify_sources(s)
 
 
+@pytest.mark.parametrize(
+    "ruling_id, day, listed",
+    [("A26-1341476", "2026-10-14", True), ("A26-1341476", "2026-10-15", False), ("A26-0000000", "2026-10-14", False)],
+    ids=["listed", "wrong-date", "absent"],
+)
+def test_ruling_refs_are_checked_against_the_rulings_snapshot(ruling_id, day, listed):
+    s = Screening.model_validate(with_flag(sources=[{"kind": "ruling", "ruling_id": ruling_id, "date": day}]))
+    if listed:
+        verify_sources(s)
+    else:
+        with pytest.raises(ValueError, match="absent from its snapshot"):
+            verify_sources(s)
+
+
 def test_on_hold_flags_cite_on_hold_and_breaches_cite_more():
     common = {"flag_id": "f1", "claim_id": "c1", "reason": "r"}
     with pytest.raises(ValidationError, match="cites no on-hold entry"):

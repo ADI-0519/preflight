@@ -14,6 +14,7 @@ from preflight.eval.score import caught
 from preflight.eval.split import GroundTruth, load_ground_truth, load_split, load_team_ad
 from preflight.models import from_env
 from preflight.models.clients import SPARK
+from preflight.models.store import Store
 from preflight.pipeline import SNAPSHOTS
 from preflight.schema import Ad, Claim, OnScreenEvidence, OnScreenText, Screening, StageRun
 
@@ -139,6 +140,7 @@ def main() -> None:
     parser.add_argument("--cap-rules", default=SNAPSHOTS.cap_rules, help="CAP rule pack snapshot")
     parser.add_argument("--per-ad-precedents", action="store_true", help="retrieve rulings per ad, as before v4")
     parser.add_argument("--only", nargs="*", help="dev item IDs to run (default: all of dev)")
+    parser.add_argument("--cache-dir", help="a fresh model cache, so a repeat run calls the model again")
     parser.add_argument("--rescore", metavar="RUN_ID", help="score a saved check run again; no model calls")
     args = parser.parse_args()
     if args.rescore:
@@ -152,7 +154,7 @@ def main() -> None:
     run_id = f"check-{created:%Y%m%dT%H%M%S}"
     work = WORK / run_id
     work.mkdir(parents=True)
-    spark = Metered(from_env().spark)
+    spark = Metered(from_env(Store(args.cache_dir) if args.cache_dir else None).spark)
     snapshots = SNAPSHOTS.model_copy(update={"rulings": args.rulings, "cap_rules": args.cap_rules})
 
     def judge(item_id: str) -> list[Screening]:

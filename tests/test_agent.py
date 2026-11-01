@@ -1,13 +1,15 @@
 import json
 import logging
+import shutil
 from datetime import UTC, datetime
 from pathlib import Path
 
 import pytest
 
 from preflight.agent import Draft, DraftScene, approve, digest, fix, is_clean, load_draft
-from preflight.agent.draft import Address, lines, with_line
+from preflight.agent.draft import Address, lines, render_draft, with_line
 from preflight.agent.fix import ALREADY_WORDING
+from preflight.ingest import png_size
 from preflight.pipeline import SNAPSHOTS
 from preflight.schema import (
     Ad,
@@ -307,3 +309,30 @@ def test_no_ad_text_in_logging(tmp_path, caplog):
     with caplog.at_level(logging.DEBUG), pytest.raises(RuntimeError):
         run(draft_of(tmp_path, voiceover=SECRET), Scripted(broken), tmp_path)
     assert SECRET not in caplog.text
+
+
+needs_ffmpeg = pytest.mark.skipif(shutil.which("ffmpeg") is None, reason="needs ffmpeg")
+
+
+def script_only(*captions):
+    return Draft(format="image", scenes=(DraftScene(on_screen_text=captions),))
+
+
+@needs_ffmpeg
+def test_draft_without_a_picture_renders_a_card(tmp_path):
+    (tmp_path / "draft.yaml").write_text(
+        "format: image\nscenes:\n  - on_screen_text: [Magnesium tablets]\n", encoding="utf-8"
+    )
+    draft = load_draft(tmp_path / "draft.yaml")
+    assert draft.scenes[0].still is None
+    assert png_size(render_draft(draft, tmp_path / "out").media) == (1280, 720)
+
+
+def test_picture_only_claim_without_a_picture_goes_to_person(tmp_path):
+    c = claim("c0", "Cures every illness", "on_screen")
+    screener = Scripted(lambda i, p: screening(i, [c], [flag("f0", "c0")]))
+    image = Image()
+    result, _ = run(script_only("Magnesium tablets"), screener, tmp_path, image=image)
+    assert result.state == "needs_person"
+    assert image.calls == []
+

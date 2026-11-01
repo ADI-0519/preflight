@@ -36,6 +36,7 @@ STILL_EDIT_PROMPT = (
 )
 NO_WORDING = "no authorised wording"
 ALREADY_WORDING = "line already carries the register wording"
+NO_PICTURE = "the claim is in the picture, and this draft has none to edit"
 NOT_LOCATED = "could not locate the claim in the draft"
 ROUND_LIMIT = "round limit reached"
 
@@ -167,6 +168,9 @@ def plan_round(
         in_text = bool(scored) and scored[0][0] >= MIN_SCORE
         if wording is None and not in_text and time is not None:
             scene = scene_at(draft, time, bounds or nominal_bounds(draft))
+            if draft.scenes[scene].still is None:
+                done.for_person.append(hand_off(flag, NO_PICTURE, address))
+                continue
             if scene in edited:
                 done.superseded.append(flag.flag_id)
                 continue

@@ -42,7 +42,7 @@ Choose a new output directory on each run. It writes labelled HTML, screening JS
 
 ## Use as a tool
 
-Other agents can call PreFlight as two tools: `screen_ad` (screen a video, image or page) and `fix_ad` (screen a draft and swap flagged lines for register wording). `screen_ad` returns the flagged lines, each with its CAP rules, sources, evidence and any register wording, a shorter flagged phrase on the same evidence folded under the line that contains it, and the register's authorised entries for each flagged substance. There is no approve or publish tool. A person records approval with `preflight approve <log> --by <name>`.
+Other agents can call PreFlight as two tools: `screen_ad` (screen a video, image or page) and `fix_ad` (screen a draft and swap flagged lines for register wording). `screen_ad` returns the flagged lines, each with its CAP rules, sources, evidence and any register wording, a shorter flagged phrase on the same evidence folded under the line that contains it, and the register's authorised entries for each flagged substance. A draft can be just a script, voiceover and on-screen text with no picture, which `fix_ad` renders on a plain card. There is no approve or publish tool. A person records approval with `preflight approve <log> --by <name>`.
 
 To serve them to an MCP client over stdio, install the extras (`uv sync --extra mcp --extra render`) and add this to the client's config, with the path to this repository:
 

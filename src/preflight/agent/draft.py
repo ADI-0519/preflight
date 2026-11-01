@@ -9,7 +9,7 @@ from typing import Literal, NamedTuple
 import yaml
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
-from preflight.eval.reconstruct import Scene, concat, ensure_voice, frame, render_scene
+from preflight.eval.reconstruct import Scene, card, concat, ensure_voice, frame, render_scene
 from preflight.ingest import probe
 from preflight.models.store import digest as bytes_digest
 
@@ -20,7 +20,7 @@ SENTENCE_BREAK = re.compile(r"(?<=[.!?])\s+")
 class DraftScene(BaseModel):
     model_config = ConfigDict(frozen=True, extra="forbid")
 
-    still: Path
+    still: Path | None = None
     on_screen_text: tuple[str, ...] = ()
     voiceover: str = ""
     duration_seconds: float = 4.0
@@ -61,14 +61,15 @@ class Rendered(NamedTuple):
 def load_draft(path: Path) -> Draft:
     fields = yaml.safe_load(path.read_text(encoding="utf-8"))
     for scene in fields["scenes"]:
-        scene["still"] = (path.parent / scene["still"]).resolve()
+        if scene.get("still"):
+            scene["still"] = (path.parent / scene["still"]).resolve()
     return Draft.model_validate(fields)
 
 
 def digest(draft: Draft) -> str:
     fields = draft.model_dump(mode="json")
     for scene in fields["scenes"]:
-        scene["still"] = bytes_digest(Path(scene["still"]))
+        scene["still"] = scene["still"] and bytes_digest(Path(scene["still"]))
     return hashlib.sha256(json.dumps(fields, sort_keys=True, ensure_ascii=False).encode()).hexdigest()
 
 
@@ -136,6 +137,7 @@ def render_draft(draft: Draft, out_dir: Path) -> Rendered:
     clips, bounds, start = [], [], 0.0
     with tempfile.TemporaryDirectory(dir=out_dir) as tmp:
         work = Path(tmp)
+        blank = None
         for i, scene in enumerate(draft.scenes):
             audio = None
             if voice and scene.voiceover.strip():
@@ -145,7 +147,12 @@ def render_draft(draft: Draft, out_dir: Path) -> Rendered:
                 duration_seconds=scene.duration_seconds, image_prompt="",
                 on_screen_text=list(scene.on_screen_text), voiceover=scene.voiceover,
             )
-            clips.append(render_scene(scene.still, shot, audio, work / f"scene{i}.mp4", draft.format, label=LABEL))
+            if scene.still is None and blank is None:
+                blank = work / "card.png"
+                card(blank)
+            clips.append(render_scene(
+                scene.still or blank, shot, audio, work / f"scene{i}.mp4", draft.format, label=LABEL
+            ))
             length = probe(clips[-1])["duration"]
             bounds.append((start, start + length))
             start += length

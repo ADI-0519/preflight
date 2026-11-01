@@ -17,6 +17,7 @@ from preflight.schema import (
     verify_sources,
 )
 from preflight.sources.register import load_register
+from preflight.sources.rulings import load_ruling_index
 
 REGISTER = load_register("2026-05-19")
 AUTHORISED = next(e for e in REGISTER if e.status == "authorised" and e.substance == "Magnesium")
@@ -151,6 +152,15 @@ def test_rules_2_and_3_sources_verified_against_snapshots(fields):
     s = Screening.model_validate(fields)
     with pytest.raises(ValueError):
         verify_sources(s)
+
+
+def test_ruling_sources_verified_against_snapshot():
+    ruling = load_ruling_index("2026-10-31")[0]
+    fields = with_flag(sources=[{"kind": "ruling", "ruling_id": ruling.ruling_id, "date": ruling.date}])
+    verify_sources(Screening.model_validate(fields))
+    fields["flags"][0]["sources"][0]["date"] = "2026-01-01"
+    with pytest.raises(ValueError, match="absent from its snapshot"):
+        verify_sources(Screening.model_validate(fields))
 
 
 def test_on_hold_flags_cite_on_hold_and_breaches_cite_more():

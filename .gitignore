@@ -30,6 +30,9 @@ data/raw/
 data/cache/
 data/work/
 
+# local Graphify code graph and generated Obsidian export
+graphify-out/
+
 # media and model weights
 *.mp4
 *.mov

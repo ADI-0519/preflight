@@ -77,8 +77,8 @@ def test_word_timing_with_fake_aligner(tmp_path):
     assert [(s.segment_id, s.text, s.timing) for s in segments] == [
         ("segment-0", "Buy now.", "word"), ("segment-1", "Daily D", "word"), ("segment-2", "vitamin works well", "word")
     ]
-    # the slice starts 0.25 s before the turn, so 0.75 s on the ad's clock
-    assert [(round(s.start, 2), round(s.end, 2)) for s in segments] == [(1.05, 1.75), (2.15, 2.45), (2.95, 4.05)]
+    # the slice starts 0.25 s before the turn, so 0.75 s on the ad's clock; ends run on by TAIL
+    assert [(round(s.start, 2), round(s.end, 2)) for s in segments] == [(1.05, 1.9), (2.15, 2.6), (2.95, 4.2)]
 
 
 def test_low_score_falls_back(tmp_path):
@@ -103,15 +103,16 @@ def test_unalignable_words_take_neighbour_span(tmp_path):
     spans = [None, (0.5, 0.9), None, (1.2, 1.5), None]
     segments, _ = transcribe(ingested(silent(tmp_path / "a.wav", 10)), voice, align=fake(spans))
     # the whole turn is one phrase; its edges are the turn edges where the neighbours are missing
-    assert [(s.start, s.end) for s in segments] == [(1.0, 5.0)]
+    assert [(s.start, s.end) for s in segments] == [(1.0, 5.15)]
 
 
 def test_unalignable_word_between_phrases(tmp_path):
     voice = Stub([Turn(1000, 5000, "Daily 1000. users", "A")])
     spans = [(0.5, 0.9), None, (1.0, 1.5)]
     segments, _ = transcribe(ingested(silent(tmp_path / "a.wav", 10)), voice, align=fake(spans))
+    # the first segment's tail stops where the next starts
     assert [(s.text, round(s.start, 2), round(s.end, 2)) for s in segments] == [
-        ("Daily 1000.", 1.25, 1.75), ("users", 1.75, 2.25)
+        ("Daily 1000.", 1.25, 1.75), ("users", 1.75, 2.4)
     ]
 
 

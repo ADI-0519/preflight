@@ -13,6 +13,8 @@ from preflight.schema import Segment, StageRun
 GAP = 0.3
 # audio around a turn, so a word the transcriber clipped is still in the slice
 PAD = 0.25
+# the aligner ends a word before its sound fades, so word-timed segments run on this long
+TAIL = 0.15
 # see docs/notes/word-timing-check.md
 MIN_SCORE = 0.35
 SENTENCE_END = re.compile(r"[.!?][\"')\]]*$")
@@ -96,6 +98,10 @@ def transcribe(
                 start = spans[part[0]][0]
                 found.append((n, text, start, max(spans[part[-1]][1], start), "word"))
     found.sort(key=lambda f: (f[2], f[0]))
+    for i, (n, text, start, end, timing) in enumerate(found):
+        if timing == "word":
+            stop = found[i + 1][2] if i + 1 < len(found) else duration
+            found[i] = (n, text, start, max(min(end + TAIL, stop), end), timing)
     segments = [
         Segment(segment_id=f"segment-{i}", turn=n, text=text, start=start, end=end, timing=timing)
         for i, (n, text, start, end, timing) in enumerate(found)

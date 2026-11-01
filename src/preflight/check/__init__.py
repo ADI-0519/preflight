@@ -23,7 +23,7 @@ from preflight.sources.on_hold import OnHoldClaim, load_on_hold
 from preflight.sources.register import load_register
 from preflight.sources.rulings import Ruling
 
-PROMPT_VERSION = "judge_v4"
+PROMPT_VERSION = "judge_v5"
 EFFORT = "high"
 PRECEDENTS = 3
 # per-claim retrieval: each claim's closest ruling, the most shared first, up to this many in the call

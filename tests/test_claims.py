@@ -5,11 +5,12 @@ import pytest
 from pydantic import ValidationError
 
 from preflight.claims import PROMPTS, extract_claims, parse
+from preflight.eval.claim_recall import score
 from preflight.eval.split import EVAL_DIR, load_ground_truth, load_split
 from preflight.ingest import Frame, Ingested
 from preflight.models import SparkResult
 from preflight.models.store import digest
-from preflight.schema import Ad, OnScreenText, Region, Segment, Track, TranscriptEvidence
+from preflight.schema import Ad, Claim, OnScreenText, Region, Segment, Track, TranscriptEvidence
 
 SEGMENT = Segment(segment_id="segment-0", turn=0, text="Feel calmer every day.", start=0.5, end=2.0, timing="word")
 TEXT = OnScreenText(text_id="text-0", text="100% natural", start=1.0, end=3.0, box=(10, 10, 100, 40))
@@ -109,6 +110,13 @@ def test_nothing_to_cite_skips_the_model(tmp_path):
     assert (claims, stage.status, calls) == ([], "skipped", [])
 
 
+def test_recall_counts_exact_and_near_quotes_only():
+    said = [
+        Claim(claim_id=f"claim-{n}", text=t, kind="explicit", evidence=(TranscriptEvidence(segment_id="s"),))
+        for n, t in enumerate(["It helps you sleep better tonight", "Calm"])
+    ]
+    assert score(["helps you sleep better", "calm and focused all day", "sleep"], said) == [True, False, True]
+
 
 def normalised(text: str) -> str:
     return " ".join(re.findall(r"[a-z0-9]+", text.casefold().replace("’", "'")))
@@ -145,3 +153,12 @@ def test_second_pass_is_shown_the_first_and_adds_what_it_missed(tmp_path):
     (asked, _), (second, kwargs) = spark.calls
     assert second.startswith(asked) and '"text": "100% natural"' in second
     assert kwargs["prompt_version"] == "claims_v3+claims_missed_v1"
+
+
+def test_a_quote_covering_much_more_than_the_claim_scores_only_loosely():
+    said = [Claim(
+        claim_id="claim-0", text="Feel calmer, sleep deeper and wake up ready for anything the long day brings",
+        kind="explicit", evidence=(TranscriptEvidence(segment_id="s"),),
+    )]
+    assert score(["sleep deeper"], said) == [False]
+    assert score(["sleep deeper"], said, tight=False) == [True]

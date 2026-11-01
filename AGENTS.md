@@ -2,7 +2,7 @@
 
 ## Mission
 
-PreFlight helps advertisers identify possible Meta policy issues before submission. Preserve the distinction between evidence-backed screening and final platform enforcement.
+PreFlight screens a health or supplement ad before it goes live, against the GB nutrition and health claims register, the CAP Code and past ASA rulings. It is screening, not legal advice: it flags and explains, and a person decides whether the ad runs.
 
 ## Non-negotiable product rules
 

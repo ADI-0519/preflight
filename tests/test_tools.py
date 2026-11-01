@@ -87,6 +87,15 @@ def test_failed_stage_says_incomplete(box, monkeypatch):
     assert result["next_step"] == tools.INCOMPLETE
 
 
+def test_skipped_check_says_incomplete(box, monkeypatch):
+    stages = tuple(r.model_copy(update={"status": "skipped"}) if r.stage == "check" else r for r in CLEAN.stages)
+    skipped = CLEAN.model_copy(update={"stages": stages})
+    monkeypatch.setattr(tools, "fix_draft", fixed("needs_person", screening=skipped))
+    result = box.call("fix_ad", {"draft": "draft.yaml"})
+    assert result["incomplete_stages"] == ["check"]
+    assert result["next_step"] == tools.INCOMPLETE
+
+
 def test_tool_errors_are_returned_not_raised(box, monkeypatch):
     def missing(*a, **k):
         raise FileNotFoundError("no such draft")

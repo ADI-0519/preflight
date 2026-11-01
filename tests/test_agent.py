@@ -7,6 +7,7 @@ from pathlib import Path
 import pytest
 
 from preflight.agent import Draft, DraftScene, approve, digest, fix, is_clean, load_draft
+from preflight.agent import draft as draft_module
 from preflight.agent.draft import Address, lines, render_draft, with_line
 from preflight.agent.fix import ALREADY_WORDING
 from preflight.ingest import png_size
@@ -316,6 +317,40 @@ needs_ffmpeg = pytest.mark.skipif(shutil.which("ffmpeg") is None, reason="needs 
 
 def script_only(*captions):
     return Draft(format="image", scenes=(DraftScene(on_screen_text=captions),))
+
+
+@pytest.fixture
+def renders(monkeypatch):
+    calls = []
+    real = draft_module.render_scene
+
+    def spy(*args, **kwargs):
+        calls.append(args[0])
+        return real(*args, **kwargs)
+
+    monkeypatch.setattr(draft_module, "render_scene", spy)
+    return calls
+
+
+@needs_ffmpeg
+def test_same_draft_renders_once(tmp_path, renders):
+    first = render_draft(script_only("Magnesium tablets"), tmp_path)
+    again = render_draft(script_only("Magnesium tablets"), tmp_path)
+    assert len(renders) == 1
+    assert again == first
+    render_draft(script_only("Magnesium capsules"), tmp_path)
+    assert len(renders) == 2
+
+
+@needs_ffmpeg
+def test_partial_render_is_not_reused(tmp_path, renders):
+    first = render_draft(script_only("Magnesium tablets"), tmp_path)
+    (first.media.parent / "bounds.json").unlink()
+    first.media.write_bytes(b"half")
+    again = render_draft(script_only("Magnesium tablets"), tmp_path)
+    assert len(renders) == 2
+    assert again.media.stat().st_size > 4
+    assert [p.name for p in tmp_path.iterdir()] == [again.media.parent.name]
 
 
 @needs_ffmpeg

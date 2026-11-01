@@ -1,6 +1,7 @@
 import hashlib
 import json
 import re
+import shutil
 import tempfile
 import wave
 from pathlib import Path
@@ -132,11 +133,19 @@ def speak(line: str, voice: Path, path: Path) -> None:
 
 def render_draft(draft: Draft, out_dir: Path) -> Rendered:
     out_dir.mkdir(parents=True, exist_ok=True)
+    final = out_dir / digest(draft)[:16]
+    media = final / ("draft.mp4" if draft.format == "video" else "draft.png")
+    # the bounds file is written last, so a render without it is partial and is redone
+    marker = final / "bounds.json"
+    if marker.exists():
+        return Rendered(media, tuple(map(tuple, json.loads(marker.read_text(encoding="utf-8")))))
     video = draft.format == "video"
     voice = ensure_voice() if video and any(s.voiceover.strip() for s in draft.scenes) else None
     clips, bounds, start = [], [], 0.0
     with tempfile.TemporaryDirectory(dir=out_dir) as tmp:
         work = Path(tmp)
+        staged = work / "staged"
+        staged.mkdir()
         blank = None
         for i, scene in enumerate(draft.scenes):
             audio = None
@@ -157,9 +166,10 @@ def render_draft(draft: Draft, out_dir: Path) -> Rendered:
             bounds.append((start, start + length))
             start += length
         if video:
-            media = out_dir / "draft.mp4"
-            concat(clips, media, work)
+            concat(clips, staged / media.name, work)
         else:
-            media = out_dir / "draft.png"
-            frame(clips[0], media)
+            frame(clips[0], staged / media.name)
+        (staged / marker.name).write_text(json.dumps(bounds), encoding="utf-8")
+        shutil.rmtree(final, ignore_errors=True)
+        staged.replace(final)
     return Rendered(media, tuple(bounds))

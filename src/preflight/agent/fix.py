@@ -60,7 +60,8 @@ class DraftScreener:
         self.scene_bounds: tuple[tuple[float, float], ...] | None = None
 
     def __call__(self, draft: Draft, screening_id: str, previous_id: str | None) -> Screening:
-        rendered = render_draft(draft, self.work_dir / "renders" / screening_id)
+        # one shared location, so a draft any fix round or run has rendered before is not rendered again
+        rendered = render_draft(draft, self.work_dir.parent / "renders")
         self.scene_bounds = rendered.scene_bounds
         done = ingest(rendered.media, self.work_dir / "ingest")
         return screen(done, self.models, self.precedents, screening_id, align=self.align)

@@ -124,7 +124,7 @@ def speak(line: str, voice: Path, path: Path) -> None:
     try:
         from piper import PiperVoice
     except ImportError as e:
-        raise RuntimeError("piper is not installed; run `uv sync --group fixtures`") from e
+        raise RuntimeError("piper is not installed; run `uv sync --extra render`") from e
     with wave.open(str(path), "wb") as f:
         PiperVoice.load(str(voice)).synthesize_wav(line, f)
 

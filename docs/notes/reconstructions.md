@@ -10,7 +10,7 @@ Built 31 Oct 2026 by `preflight.eval.reconstruct` from the 74 ruling items in sp
   - replaces brand and person names with generic ones;
   - picks a video when the description mentions speech, video, TikTok and similar, and an image otherwise.
 - **Stills:** `muse-image-1.0`, one per scene, asked for no text in the image. All wording is drawn on afterwards with ffmpeg, so it stays exact. If Muse Image refuses a scene's picture, the builder uses a neutral product shot instead and lists the scene in `meta.json` under `fallback_stills`; the scene's wording is unchanged.
-- **Voiceover:** local Piper TTS (`en_GB-alan-medium`), video items only, installed with `uv sync --group fixtures` (decided in P05).
+- **Voiceover:** local Piper TTS (`en_GB-alan-medium`), video items only, installed with `uv sync --extra render` (chosen in P05, moved to the `render` extra in P41).
 - **Label:** "AI reconstruction from ASA ruling text" is drawn on every frame and set in `meta.json` (`reconstruction: true`). Long on-screen text is shrunk to fit, not cut.
 
 ## Run of 31 Oct 2026
@@ -87,8 +87,8 @@ Reading reconstructions of test items means reading test-split ad wording, so th
 ## Rebuild
 
 ```
-uv sync --group fixtures
-uv run --group fixtures python -m preflight.eval.reconstruct eval/splits/v1.yaml
+uv sync --extra render
+uv run --extra render python -m preflight.eval.reconstruct eval/splits/v1.yaml
 ```
 
 This needs `META_API_KEY` in `.env`, ffmpeg on PATH and the cached ruling pages in `data/raw/rulings/`. Built items are skipped unless `--rebuild` is passed.

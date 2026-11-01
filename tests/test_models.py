@@ -325,6 +325,27 @@ def test_transcribe_live(tmp_path):
     assert "vitamin" in " ".join(t.text for t in turns).lower()
 
 
+def test_spark_respond_caches_and_replays(tmp_path):
+    item = NS(model_dump=lambda exclude_none: {"type": "function_call", "name": "screen_ad", "call_id": "c1"})
+    seen = []
+
+    def create(**kwargs):
+        seen.append(kwargs)
+        return NS(status="completed", model="muse-spark-1.3", output=[item], output_text="", usage=None)
+
+    api = NS(responses=NS(create=create))
+    tools = [{"type": "function", "name": "screen_ad"}]
+    ask = [{"type": "message", "role": "user", "content": "hi"}]
+    kwargs = {"tools": tools, "prompt_version": PV, "effort": "low", "instructions": "be brief"}
+    first = Spark(Store(tmp_path), api).respond(ask, **kwargs)
+    again = Spark(Store(tmp_path), api).respond(ask, **kwargs)
+    assert len(seen) == 1
+    assert seen[0]["instructions"] == "be brief"
+    assert first.calls == again.calls == [{"type": "function_call", "name": "screen_ad", "call_id": "c1"}]
+    with pytest.raises(CacheMiss):
+        Spark(Store(tmp_path, "replay"), api).respond([*ask, ask[0]], **kwargs)
+
+
 @pytest.mark.live
 @need("META_API_KEY")
 def test_sam_live(tmp_path):

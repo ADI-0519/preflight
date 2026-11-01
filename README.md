@@ -40,6 +40,20 @@ uv run --offline python scripts/verify_screening_replay.py --out data/work/verif
 
 Choose a new output directory on each run. It writes labelled HTML, screening JSON and a provenance manifest. This checks recorded-response contracts and rendering, not live model accuracy or ruling-text retrieval. See [the development workflow](docs/research/engineering-workflow.md) for the research, limitations and next verification steps.
 
+## Use as a tool
+
+Other agents can call PreFlight as two tools: `screen_ad` (screen a video, image or page) and `fix_ad` (screen a draft and swap flagged lines for register wording). There is no approve or publish tool. A person records approval with `preflight approve <log> --by <name>`.
+
+To serve them to an MCP client over stdio, install the extras (`uv sync --extra mcp --extra render`) and add this to the client's config, with the path to this repository:
+
+```json
+{"command": "uv", "args": ["run", "--directory", "<path to repo>", "--extra", "mcp", "--extra", "render", "preflight", "mcp"]}
+```
+
+The tools read any file path or URL the calling agent passes, and send the ad to the Meta Model API, so connect them only to agents you trust. Results are written under `data/work/agent/`.
+
+`scripts/agent_demo.py <draft.yaml>` shows an agent given a draft ad that calls `screen_ad` before it would publish. It needs the `render` extra.
+
 ## Status
 
 The [local API guide](docs/api.md) documents P51 endpoints, SSE, retention and the

@@ -23,6 +23,8 @@ align = [
     "torch>=2.15.0",
     "torchaudio>=2.11.1",
 ]
+render = ["piper-tts>=1.8.0"]
+mcp = ["mcp>=1.2,<2"]
 api = [
     "fastapi>=0.115",
     "uvicorn>=0.30",
@@ -32,9 +34,6 @@ api = [
 dev = [
     "pytest>=8.3",
     "ruff>=0.9",
-]
-fixtures = [
-    "piper-tts>=1.8.0",
 ]
 
 [build-system]

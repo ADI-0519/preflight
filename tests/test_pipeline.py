@@ -6,7 +6,7 @@ from html import escape
 import pytest
 from test_evidence import CLIP, ffmpeg, hand_built, models  # noqa: F401
 
-from preflight import cli
+from preflight import cli, pipeline
 from preflight.eval import claim_recall
 from preflight.models import SparkResult
 from preflight.pipeline import SNAPSHOTS, screen
@@ -66,7 +66,7 @@ def clip(tmp_path):
 
 
 def test_cli_screens_the_fixture_clip_end_to_end(tmp_path, monkeypatch, models, clip):  # noqa: F811
-    monkeypatch.setattr(cli, "ingest", lambda path: clip)
+    monkeypatch.setattr(pipeline, "ingest", lambda path: clip)
     monkeypatch.setattr(cli, "from_env", lambda: models)
     monkeypatch.setattr(cli, "load_precedents", lambda version: NoPrecedents())
     assert cli.main(["screen", str(CLIP), "--out", str(tmp_path / "out"), "--no-align"]) == 0
@@ -124,10 +124,10 @@ def test_cli_returns_incomplete_when_no_evidence_can_be_checked(tmp_path, monkey
         screened_at=datetime.now(UTC),
         stages=(StageRun(stage="claims", status="skipped"), StageRun(stage="check", status="skipped")),
     )
-    monkeypatch.setattr(cli, "ingest", lambda path: clip)
+    monkeypatch.setattr(pipeline, "ingest", lambda path: clip)
+    monkeypatch.setattr(pipeline, "screen", lambda *args, **kwargs: skipped)
     monkeypatch.setattr(cli, "from_env", lambda: models)
     monkeypatch.setattr(cli, "load_precedents", lambda version: NoPrecedents())
-    monkeypatch.setattr(cli, "screen", lambda *args, **kwargs: skipped)
     assert cli.main(["screen", str(CLIP), "--out", str(tmp_path / "out"), "--no-align"]) == 1
     saved = Screening.model_validate_json((tmp_path / "out" / "no-evidence.json").read_text(encoding="utf-8"))
     assert saved.headline.startswith("Incomplete")

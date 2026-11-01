@@ -1,0 +1,788 @@
+{
+ "schema_version": "1",
+ "screening_id": "20261101T145140-1d107e6d8c02-0",
+ "previous_id": null,
+ "ad": {
+  "content_hash": "6c9c180f69fce8da26ee235f5600a7da169134ebe145f72b3c3532c0e31b2e34",
+  "media": "video",
+  "width": 1280,
+  "height": 720,
+  "duration": 7.613,
+  "fps": 25.0
+ },
+ "snapshots": {
+  "gb_register": "2026-05-19",
+  "on_hold": "2021-01-12",
+  "cap_rules": "2026-10-31",
+  "rulings": "2026-11-01"
+ },
+ "stages": [
+  {
+   "stage": "transcribe",
+   "status": "done",
+   "model": "muse-voice-transcribe-1.0",
+   "prompt": null,
+   "effort": null
+  },
+  {
+   "stage": "on_screen",
+   "status": "done",
+   "model": "muse-spark-1.3",
+   "prompt": "on-screen-2",
+   "effort": "medium"
+  },
+  {
+   "stage": "regions",
+   "status": "done",
+   "model": "sam-3.1",
+   "prompt": "regions-2",
+   "effort": null
+  },
+  {
+   "stage": "claims",
+   "status": "done",
+   "model": "muse-spark-1.3",
+   "prompt": "claims_v3",
+   "effort": "high"
+  },
+  {
+   "stage": "check",
+   "status": "done",
+   "model": "muse-spark-1.3",
+   "prompt": "judge_v3",
+   "effort": "high"
+  }
+ ],
+ "screened_at": "2026-11-01T14:52:59.075583Z",
+ "segments": [
+  {
+   "start": 0.06,
+   "end": 7.18,
+   "segment_id": "segment-0",
+   "turn": 0,
+   "text": "our magnesium tablets banish tiredness for good.",
+   "timing": "turn"
+  },
+  {
+   "start": 0.06,
+   "end": 7.18,
+   "segment_id": "segment-1",
+   "turn": 0,
+   "text": "Magnesium keeps your nerves calm under any pressure.",
+   "timing": "turn"
+  }
+ ],
+ "on_screen": [
+  {
+   "start": 0.0,
+   "end": 0.0,
+   "text_id": "text-0",
+   "text": "Beats fatigue in seven days",
+   "box": [
+    489,
+    442,
+    790,
+    489
+   ]
+  },
+  {
+   "start": 0.0,
+   "end": 0.0,
+   "text_id": "text-1",
+   "text": "Food supplements should not be used as a",
+   "box": [
+    489,
+    442,
+    790,
+    489
+   ]
+  },
+  {
+   "start": 0.0,
+   "end": 0.0,
+   "text_id": "text-2",
+   "text": "Magnesium tablets",
+   "box": [
+    489,
+    442,
+    790,
+    489
+   ]
+  },
+  {
+   "start": 0.0,
+   "end": 0.0,
+   "text_id": "text-3",
+   "text": "PreFlight draft",
+   "box": [
+    0,
+    0,
+    207,
+    66
+   ]
+  },
+  {
+   "start": 0.0,
+   "end": 0.0,
+   "text_id": "text-4",
+   "text": "healthy lifestyle.",
+   "box": [
+    511,
+    617,
+    768,
+    665
+   ]
+  },
+  {
+   "start": 0.0,
+   "end": 0.0,
+   "text_id": "text-5",
+   "text": "substitute for a varied and balanced diet and a",
+   "box": [
+    316,
+    489,
+    1068,
+    593
+   ]
+  }
+ ],
+ "tracks": [
+  {
+   "track_id": "dark-rectangle-0",
+   "prompt": "dark rectangle",
+   "regions": [
+    {
+     "frame_time": 0.0,
+     "box": [
+      511,
+      617,
+      768,
+      665
+     ],
+     "crop": null
+    },
+    {
+     "frame_time": 0.5,
+     "box": [
+      511,
+      617,
+      769,
+      665
+     ],
+     "crop": "crops/dark-rectangle-0.png"
+    },
+    {
+     "frame_time": 1.0,
+     "box": [
+      511,
+      617,
+      768,
+      665
+     ],
+     "crop": null
+    },
+    {
+     "frame_time": 1.5,
+     "box": [
+      511,
+      617,
+      768,
+      665
+     ],
+     "crop": null
+    },
+    {
+     "frame_time": 2.0,
+     "box": [
+      511,
+      617,
+      768,
+      665
+     ],
+     "crop": null
+    },
+    {
+     "frame_time": 2.5,
+     "box": [
+      511,
+      617,
+      768,
+      665
+     ],
+     "crop": null
+    },
+    {
+     "frame_time": 3.0,
+     "box": [
+      511,
+      617,
+      768,
+      665
+     ],
+     "crop": null
+    },
+    {
+     "frame_time": 3.5,
+     "box": [
+      511,
+      617,
+      768,
+      665
+     ],
+     "crop": null
+    },
+    {
+     "frame_time": 4.0,
+     "box": [
+      511,
+      617,
+      768,
+      665
+     ],
+     "crop": null
+    },
+    {
+     "frame_time": 4.5,
+     "box": [
+      511,
+      617,
+      768,
+      665
+     ],
+     "crop": null
+    },
+    {
+     "frame_time": 5.0,
+     "box": [
+      511,
+      617,
+      768,
+      665
+     ],
+     "crop": null
+    },
+    {
+     "frame_time": 5.5,
+     "box": [
+      511,
+      617,
+      768,
+      665
+     ],
+     "crop": null
+    },
+    {
+     "frame_time": 6.0,
+     "box": [
+      511,
+      617,
+      768,
+      665
+     ],
+     "crop": null
+    },
+    {
+     "frame_time": 6.5,
+     "box": [
+      511,
+      617,
+      768,
+      665
+     ],
+     "crop": null
+    },
+    {
+     "frame_time": 7.0,
+     "box": [
+      511,
+      617,
+      768,
+      665
+     ],
+     "crop": null
+    }
+   ]
+  },
+  {
+   "track_id": "dark-rectangle-1",
+   "prompt": "dark rectangle",
+   "regions": [
+    {
+     "frame_time": 0.0,
+     "box": [
+      489,
+      442,
+      790,
+      489
+     ],
+     "crop": null
+    },
+    {
+     "frame_time": 0.5,
+     "box": [
+      488,
+      441,
+      791,
+      488
+     ],
+     "crop": "crops/dark-rectangle-1.png"
+    },
+    {
+     "frame_time": 1.0,
+     "box": [
+      488,
+      441,
+      791,
+      488
+     ],
+     "crop": null
+    },
+    {
+     "frame_time": 1.5,
+     "box": [
+      488,
+      441,
+      791,
+      488
+     ],
+     "crop": null
+    },
+    {
+     "frame_time": 2.0,
+     "box": [
+      488,
+      441,
+      791,
+      488
+     ],
+     "crop": null
+    },
+    {
+     "frame_time": 2.5,
+     "box": [
+      488,
+      441,
+      791,
+      488
+     ],
+     "crop": null
+    },
+    {
+     "frame_time": 3.0,
+     "box": [
+      488,
+      441,
+      791,
+      488
+     ],
+     "crop": null
+    },
+    {
+     "frame_time": 3.5,
+     "box": [
+      488,
+      441,
+      791,
+      488
+     ],
+     "crop": null
+    },
+    {
+     "frame_time": 4.0,
+     "box": [
+      488,
+      441,
+      791,
+      488
+     ],
+     "crop": null
+    },
+    {
+     "frame_time": 4.5,
+     "box": [
+      488,
+      441,
+      791,
+      488
+     ],
+     "crop": null
+    },
+    {
+     "frame_time": 5.0,
+     "box": [
+      488,
+      441,
+      791,
+      488
+     ],
+     "crop": null
+    },
+    {
+     "frame_time": 5.5,
+     "box": [
+      488,
+      441,
+      791,
+      488
+     ],
+     "crop": null
+    },
+    {
+     "frame_time": 6.0,
+     "box": [
+      488,
+      441,
+      791,
+      488
+     ],
+     "crop": null
+    },
+    {
+     "frame_time": 6.5,
+     "box": [
+      488,
+      442,
+      791,
+      488
+     ],
+     "crop": null
+    },
+    {
+     "frame_time": 7.0,
+     "box": [
+      488,
+      441,
+      791,
+      488
+     ],
+     "crop": null
+    }
+   ]
+  },
+  {
+   "track_id": "dark-rectangle-2",
+   "prompt": "dark rectangle",
+   "regions": [
+    {
+     "frame_time": 5.5,
+     "box": [
+      99,
+      14,
+      165,
+      45
+     ],
+     "crop": "crops/dark-rectangle-2.png"
+    },
+    {
+     "frame_time": 6.0,
+     "box": [
+      99,
+      14,
+      164,
+      45
+     ],
+     "crop": null
+    },
+    {
+     "frame_time": 6.5,
+     "box": [
+      99,
+      14,
+      164,
+      45
+     ],
+     "crop": null
+    },
+    {
+     "frame_time": 7.0,
+     "box": [
+      99,
+      14,
+      164,
+      45
+     ],
+     "crop": null
+    }
+   ]
+  }
+ ],
+ "claims": [
+  {
+   "claim_id": "claim-0",
+   "text": "our magnesium tablets banish tiredness for good.",
+   "kind": "explicit",
+   "substance": "magnesium",
+   "evidence": [
+    {
+     "kind": "transcript",
+     "segment_id": "segment-0"
+    }
+   ]
+  },
+  {
+   "claim_id": "claim-1",
+   "text": "our magnesium tablets banish tiredness",
+   "kind": "explicit",
+   "substance": "magnesium",
+   "evidence": [
+    {
+     "kind": "transcript",
+     "segment_id": "segment-0"
+    }
+   ]
+  },
+  {
+   "claim_id": "claim-2",
+   "text": "Magnesium keeps your nerves calm under any pressure.",
+   "kind": "explicit",
+   "substance": "Magnesium",
+   "evidence": [
+    {
+     "kind": "transcript",
+     "segment_id": "segment-1"
+    }
+   ]
+  },
+  {
+   "claim_id": "claim-3",
+   "text": "Magnesium keeps your nerves calm",
+   "kind": "explicit",
+   "substance": "Magnesium",
+   "evidence": [
+    {
+     "kind": "transcript",
+     "segment_id": "segment-1"
+    }
+   ]
+  },
+  {
+   "claim_id": "claim-4",
+   "text": "Beats fatigue in seven days",
+   "kind": "explicit",
+   "substance": null,
+   "evidence": [
+    {
+     "kind": "on_screen",
+     "text_id": "text-0"
+    }
+   ]
+  },
+  {
+   "claim_id": "claim-5",
+   "text": "Beats fatigue",
+   "kind": "explicit",
+   "substance": null,
+   "evidence": [
+    {
+     "kind": "on_screen",
+     "text_id": "text-0"
+    }
+   ]
+  },
+  {
+   "claim_id": "claim-6",
+   "text": "Magnesium tablets",
+   "kind": "explicit",
+   "substance": "Magnesium",
+   "evidence": [
+    {
+     "kind": "on_screen",
+     "text_id": "text-2"
+    }
+   ]
+  }
+ ],
+ "flags": [
+  {
+   "flag_id": "flag-0",
+   "claim_id": "claim-0",
+   "kind": "possible_breach",
+   "reason": "The claim \"our magnesium tablets banish tiredness for good.\" promises complete permanent elimination of tiredness, which goes beyond the authorised \"Magnesium contributes to a reduction of tiredness and fatigue\" and exaggerates effect and certainty for a supplement.",
+   "sources": [
+    {
+     "kind": "cap_rule",
+     "rule": "15.1"
+    },
+    {
+     "kind": "cap_rule",
+     "rule": "15.1.1"
+    },
+    {
+     "kind": "cap_rule",
+     "rule": "15.7"
+    },
+    {
+     "kind": "cap_rule",
+     "rule": "3.11"
+    },
+    {
+     "kind": "register",
+     "register_id": "gbhc-e1f78000ec6b"
+    }
+   ],
+   "suggested_wording": {
+    "register_id": "gbhc-e1f78000ec6b",
+    "wording": "Magnesium contributes to a reduction of tiredness and fatigue"
+   }
+  },
+  {
+   "flag_id": "flag-1",
+   "claim_id": "claim-1",
+   "kind": "possible_breach",
+   "reason": "The claim \"our magnesium tablets banish tiredness\" promises complete elimination of tiredness, which goes beyond the authorised \"contributes to a reduction of tiredness and fatigue\" and exaggerates the effect for a supplement.",
+   "sources": [
+    {
+     "kind": "cap_rule",
+     "rule": "15.1"
+    },
+    {
+     "kind": "cap_rule",
+     "rule": "15.1.1"
+    },
+    {
+     "kind": "cap_rule",
+     "rule": "15.7"
+    },
+    {
+     "kind": "cap_rule",
+     "rule": "3.11"
+    },
+    {
+     "kind": "register",
+     "register_id": "gbhc-e1f78000ec6b"
+    }
+   ],
+   "suggested_wording": {
+    "register_id": "gbhc-e1f78000ec6b",
+    "wording": "Magnesium contributes to a reduction of tiredness and fatigue"
+   }
+  },
+  {
+   "flag_id": "flag-2",
+   "claim_id": "claim-2",
+   "kind": "possible_breach",
+   "reason": "The claim \"Magnesium keeps your nerves calm under any pressure.\" matches the on-hold calm claim but adds \"under any pressure\" claiming universal efficacy in all situations, which overstates and exaggerates the effect for a supplement.",
+   "sources": [
+    {
+     "kind": "cap_rule",
+     "rule": "15.1"
+    },
+    {
+     "kind": "cap_rule",
+     "rule": "15.7"
+    },
+    {
+     "kind": "cap_rule",
+     "rule": "3.11"
+    },
+    {
+     "kind": "register",
+     "register_id": "gbhc-63277e369bb5"
+    },
+    {
+     "kind": "on_hold",
+     "on_hold_id": "4710"
+    },
+    {
+     "kind": "on_hold",
+     "on_hold_id": "4711"
+    }
+   ],
+   "suggested_wording": {
+    "register_id": "gbhc-63277e369bb5",
+    "wording": "Magnesium contributes to normal functioning of the nervous system"
+   }
+  },
+  {
+   "flag_id": "flag-3",
+   "claim_id": "claim-3",
+   "kind": "on_hold",
+   "reason": "The claim \"Magnesium keeps your nerves calm\" matches the on-hold entries for inducing calm and help in stress/anxiety.",
+   "sources": [
+    {
+     "kind": "on_hold",
+     "on_hold_id": "4710"
+    },
+    {
+     "kind": "on_hold",
+     "on_hold_id": "4711"
+    }
+   ],
+   "suggested_wording": null
+  },
+  {
+   "flag_id": "flag-4",
+   "claim_id": "claim-4",
+   "kind": "possible_breach",
+   "reason": "The claim \"Beats fatigue in seven days\" promises in context that the magnesium product completely eliminates fatigue with a specific \"in seven days\" timeframe, which goes beyond the authorised reduction claim and is an unsubstantiated speed and efficacy claim for a supplement.",
+   "sources": [
+    {
+     "kind": "cap_rule",
+     "rule": "15.1"
+    },
+    {
+     "kind": "cap_rule",
+     "rule": "15.1.1"
+    },
+    {
+     "kind": "cap_rule",
+     "rule": "15.7"
+    },
+    {
+     "kind": "cap_rule",
+     "rule": "12.1"
+    },
+    {
+     "kind": "cap_rule",
+     "rule": "3.7"
+    },
+    {
+     "kind": "cap_rule",
+     "rule": "3.11"
+    },
+    {
+     "kind": "register",
+     "register_id": "gbhc-e1f78000ec6b"
+    }
+   ],
+   "suggested_wording": {
+    "register_id": "gbhc-e1f78000ec6b",
+    "wording": "Magnesium contributes to a reduction of tiredness and fatigue"
+   }
+  },
+  {
+   "flag_id": "flag-5",
+   "claim_id": "claim-5",
+   "kind": "possible_breach",
+   "reason": "The claim \"Beats fatigue\" promises in context that the magnesium product completely eliminates fatigue, which goes beyond the authorised \"contributes to a reduction\" and exaggerates the effect for a supplement.",
+   "sources": [
+    {
+     "kind": "cap_rule",
+     "rule": "15.1"
+    },
+    {
+     "kind": "cap_rule",
+     "rule": "15.1.1"
+    },
+    {
+     "kind": "cap_rule",
+     "rule": "15.7"
+    },
+    {
+     "kind": "cap_rule",
+     "rule": "3.11"
+    },
+    {
+     "kind": "register",
+     "register_id": "gbhc-e1f78000ec6b"
+    }
+   ],
+   "suggested_wording": {
+    "register_id": "gbhc-e1f78000ec6b",
+    "wording": "Magnesium contributes to a reduction of tiredness and fatigue"
+   }
+  }
+ ],
+ "notice": "PreFlight screens ads against the dated sources named in this report. It is not legal advice, and it does not decide whether an ad may run: a person makes that call.",
+ "headline": "6 flags on 6 claims, checked against the GB register (2026-05-19), the on-hold list (2021-01-12), the CAP Code rule pack (2026-10-31) and the ASA rulings index (2026-11-01)."
+}

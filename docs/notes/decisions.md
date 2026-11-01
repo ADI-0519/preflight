@@ -1,5 +1,7 @@
 # Decisions
 
+- **1 Nov 2026 (P52 implementation).** The local React page consumes P51 and receives progress over SSE. Screening types are generated from the schema; private media and exact evidence crops are served through confined API reads. Demo outcomes are revealed from committed ruling metadata, while scoreboard rates require an explicit registered test-run selection in `results/final.md`. Missing final assets/metrics stay unavailable rather than being replaced with development or replay results. See [the web guide](../web.md).
+
 One dated line per decision the founders take. Changing a product rule needs all three founders and a line here.
 
 The P05 decisions below were taken by one founder (NEESAY) on 31 Oct 2026 and await confirmation by the other two. Until both confirm, the product rules stand as confirmed by one founder only.

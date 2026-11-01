@@ -56,6 +56,9 @@ The tools read any file path or URL the calling agent passes, and send the ad to
 
 ## Status
 
+The [web workspace guide](docs/web.md) covers building and running P52, synthetic
+browser verification, demo asset configuration and the registered-run scoreboard.
+
 The [local API guide](docs/api.md) documents P51 endpoints, SSE, retention and the
 localhost run command. API verification uses synthetic replay, not live models.
 

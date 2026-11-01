@@ -2,6 +2,7 @@ import asyncio
 import json
 import logging
 from contextlib import asynccontextmanager, suppress
+from pathlib import Path
 
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.exceptions import RequestValidationError
@@ -12,6 +13,7 @@ from starlette.middleware.trustedhost import TrustedHostMiddleware
 from preflight.api.contracts import Approval, ApprovalView, FixView, JobView, StartFix, StartScreening, UploadView
 from preflight.api.service import Service
 from preflight.api.storage import TERMINAL, APIError, Settings
+from preflight.api.web import ROOT, install_web
 from preflight.ingest import MAX_SECONDS, probe, run
 from preflight.schema import NOTICE, Screening
 
@@ -62,7 +64,10 @@ class BodyLimit:
         await self.app(scope, limited_receive, send)
 
 
-def create_app(settings: Settings | None = None, **dependencies) -> FastAPI:
+def create_app(
+    settings: Settings | None = None, *, web_root: Path | None = None,
+    demo_root: Path | None = None, results_root: Path | None = None, **dependencies,
+) -> FastAPI:
     """Local single-process app; production authentication/deployment are out of scope."""
     settings = settings or Settings()
     service = Service(settings, **dependencies)
@@ -233,4 +238,6 @@ def create_app(settings: Settings | None = None, **dependencies) -> FastAPI:
         content, media_type = service.still(job_id, index)
         return Response(content, media_type=media_type)
 
+    install_web(app, service, web_root=web_root or ROOT / "web/dist",
+                demo_root=demo_root or ROOT / "data/raw/demo", results_root=results_root or ROOT / "results")
     return app

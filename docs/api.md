@@ -26,6 +26,11 @@ Live calls were not used to verify P51. Langfuse instrumentation is not enabled.
 
 ## Endpoints
 
+P52 adds the built web page at `/` and read-only presentation/media routes under
+`/ui/` and `/uploads/{id}/media`. These preserve source verification, private path
+boundaries and retention checks. Media supports byte ranges for video seeking.
+See [the web guide](./web.md) for the build, demo manifest and scoreboard contract.
+
 | Method | Path | Behavior |
 |---|---|---|
 | GET | `/health` | Service liveness, not proof of model/account availability |

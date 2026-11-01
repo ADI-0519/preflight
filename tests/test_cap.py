@@ -59,3 +59,12 @@ def test_conduct_rule_not_screenable(pack):
 def test_version_recorded(pack):
     assert pack.version == "2026-10-31"
     assert pack.latest_amendment_seen == "2026-01-05"
+
+
+def test_2026_11_01_pack_uses_current_section_3_numbers():
+    pack = load_cap_rules("2026-11-01")
+    old = load_cap_rules(SNAPSHOT)
+    assert set(pack.rules) - set(old.rules) == {"3.39", "3.41"}
+    assert "price" in pack.rules["3.39"].summary and "denigrate" in pack.rules["3.41"].summary
+    # rules both packs hold are unchanged
+    assert all(pack.rules[r] == old.rules[r] for r in old.rules)

@@ -9,6 +9,7 @@ from pydantic import AfterValidator, AwareDatetime, BaseModel, ConfigDict, Field
 from preflight.sources.cap import load_cap_rules
 from preflight.sources.on_hold import load_on_hold
 from preflight.sources.register import RegisterEntry, load_register
+from preflight.sources.rulings import load_ruling_index
 
 SCHEMA_VERSION = "1"
 
@@ -311,17 +312,23 @@ def _cap_rules(version: str) -> frozenset[str]:
     return frozenset(load_cap_rules(version).rules)
 
 
+@cache
+def _rulings(version: str) -> dict[str, date]:
+    return {m.ruling_id: m.date for m in load_ruling_index(version)}
+
+
 # rules 2 and 3: run on every screening the checker returns or the API accepts
 def verify_sources(screening: Screening) -> None:
     s = screening.snapshots
     register, on_hold, cap_rules = _register(s.gb_register), _on_hold_ids(s.on_hold), _cap_rules(s.cap_rules)
+    rulings = _rulings(s.rulings)
     for flag in screening.flags:
         for ref in flag.sources:
-            # TODO: check ruling refs against the rulings index once P13 builds it
             missing = (
                 (ref.kind == "register" and ref.register_id not in register)
                 or (ref.kind == "on_hold" and ref.on_hold_id not in on_hold)
                 or (ref.kind == "cap_rule" and ref.rule not in cap_rules)
+                or (ref.kind == "ruling" and rulings.get(ref.ruling_id) != ref.date)
             )
             if missing:
                 raise ValueError(f"flag {flag.flag_id} cites a source absent from its snapshot: {ref!r}")

@@ -1,7 +1,6 @@
 import argparse
 import csv
 import json
-import subprocess
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from pathlib import Path
@@ -9,24 +8,18 @@ from pathlib import Path
 from preflight.claims import EFFORT, PROMPT_VERSION
 from preflight.eval.check_reconstructions import carried, lines, words
 from preflight.eval.reconstruct import OUT_DIR, SPARK_IN, SPARK_OUT, ShotList
+from preflight.eval.registry import RESULTS, register, revision, snapshot_text
+from preflight.eval.score import matches
 from preflight.eval.split import ROOT, load_ground_truth, load_split
 from preflight.ingest import ingest
 from preflight.models import Models, Spark, SparkResult, from_env
 from preflight.models.clients import SPARK
-from preflight.pipeline import gather
+from preflight.pipeline import SNAPSHOTS, gather
 from preflight.schema import Claim, Screening
 
 # rule 5: prompts are tuned on dev; the test part runs once, in P33
 PART = "dev"
-RESULTS = ROOT / "results"
-RUNS = RESULTS / "runs.csv"
 WORK = ROOT / "data" / "work" / "runs"
-FIELDS = [
-    "run_id", "created_at", "git_sha", "split", "part", "stage", "model", "prompt", "effort", "metric", "hits", "total",
-]
-# a quote longer than this many times a ground-truth claim, plus slack words, covers more than that claim
-LONGER = 2
-SLACK = 5
 
 
 @dataclass
@@ -38,10 +31,6 @@ class Metered:
         r = self.spark.ask(text, **kwargs)
         self.calls.append(r)
         return r
-
-
-def git(*args: str) -> str:
-    return subprocess.run(["git", *args], cwd=ROOT, capture_output=True, text=True, check=True).stdout
 
 
 def media_of(item_id: str) -> list[Path]:
@@ -58,11 +47,6 @@ def screen(path: Path, models: Models, run_id: str, spark: Spark | Metered, **co
     if failed:
         raise RuntimeError(f"{path.name}: {', '.join(failed)} failed")
     return screening
-
-
-def matches(truth: str, said: list[str], tight: bool) -> bool:
-    n = len(words(truth))
-    return carried(truth, said) != "missing" and (not tight or len(said) <= max(LONGER * n, n + SLACK))
 
 
 def score(truth: list[str], claims: list[Claim], tight: bool = True) -> list[bool]:
@@ -84,10 +68,7 @@ def main() -> None:
     config = {"prompt": args.prompt, "effort": args.effort, "second_pass": args.second_pass}
     dev = [i for i in load_split("v1").dev if not args.only or i in args.only]
     items = [i for i in dev if load_ground_truth("v1", i).label == "positive"]
-    sha = git("rev-parse", "--short", "HEAD").strip()
-    # a run on uncommitted code is not reproducible from its SHA alone
-    if git("status", "--porcelain", "--untracked-files=no"):
-        sha += "-dirty"
+    sha = revision(PART)
     created = datetime.now(UTC)
     run_id = f"claims-{created:%Y%m%dT%H%M%S}"
     work = WORK / run_id
@@ -135,6 +116,7 @@ def main() -> None:
     common = {
         "run_id": run_id, "created_at": created.isoformat(timespec="seconds"), "git_sha": sha, "split": "v1",
         "part": PART, "stage": "claims", "model": SPARK, "prompt": version, "effort": args.effort,
+        "snapshots": snapshot_text(SNAPSHOTS),
     }
     metrics = [
         ("ad_recall", sum(r["found"] > 0 for r in rows), len(rows)),
@@ -147,13 +129,7 @@ def main() -> None:
         # only calls made in this run are timed; cached answers carry the time of their original call or none
         ("claims_seconds", round(total("seconds"), 1), total("timed")),
     ]
-    new = not RUNS.exists()
-    with RUNS.open("a", newline="", encoding="utf-8") as f:
-        writer = csv.DictWriter(f, fieldnames=FIELDS)
-        if new:
-            writer.writeheader()
-        for metric, hits, out_of in metrics:
-            writer.writerow(common | {"metric": metric, "hits": hits, "total": out_of})
+    register(common, metrics)
     for metric, hits, out_of in metrics:
         print(f"{run_id} {metric}: {hits} / {out_of}")
 

@@ -1,0 +1,39 @@
+import sys
+from types import SimpleNamespace
+
+import pytest
+from test_eval import screening, truth
+
+from preflight.eval import run
+from preflight.eval.score import score_item
+from preflight.schema import StageRun
+
+
+@pytest.mark.parametrize("status", ["skipped", "failed", None, "done"])
+def test_registration_requires_a_completed_check(tmp_path, monkeypatch, status):
+    item = truth("T-synthetic-negative", [])
+    stages = (StageRun(stage="claims", status="done"),)
+    if status is not None:
+        stages += (StageRun(stage="check", status=status),)
+    result = screening("synthetic", [], {}).model_copy(update={"stages": stages})
+    registered = []
+    monkeypatch.setattr(sys, "argv", ["test", "--part", "dev"])
+    monkeypatch.setattr(run, "revision", lambda part: "synthetic")
+    monkeypatch.setattr(run, "load_split", lambda version: SimpleNamespace(dev=[item.item_id]))
+    monkeypatch.setattr(run, "media", lambda item_id: [tmp_path / "synthetic.png"])
+    monkeypatch.setattr(run, "load_ground_truth", lambda version, item_id: item)
+    monkeypatch.setattr(run, "load_precedents", lambda *args: None)
+    monkeypatch.setattr(run, "from_env", lambda: None)
+    monkeypatch.setattr(run, "screen_item", lambda *args: (score_item(item, [result]), [result], 0.0))
+    monkeypatch.setattr(run, "WORK", tmp_path)
+    monkeypatch.setattr(run, "RESULTS", tmp_path)
+    monkeypatch.setattr(run, "register", lambda *args: registered.append(args))
+    if status == "done":
+        run.main()
+        assert len(registered) == 1
+    else:
+        with pytest.raises(SystemExit, match="not registered"):
+            run.main()
+        assert not registered
+    # Rejected attempts retain their item rows for diagnosis.
+    assert len(list((tmp_path / "runs").glob("*.csv"))) == 1

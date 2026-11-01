@@ -8,9 +8,10 @@ from datetime import UTC, datetime
 
 from preflight.check import EFFORT, PROMPT_VERSION, check
 from preflight.check.precedents import load_precedents
-from preflight.eval.check_reconstructions import words
-from preflight.eval.claim_recall import FIELDS, PART, RESULTS, RUNS, WORK, Metered, cost, git, matches
-from preflight.eval.split import BreachingClaim, load_ground_truth, load_split, load_team_ad
+from preflight.eval.claim_recall import PART, WORK, Metered, cost
+from preflight.eval.registry import RESULTS, register, revision, snapshot_text
+from preflight.eval.score import caught
+from preflight.eval.split import load_ground_truth, load_split, load_team_ad
 from preflight.models import from_env
 from preflight.models.clients import SPARK
 from preflight.pipeline import SNAPSHOTS
@@ -18,23 +19,6 @@ from preflight.schema import Ad, Claim, OnScreenEvidence, OnScreenText, Screenin
 
 # the dev screenings whose claims the judge is run on (docs/notes/claim-extraction.md)
 CLAIMS_RUN = "claims-20261101T023641"
-
-
-def related(a: str, b: str) -> bool:
-    return a == b or a.startswith(b + ".") or b.startswith(a + ".")
-
-
-def caught(truth: list[BreachingClaim], screenings: list[Screening]) -> tuple[list[bool], list[bool]]:
-    rules: dict[tuple[str, str], list[str]] = {}
-    for s in screenings:
-        for f in s.flags:
-            rules.setdefault((s.screening_id, f.claim_id), []).extend(r.rule for r in f.sources if r.kind == "cap_rule")
-    flagged = [(words(c.text), rules[s.screening_id, c.claim_id]) for s in screenings for c in s.claims
-               if (s.screening_id, c.claim_id) in rules]  # fmt: skip
-    found = [[cited for said, cited in flagged if matches(t.claim, said, tight=True)] for t in truth]
-    with_rule = [any(related(r, g) for cited in hits for r in cited for g in t.rules)
-                 for t, hits in zip(truth, found, strict=True)]  # fmt: skip
-    return [bool(h) for h in found], with_rule
 
 
 def team_screening(item_id: str) -> Screening:
@@ -66,9 +50,7 @@ def main() -> None:
     items = [i for i in load_split("v1").dev if not args.only or i in args.only]
     truths = {i: load_ground_truth("v1", i) for i in items}
     precedents = load_precedents(args.rulings)
-    sha = git("rev-parse", "--short", "HEAD").strip()
-    if git("status", "--porcelain", "--untracked-files=no"):
-        sha += "-dirty"
+    sha = revision(PART)
     created = datetime.now(UTC)
     run_id = f"check-{created:%Y%m%dT%H%M%S}"
     work = WORK / run_id
@@ -136,11 +118,9 @@ def main() -> None:
     common = {
         "run_id": run_id, "created_at": created.isoformat(timespec="seconds"), "git_sha": sha, "split": "v1",
         "part": PART, "stage": "check", "model": SPARK, "prompt": args.prompt, "effort": args.effort,
+        "snapshots": snapshot_text(snapshots),
     }
-    with RUNS.open("a", newline="", encoding="utf-8") as f:
-        writer = csv.DictWriter(f, fieldnames=FIELDS)
-        for metric, hits, out_of in metrics:
-            writer.writerow(common | {"metric": metric, "hits": hits, "total": out_of})
+    register(common, metrics)
     for metric, hits, out_of in metrics:
         print(f"{run_id} {metric}: {hits} / {out_of}")
 

@@ -58,7 +58,11 @@ The five team-written dev negatives have no rendered media. Their on-screen line
 - **v5 keeps most of v4's gain over v3** (194 and 190 against 166 claims with a matching rule) without v4's item-specific wording. The 14 to 18 claims between v4 and v5 are what that wording bought on dev, where it was written; it is not expected to carry to test.
 - **Run-to-run noise is about ±4 claims** on one repeat. Differences of that size between prompts are not real.
 - **Extraction is the ceiling.** 39 of the 250 claims never reach the judge.
-- **The judge flags 23 to 25 claims per positive ad** against 10 ground-truth claims, since P26 lists overlapping phrases and the claims inside them. False alarms are measured only on 5 register-worded team ads, which no version flags; that is not a false-alarm rate.
+- **The judge flags 23 to 25 claims per positive ad** against 10 ground-truth claims, since P26 lists overlapping phrases and the claims inside them. On the 5 register-worded team ads, which no version flags, that is not a false-alarm rate; split v2's negatives are below.
+
+### Negatives that read like real ads (split v2)
+
+Split v2 adds ten dev negatives (T16-T25): flavours, dosing, an offer and general well-being lines beside an authorised claim, every health claim in exact register wording. judge_v5 flags none of them, judged line by line (`check-20261101T232557`) or end to end, with the rendered ads screened through every stage (`screen-20261101T232627`, $0.91 for the ten). Ten ads the team wrote are not a false-alarm rate on real ads.
 
 ### Earlier runs (`claims-20261101T023641`, 209 of 250 extracted; CAP pack 2026-10-31; scored before the renumbering)
 

@@ -1,0 +1,70 @@
+{
+  "item_id": "A25-1303538",
+  "kind": "ruling",
+  "label": "positive",
+  "outcome": "upheld",
+  "claims": [
+    {
+      "claim": "Prostate Health Nitric Oxide Bundle",
+      "rules": [
+        "12.1",
+        "12.11",
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "to reduce prostate inflammation",
+      "rules": [
+        "12.1",
+        "12.11",
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "ingredients that help improve blood flow throughout your system",
+      "rules": [
+        "12.1",
+        "12.11",
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "One customer went from five trips to just one within a month",
+      "rules": [
+        "12.1",
+        "12.11",
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "by three months, most men sleep through the night completely",
+      "rules": [
+        "12.1",
+        "12.11",
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    }
+  ],
+  "written_by": "draft: scripts/draft_split_v1.py",
+  "checked_by": "NEESAY"
+}

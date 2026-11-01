@@ -1,0 +1,99 @@
+{
+  "item_id": "A24-1253730",
+  "kind": "ruling",
+  "label": "positive",
+  "outcome": "upheld",
+  "claims": [
+    {
+      "claim": "my mood’s a lot better",
+      "rules": [
+        "15.6.2",
+        "15.9",
+        "15.1",
+        "15.1.1",
+        "15.7"
+      ],
+      "points": [
+        1,
+        2,
+        3
+      ]
+    },
+    {
+      "claim": "my energy’s better",
+      "rules": [
+        "15.6.2",
+        "15.9",
+        "15.1",
+        "15.1.1",
+        "15.7"
+      ],
+      "points": [
+        1,
+        2,
+        3
+      ]
+    },
+    {
+      "claim": "I’ve got energy to get up and do stuff",
+      "rules": [
+        "15.6.2",
+        "15.9",
+        "15.1",
+        "15.1.1",
+        "15.7"
+      ],
+      "points": [
+        1,
+        2,
+        3
+      ]
+    },
+    {
+      "claim": "Finally a supplement that actually works on my tiredness",
+      "rules": [
+        "15.6.2",
+        "15.9"
+      ],
+      "points": [
+        1,
+        2
+      ]
+    },
+    {
+      "claim": "If you get vitamin B12 injections you need to fuck them off and get these",
+      "rules": [
+        "15.6.2",
+        "15.9"
+      ],
+      "points": [
+        1,
+        2
+      ]
+    },
+    {
+      "claim": "this supplement of B12 that is just as effective as having a B12 injection",
+      "rules": [
+        "1.3",
+        "15.6.2",
+        "15.9"
+      ],
+      "points": [
+        1,
+        2
+      ]
+    },
+    {
+      "claim": "I don’t need to go anywhere else to get my injection",
+      "rules": [
+        "1.3"
+      ],
+      "points": [
+        1,
+        2
+      ]
+    }
+  ],
+  "written_by": "draft: scripts/draft_split_v1.py",
+  "checked_by": "NEESAY"
+}

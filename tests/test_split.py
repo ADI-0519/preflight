@@ -13,9 +13,9 @@ DISCLAIMER = (
 )
 
 
-@pytest.fixture(scope="module")
-def split():
-    return load_split("v1")
+@pytest.fixture(scope="module", params=["v1", "v2"])
+def split(request):
+    return load_split(request.param)
 
 
 def test_no_item_in_both_dev_and_test(split):
@@ -40,20 +40,20 @@ def test_rulings_are_in_the_corpus_and_capped_per_advertiser(split):
 
 def test_every_item_has_ground_truth(split):
     for item in split.items:
-        truth = load_ground_truth("v1", item)
+        truth = load_ground_truth(split.version, item)
         assert truth.item_id == item
         if truth.kind == "ruling":
             assert truth.label == "positive" and truth.claims
         else:
             assert truth.label == "negative" and not truth.claims
-    files = {p.stem for p in (EVAL_DIR / "ground_truth" / "v1").glob("*.json")}
+    files = {p.stem for p in (EVAL_DIR / "ground_truth" / split.version).glob("*.json")}
     assert files == set(split.items)
 
 
 def test_ground_truth_cites_cap_rule_numbers(split):
     # a ruling page's rule list can be wrong ("15.11" for 15.1.1), so rules follow the assessment text
     for item in split.excluded_ruling_ids():
-        for claim in load_ground_truth("v1", item).claims:
+        for claim in load_ground_truth(split.version, item).claims:
             assert claim.rules and all(re.fullmatch(r"\d{1,2}(\.\d{1,2}){1,2}", r) for r in claim.rules), item
 
 
@@ -75,13 +75,21 @@ def test_team_ads_use_only_authorised_register_wording(split):
         assert DISCLAIMER in ad.on_screen_text
 
 
-def test_manifest_counts_match_lists():
-    data = yaml.safe_load((EVAL_DIR / "splits" / "v1.yaml").read_text(encoding="utf-8"))
+@pytest.mark.parametrize("version", ["v1", "v2"])
+def test_manifest_counts_match_lists(version):
+    data = yaml.safe_load((EVAL_DIR / "splits" / f"{version}.yaml").read_text(encoding="utf-8"))
     for part in ("dev", "test"):
         teams = sum(1 for i in data[part] if i.startswith("T"))
         assert data["counts"][part] == {"positive": len(data[part]) - teams, "negative": teams}
 
 
+def test_v2_keeps_every_v1_item_and_its_ground_truth():
+    v1, v2 = load_split("v1"), load_split("v2")
+    assert set(v1.dev) <= set(v2.dev) and v1.test == v2.test
+    for item in v1.items:
+        assert load_ground_truth("v2", item) == load_ground_truth("v1", item)
+
+
 def test_frozen_split_is_fully_checked(split):
     if split.frozen:
-        assert all(load_ground_truth("v1", i).checked_by for i in split.items)
+        assert all(load_ground_truth(split.version, i).checked_by for i in split.items)

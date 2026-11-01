@@ -1,0 +1,93 @@
+{
+  "item_id": "A25-1303746",
+  "kind": "ruling",
+  "label": "positive",
+  "outcome": "upheld",
+  "claims": [
+    {
+      "claim": "I tried over 20 vitamins for my daughter with autism… none worked",
+      "rules": [
+        "12.1",
+        "12.11",
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "Fewer meltdowns",
+      "rules": [
+        "12.1",
+        "12.11",
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "Even trying NEW foods!",
+      "rules": [
+        "12.1",
+        "12.11",
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "this is truly life-changing for sensory-sensitive kids",
+      "rules": [
+        "12.1",
+        "12.11",
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "Our paediatrician recommended us to take a multivitamin, since nutrient deficiencies can cause behavioural issues",
+      "rules": [
+        "12.1",
+        "12.11",
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "She’s even trying new foods like strawberries!",
+      "rules": [
+        "12.1",
+        "12.11",
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "More energy & alertness",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.7"
+      ],
+      "points": [
+        2
+      ]
+    }
+  ],
+  "written_by": "draft: scripts/draft_split_v1.py",
+  "checked_by": "NEESAY"
+}

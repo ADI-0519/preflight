@@ -1,0 +1,46 @@
+{
+  "item_id": "A25-1306897",
+  "kind": "ruling",
+  "label": "positive",
+  "outcome": "upheld",
+  "claims": [
+    {
+      "claim": "I have noticed from the time I started to take both products very quick improvement in the pain and movement ability",
+      "rules": [
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "Using lions mane [sic], ashwaganda [sic], and D3 & K2, I have managed to wean myself off sertralene",
+      "rules": [
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "There is no freedom of speech in the UK so we cant [sic] write what anything might help with",
+      "rules": [
+        "3.1"
+      ],
+      "points": [
+        2
+      ]
+    },
+    {
+      "claim": "when you use the search bar top right for condition X and it’s in the reviews it should come up",
+      "rules": [
+        "3.1"
+      ],
+      "points": [
+        2
+      ]
+    }
+  ],
+  "written_by": "draft: scripts/draft_split_v1.py",
+  "checked_by": "NEESAY"
+}

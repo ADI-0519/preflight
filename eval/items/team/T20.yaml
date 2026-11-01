@@ -1,0 +1,15 @@
+# Team-written negative for split v2 dev: realistic marketing copy whose only health claims are authorised
+# GB register wording, copied exactly (register 2026-05-19). Written on 1 Nov 2026, after the v1 dev positives were read.
+item_id: T20
+format: image
+product: vitamin B12 oral spray
+register_ids:
+- gbhc-a932b42fea05
+on_screen_text:
+- Vitamin B12 oral spray
+- Fresh mint flavour
+- Suitable for vegans
+- Vitamin B12 contributes to normal energy-yielding metabolism
+- Two sprays a day
+- Food supplements should not be used as a substitute for a varied and balanced diet and a healthy lifestyle.
+voiceover: ''

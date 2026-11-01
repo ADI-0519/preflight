@@ -1,0 +1,75 @@
+{
+  "item_id": "A24-1269415",
+  "kind": "ruling",
+  "label": "positive",
+  "outcome": "upheld",
+  "claims": [
+    {
+      "claim": "THE BEST SLEEP SUPPLEMENT ON THE MARKET",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.7"
+      ],
+      "points": [
+        2
+      ]
+    },
+    {
+      "claim": "Are you struggling with sleep?",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.7"
+      ],
+      "points": [
+        2
+      ]
+    },
+    {
+      "claim": "helps ease stress",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.7"
+      ],
+      "points": [
+        2
+      ]
+    },
+    {
+      "claim": "improve sleep",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.7"
+      ],
+      "points": [
+        2
+      ]
+    },
+    {
+      "claim": "support muscle recovery",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.7"
+      ],
+      "points": [
+        2
+      ]
+    },
+    {
+      "claim": "Rest & Recover",
+      "rules": [
+        "15.2",
+        "15.7"
+      ],
+      "points": [
+        2
+      ]
+    }
+  ],
+  "written_by": "draft: scripts/draft_split_v1.py",
+  "checked_by": "NEESAY"
+}

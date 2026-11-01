@@ -1,0 +1,256 @@
+{
+  "item_id": "A25-1281264",
+  "kind": "ruling",
+  "label": "positive",
+  "outcome": "upheld",
+  "claims": [
+    {
+      "claim": "curb cravings",
+      "rules": [
+        "12.1",
+        "12.11",
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "Nature’s GLP-1",
+      "rules": [
+        "12.1",
+        "12.11",
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "Fibre is a 100% natural way to stimulate GLP-1, the hormone that keeps you fuller for longer",
+      "rules": [
+        "12.1",
+        "12.11",
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "Curb Your Cravings",
+      "rules": [
+        "12.1",
+        "12.11",
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "help stop cravings before they start",
+      "rules": [
+        "12.1",
+        "12.11",
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "control cravings",
+      "rules": [
+        "12.1",
+        "12.11",
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "stay fuller longer",
+      "rules": [
+        "12.1",
+        "12.11",
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "No more cravings",
+      "rules": [
+        "12.1",
+        "12.11",
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "No side effects, no injections",
+      "rules": [
+        "12.1",
+        "12.11",
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "like GLP-1 drugs just natural",
+      "rules": [
+        "12.1",
+        "12.11",
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "Boosts GLP1-production",
+      "rules": [
+        "12.1",
+        "12.11",
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "reduce blood sugar spikes",
+      "rules": [
+        "12.1",
+        "12.11",
+        "15.6",
+        "15.6.2",
+        "15.1",
+        "15.1.1",
+        "15.7"
+      ],
+      "points": [
+        1,
+        2
+      ]
+    },
+    {
+      "claim": "Reduces blood sugar spikes",
+      "rules": [
+        "12.1",
+        "12.11",
+        "15.6",
+        "15.6.2",
+        "15.1",
+        "15.1.1",
+        "15.7"
+      ],
+      "points": [
+        1,
+        2
+      ]
+    },
+    {
+      "claim": "improve DIGESTION",
+      "rules": [
+        "12.1",
+        "12.11",
+        "15.6",
+        "15.6.2",
+        "15.1",
+        "15.1.1",
+        "15.7"
+      ],
+      "points": [
+        1,
+        2
+      ]
+    },
+    {
+      "claim": "Metabolic Booster",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.7"
+      ],
+      "points": [
+        2
+      ]
+    },
+    {
+      "claim": "support metabolism",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.7"
+      ],
+      "points": [
+        2
+      ]
+    },
+    {
+      "claim": "Fuel your metabolism",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.7"
+      ],
+      "points": [
+        2
+      ]
+    },
+    {
+      "claim": "Stable energy levels",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.7"
+      ],
+      "points": [
+        2
+      ]
+    },
+    {
+      "claim": "Anti-Snack Drink",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.7"
+      ],
+      "points": [
+        2
+      ]
+    },
+    {
+      "claim": "Stable appetite",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.7"
+      ],
+      "points": [
+        2
+      ]
+    }
+  ],
+  "written_by": "draft: scripts/draft_split_v1.py",
+  "checked_by": "NEESAY"
+}

@@ -1,0 +1,120 @@
+{
+  "item_id": "A24-1246372",
+  "kind": "ruling",
+  "label": "positive",
+  "outcome": "upheld",
+  "claims": [
+    {
+      "claim": "Relieve the symptoms of Perimenopause, Menopause, and Post-menopause",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "menopause supplement",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "Natural Menopause Support",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "designed to target common symptoms",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "Hot flushes",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "Night sweats",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "Hormonal balance",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "Low mood and bad sleep",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "Sleep",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "Fatigue",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "no more headaches, muscle aches or hot flushes",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    }
+  ],
+  "written_by": "draft: scripts/draft_split_v1.py",
+  "checked_by": "NEESAY"
+}

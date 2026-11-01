@@ -94,7 +94,7 @@ def write_rows(run_id: str, rows: list[dict]) -> None:
         writer.writerows(rows)
 
 
-def rescore(run_id: str, claims_run: str) -> None:
+def rescore(run_id: str, claims_run: str, split: str) -> None:
     """Score a saved check run again under the current scoring, with no model calls, as run <run_id>-rescored."""
     items = {}
     for path in (WORK / claims_run).glob("*.json"):
@@ -109,7 +109,7 @@ def rescore(run_id: str, claims_run: str) -> None:
         s = Screening.model_validate_json(path.read_text(encoding="utf-8"))
         item_id = s.screening_id.removeprefix("team-") if s.screening_id.startswith("team-") else items[s.screening_id]
         judged.setdefault(item_id, []).append(s)
-    truths = {i: load_ground_truth("v1", i) for i in judged}
+    truths = {i: load_ground_truth(split, i) for i in judged}
     rows, metrics = scored(judged, truths)
     stage = next(st for s in next(iter(judged.values())) for st in s.stages if st.stage == "check")
     new_id = f"{run_id}-rescored"
@@ -118,7 +118,7 @@ def rescore(run_id: str, claims_run: str) -> None:
         "run_id": new_id,
         "created_at": datetime.now(UTC).isoformat(timespec="seconds"),
         "git_sha": revision(PART),
-        "split": "v1",
+        "split": split,
         "part": PART,
         "stage": "check",
         "model": stage.model,
@@ -133,6 +133,7 @@ def rescore(run_id: str, claims_run: str) -> None:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Judge the dev screenings' claims and score breach recall.")
+    parser.add_argument("--split", default="v1")
     parser.add_argument("--claims-run", default=CLAIMS_RUN)
     parser.add_argument("--rulings", default=SNAPSHOTS.rulings, help="rulings snapshot for the precedent index")
     parser.add_argument("--prompt", default=PROMPT_VERSION)
@@ -144,10 +145,10 @@ def main() -> None:
     parser.add_argument("--rescore", metavar="RUN_ID", help="score a saved check run again; no model calls")
     args = parser.parse_args()
     if args.rescore:
-        return rescore(args.rescore, args.claims_run)
+        return rescore(args.rescore, args.claims_run, args.split)
     # rule 5: dev only; the test part runs once, in P33
-    items = [i for i in load_split("v1").dev if not args.only or i in args.only]
-    truths = {i: load_ground_truth("v1", i) for i in items}
+    items = [i for i in load_split(args.split).dev if not args.only or i in args.only]
+    truths = {i: load_ground_truth(args.split, i) for i in items}
     precedents = load_precedents(args.rulings)
     sha = revision(PART)
     created = datetime.now(UTC)
@@ -203,7 +204,7 @@ def main() -> None:
         "run_id": run_id,
         "created_at": created.isoformat(timespec="seconds"),
         "git_sha": sha,
-        "split": "v1",
+        "split": args.split,
         "part": PART,
         "stage": "check",
         "model": SPARK,

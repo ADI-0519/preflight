@@ -15,6 +15,7 @@ from preflight.sources.cap import load_cap_rules
 from preflight.sources.on_hold import load_on_hold
 from preflight.sources.register import load_register
 from preflight.sources.rulings import load_ruling_index
+from preflight.view import clock, span
 
 STYLE = """
 body { font: 15px/1.5 system-ui, sans-serif; max-width: 52rem; margin: 2rem auto; padding: 0 1rem; color: #1b1b1b; }
@@ -49,15 +50,6 @@ def _on_hold(version: str):
 @cache
 def _rulings(version: str):
     return {m.ruling_id: m for m in load_ruling_index(version)}
-
-
-def clock(t: float) -> str:
-    minutes, seconds = divmod(t, 60)
-    return f"{int(minutes)}:{seconds:04.1f}"
-
-
-def span(start: float, end: float) -> str:
-    return f"{clock(start)}\u2013{clock(end)}"
 
 
 def link(url: str, label: str) -> str:

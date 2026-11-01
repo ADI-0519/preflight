@@ -640,14 +640,14 @@ align = [
 page = [
     { name = "playwright" },
 ]
+render = [
+    { name = "piper-tts" },
+]
 
 [package.dev-dependencies]
 dev = [
     { name = "pytest" },
     { name = "ruff" },
-]
-fixtures = [
-    { name = "piper-tts" },
 ]
 
 [package.metadata]
@@ -655,6 +655,7 @@ requires-dist = [
     { name = "httpx", specifier = ">=0.28" },
     { name = "openai", specifier = ">=1.60" },
     { name = "openpyxl", specifier = ">=3.1.5" },
+    { name = "piper-tts", marker = "extra == 'render'", specifier = ">=1.8.0" },
     { name = "playwright", marker = "extra == 'page'", specifier = ">=1.48" },
     { name = "pydantic", specifier = ">=2.10" },
     { name = "python-dotenv", specifier = ">=1.0" },
@@ -663,14 +664,13 @@ requires-dist = [
     { name = "torch", marker = "extra == 'align'", specifier = ">=2.15.0" },
     { name = "torchaudio", marker = "extra == 'align'", specifier = ">=2.11.1" },
 ]
-provides-extras = ["page", "align"]
+provides-extras = ["page", "align", "render"]
 
 [package.metadata.requires-dev]
 dev = [
     { name = "pytest", specifier = ">=8.3" },
     { name = "ruff", specifier = ">=0.9" },
 ]
-fixtures = [{ name = "piper-tts", specifier = ">=1.8.0" }]
 
 [[package]]
 name = "protobuf"

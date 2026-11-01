@@ -14,6 +14,7 @@ from preflight.agent.draft import (
     nominal_bounds,
     render_draft,
     scene_at,
+    sentences,
     with_line,
     with_still,
 )
@@ -33,6 +34,7 @@ STILL_EDIT_PROMPT = (
     "Keep everything else as it is and add no new text, letters, labels or logos."
 )
 NO_WORDING = "no authorised wording"
+ALREADY_WORDING = "line already carries the register wording"
 NOT_LOCATED = "could not locate the claim in the draft"
 ROUND_LIMIT = "round limit reached"
 
@@ -106,6 +108,21 @@ def evidence_time(screening: Screening, claim: Claim) -> float | None:
     return None
 
 
+def bare(text: str) -> str:
+    # with_line adds a stop to a voiceover line, which most register wordings lack
+    return text.strip().rstrip(".!?")
+
+
+def holds_wording(draft: Draft, address: Address, wording: str) -> bool:
+    if address.kind == "caption":
+        return bare(lines(draft)[address]) == bare(wording)
+    # a wording of several sentences fills one slot, which the next round splits into several lines
+    spoken = [bare(s) for s in sentences(draft.scenes[address.scene].voiceover)]
+    said = [bare(s) for s in sentences(wording)]
+    first = max(0, address.index - len(said) + 1)
+    return any(spoken[i:i + len(said)] == said for i in range(first, address.index + 1))
+
+
 @dataclass
 class Round:
     draft: Draft
@@ -129,6 +146,9 @@ def plan_round(
         address = locate(scored)
         wording = flag.suggested_wording
         if address and wording:
+            if holds_wording(draft, address, wording.wording):
+                done.for_person.append(hand_off(flag, ALREADY_WORDING, address))
+                continue
             if address in replaced:
                 done.superseded.append(flag.flag_id)
                 continue

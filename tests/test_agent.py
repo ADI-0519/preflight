@@ -6,7 +6,8 @@ from pathlib import Path
 import pytest
 
 from preflight.agent import Draft, DraftScene, approve, digest, fix, is_clean, load_draft
-from preflight.agent.draft import Address, lines
+from preflight.agent.draft import Address, lines, with_line
+from preflight.agent.fix import ALREADY_WORDING
 from preflight.pipeline import SNAPSHOTS
 from preflight.schema import (
     Ad,
@@ -133,6 +134,30 @@ def test_flag_without_wording_goes_to_person(tmp_path):
     assert records[0]["for_person"] == [{"flag_id": "f0", "reason": "no authorised wording", "line": "0/voiceover/0"}]
     assert not records[0]["substitutions"]
     assert lines(result.draft) == lines(draft_of(tmp_path))
+
+
+def test_flag_on_register_wording_goes_to_person(tmp_path):
+    said = wording(FATIGUE).wording
+    # the stop with_line adds when it writes the wording into the voiceover
+    draft = draft_of(tmp_path, voiceover=f"{said}.")
+    screens = Scripted(lambda i, p: screening(i, [claim("c0", said)], [flag("f0", "c0", FATIGUE)]))
+    result, records = run(draft, screens, tmp_path)
+    assert result.state == "needs_person"
+    assert len(screens.drafts) == 1
+    assert records[0]["for_person"] == [{"flag_id": "f0", "reason": ALREADY_WORDING, "line": "0/voiceover/0"}]
+    assert not records[0]["substitutions"]
+
+
+def test_flag_inside_a_two_sentence_wording_goes_to_person(tmp_path):
+    bones = "gbhc-50fceee2d356"
+    said = wording(bones).wording
+    draft = with_line(draft_of(tmp_path, voiceover="Strong bones forever."), Address(0, "voiceover", 0), said)
+    second = lines(draft)[Address(0, "voiceover", 1)]
+    screens = Scripted(lambda i, p: screening(i, [claim("c0", second)], [flag("f0", "c0", bones)]))
+    result, records = run(draft, screens, tmp_path)
+    assert result.state == "needs_person"
+    assert records[0]["for_person"][0]["reason"] == ALREADY_WORDING
+    assert result.draft.scenes[0].voiceover == draft.scenes[0].voiceover
 
 
 def test_nested_flags_are_handed_off_as_one_line(tmp_path):

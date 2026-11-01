@@ -22,7 +22,7 @@ For PreFlight, the highest-leverage artifact is a constrained multimodal fix loo
 
 The official Meta event page confirms the two tracks, the two themes, the Meta model families, the November 4 submission deadline at 9:00 PM ET, judging from November 4–8, and winners on November 9: [Meta Global AI Developer Hackathon](https://dev.meta.ai/events/global-hackathon).
 
-The participant FAQ supplied by the team additionally states that the project must be new work, the repository must be public, the video must be three minutes, all contributors must be approved, and prohibited categories include AI medical advice, nutrition coaches, generic RAG, and simple image analyzers. The formal rules should still be read from the logged-in event page before submission; see the unresolved items in [hackathon-rules.md](../notes/hackathon-rules.md).
+The participant FAQ supplied by the team additionally states that the project must be new work, the repository must be public, the video must be three minutes, all contributors must be approved, and prohibited categories include AI medical advice, nutrition coaches, generic RAG, and simple image analyzers. The formal rules should still be read from the logged-in event page before submission; see the unresolved items in [hackathon-rules.md](hackathon-rules.md).
 
 ## What the closest Meta winners demonstrate
 

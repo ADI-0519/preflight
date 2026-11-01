@@ -38,7 +38,7 @@ For an inspectable synthetic replay with no credentials or network requests (req
 uv run --offline python scripts/verify_screening_replay.py --out data/work/verification/replay-001
 ```
 
-Choose a new output directory on each run. It writes labelled HTML, screening JSON and a provenance manifest. This checks recorded-response contracts and rendering, not live model accuracy or ruling-text retrieval. See [the development workflow](docs/research/engineering-workflow.md) for the research, limitations and next verification steps.
+Choose a new output directory on each run. It writes labelled HTML, screening JSON and a provenance manifest. This checks recorded-response contracts and rendering, not live model accuracy or ruling-text retrieval. See [the development workflow](docs/notes/engineering-workflow.md) for the research, limitations and next verification steps.
 
 ## Use as a tool
 

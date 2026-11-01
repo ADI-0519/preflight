@@ -123,7 +123,9 @@ def normalised(text: str) -> str:
 
 
 # rule 5: no split item's wording or ID reaches the prompt
-@pytest.mark.parametrize("path", sorted(PROMPTS.glob("claims_*.txt")), ids=lambda p: p.stem)
+@pytest.mark.parametrize(
+    "path", sorted([*PROMPTS.glob("claims_*.txt"), *PROMPTS.glob("judge_*.txt")]), ids=lambda p: p.stem
+)
 def test_prompt_holds_no_split_item(path):
     prompt = path.read_text(encoding="utf-8")
     assert not re.search(r"\b[AG]\d{2}-\d{6,8}\b", prompt)

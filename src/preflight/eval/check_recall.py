@@ -9,10 +9,11 @@ from datetime import UTC, datetime
 from preflight.check import EFFORT, PROMPT_VERSION, check
 from preflight.check.precedents import load_precedents
 from preflight.eval.check_reconstructions import words
-from preflight.eval.claim_recall import FIELDS, PART, RESULTS, RUNS, SNAPSHOTS, WORK, Metered, cost, git, matches
+from preflight.eval.claim_recall import FIELDS, PART, RESULTS, RUNS, WORK, Metered, cost, git, matches
 from preflight.eval.split import BreachingClaim, load_ground_truth, load_split, load_team_ad
 from preflight.models import from_env
 from preflight.models.clients import SPARK
+from preflight.pipeline import SNAPSHOTS
 from preflight.schema import Ad, Claim, OnScreenEvidence, OnScreenText, Screening, StageRun
 
 # the dev screenings whose claims the judge is run on (docs/notes/claim-extraction.md)

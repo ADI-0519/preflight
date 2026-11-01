@@ -14,6 +14,9 @@ dependencies = [
     "rank-bm25>=0.2.2",
 ]
 
+[project.scripts]
+preflight = "preflight.cli:main"
+
 [project.optional-dependencies]
 page = ["playwright>=1.48"]
 align = [

@@ -6,7 +6,9 @@ import pytest
 
 from preflight.agent import tools
 from preflight.agent.fix import FixResult
+from preflight.agent.publisher import run_publisher
 from preflight.agent.tools import TOOLS, Toolbox
+from preflight.models import SparkTurn
 from preflight.schema import Screening
 
 FIXTURE = Path(__file__).parent / "fixtures" / "agent" / "magnesium"
@@ -156,3 +158,78 @@ def test_mcp_call_delegates_to_toolbox():
     fake = FakeBox()
     asyncio.run(build_server(fake).call_tool("fix_ad", {"draft": "d.yaml"}))
     assert fake.calls == [("fix_ad", {"draft": "d.yaml"})]
+
+
+class ScriptedSpark:
+    def __init__(self, *turns):
+        self.turns, self.inputs = list(turns), []
+
+    def respond(self, input, **kwargs):
+        self.inputs.append(list(input))
+        return self.turns.pop(0)
+
+
+def call_turn(name="screen_ad", call_id="call-1"):
+    item = {"type": "function_call", "name": name, "arguments": '{"target": "ad.mp4"}', "call_id": call_id}
+    return SparkTurn("muse-spark-1.3", [item], "", {})
+
+
+def text_turn(text="done"):
+    return SparkTurn("muse-spark-1.3", [{"type": "message"}], text, {})
+
+
+def test_publisher_calls_screen_before_finishing(tmp_path):
+    spark, fake = ScriptedSpark(call_turn(), text_turn("the screening found nothing")), FakeBox()
+    out = run_publisher(Path("d.yaml"), Path("d.mp4"), spark, fake, out=tmp_path)
+    assert fake.calls == [("screen_ad", {"target": "ad.mp4"})]
+    assert out["tool_calls"] == 1 and out["final"] == "the screening found nothing"
+    saved = json.loads(Path(out["path"]).read_text(encoding="utf-8"))
+    assert saved["turns"][0]["calls"][0]["result"] == {"headline": "h"}
+
+
+def test_publisher_feeds_tool_output_back(tmp_path):
+    spark = ScriptedSpark(call_turn(call_id="abc"), text_turn())
+    run_publisher(Path("d.yaml"), Path("d.mp4"), spark, FakeBox(), out=tmp_path)
+    sent = [i for i in spark.inputs[1] if i["type"] == "function_call_output"]
+    assert [i["call_id"] for i in sent] == ["abc"]
+    assert json.loads(sent[0]["output"]) == {"headline": "h"}
+
+
+def test_publisher_turn_limit(tmp_path):
+    spark = ScriptedSpark(call_turn(), call_turn(call_id="c2"))
+    out = run_publisher(Path("d.yaml"), Path("d.mp4"), spark, FakeBox(), out=tmp_path, max_turns=2)
+    assert out["stopped"] == "turn limit" and out["tool_calls"] == 2
+
+
+def test_publisher_answers_malformed_arguments(tmp_path):
+    bad = {"type": "function_call", "name": "screen_ad", "arguments": "{not json", "call_id": "c1"}
+    spark, fake = ScriptedSpark(SparkTurn("muse-spark-1.3", [bad], "", {}), text_turn()), FakeBox()
+    run_publisher(Path("d.yaml"), Path("d.mp4"), spark, fake, out=tmp_path)
+    assert not fake.calls
+    sent = [i for i in spark.inputs[1] if i["type"] == "function_call_output"]
+    assert "error" in json.loads(sent[0]["output"])
+
+
+def test_publisher_keeps_run_ids_from_the_model(tmp_path):
+    class Stamped(FakeBox):
+        def call(self, name, arguments):
+            return {"headline": "h", "screening_id": "20261101T120000-x", "report": "r.html", "log": "a.jsonl"}
+
+    spark = ScriptedSpark(call_turn(), text_turn())
+    out = run_publisher(Path("d.yaml"), Path("d.mp4"), spark, Stamped(), out=tmp_path)
+    sent = [i for i in spark.inputs[1] if i["type"] == "function_call_output"]
+    assert json.loads(sent[0]["output"]) == {"headline": "h"}
+    assert out["turns"][0]["calls"][0]["result"]["screening_id"] == "20261101T120000-x"
+
+
+def test_publisher_writes_the_transcript_when_a_turn_fails(tmp_path):
+    class Failing(ScriptedSpark):
+        def respond(self, input, **kwargs):
+            if len(self.inputs) == 1:
+                raise RuntimeError("muse-spark-1.3 response failed")
+            return super().respond(input, **kwargs)
+
+    with pytest.raises(RuntimeError):
+        run_publisher(Path("d.yaml"), Path("d.mp4"), Failing(call_turn()), FakeBox(), out=tmp_path)
+    saved = json.loads(next(tmp_path.glob("*.json")).read_text(encoding="utf-8"))
+    assert saved["tool_calls"] == 1

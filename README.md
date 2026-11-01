@@ -44,6 +44,8 @@ To serve them to an MCP client over stdio, install the extras (`uv sync --extra 
 
 The tools read any file path or URL the calling agent passes, and send the ad to the Meta Model API, so connect them only to agents you trust. Results are written under `data/work/agent/`.
 
+`scripts/agent_demo.py <draft.yaml>` shows an agent given a draft ad that calls `screen_ad` before it would publish. It needs the `render` extra.
+
 ## Status
 
 Work in progress for the Meta Global AI Developer Hackathon (submission 4 November 2026). The plan, architecture and task list are in [docs/plan.md](docs/plan.md); tasks are tracked as issues on the project board.

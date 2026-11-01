@@ -2,6 +2,7 @@ import logging
 from collections.abc import Callable
 from concurrent.futures import ThreadPoolExecutor
 from datetime import UTC, datetime
+from pathlib import Path
 from typing import Literal
 
 from preflight import check as judge
@@ -13,9 +14,10 @@ from preflight.evidence import on_screen, regions
 from preflight.evidence.on_screen import read_on_screen, snap
 from preflight.evidence.regions import find_regions
 from preflight.evidence.transcribe import transcribe
-from preflight.ingest import Ingested
+from preflight.ingest import Ingested, capture, ingest
 from preflight.models import Models, Spark
 from preflight.models.clients import SAM, SPARK, TRANSCRIBE
+from preflight.report import render_html
 from preflight.schema import Screening, Snapshots, StageRun
 
 log = logging.getLogger(__name__)
@@ -76,3 +78,16 @@ def screen(
         log.warning("stage check failed: %s", type(e).__name__)
         failed = StageRun(stage="check", status="failed", model=SPARK, prompt=judge_prompt, effort=judge_effort)
         return gathered.model_copy(update={"stages": (*gathered.stages, failed)})
+
+
+def screen_target(
+    target: str, models: Models, precedents: PrecedentIndex, out: Path, *, align: Literal["mms"] | None = "mms"
+) -> tuple[Screening, Path, Path]:
+    done = capture(target) if target.startswith(("http://", "https://")) else ingest(Path(target))
+    screening = screen(done, models, precedents, default_id(done), align=align)
+    out.mkdir(parents=True, exist_ok=True)
+    stem = out / screening.screening_id
+    stem.with_suffix(".json").write_text(screening.model_dump_json(indent=1), encoding="utf-8")
+    crops = done.frames[0].path.parent.parent
+    stem.with_suffix(".html").write_text(render_html(screening, crops), encoding="utf-8")
+    return screening, stem.with_suffix(".json"), stem.with_suffix(".html")

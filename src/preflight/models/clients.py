@@ -37,6 +37,19 @@ class SparkResult:
 
 
 @dataclass
+class SparkTurn:
+    model: str
+    output: list[dict]
+    text: str
+    usage: dict
+    seconds: float | None = None
+
+    @property
+    def calls(self) -> list[dict]:
+        return [item for item in self.output if item["type"] == "function_call"]
+
+
+@dataclass
 class Turn:
     start_ms: int
     end_ms: int
@@ -146,6 +159,31 @@ class Spark:
         r = self.store.fetch(SPARK, parts, lambda: with_retry(call, self.sleep))
         data = json.loads(r["text"]) if schema is not None else None
         return SparkResult(r["model"], r["text"], data, r["usage"], r.get("seconds"))
+
+    def respond(
+        self, input: list[dict], *, tools: list[dict], prompt_version: str, effort: str,
+        instructions: str | None = None,
+    ) -> SparkTurn:
+        parts = {
+            "kind": "spark_tools", "input": input, "tools": tools, "prompt_version": prompt_version, "effort": effort,
+            "instructions": instructions,
+        }
+
+        def call() -> dict:
+            began = time.monotonic()
+            r = self.api.responses.create(
+                model=SPARK, input=input, tools=tools, reasoning={"effort": effort},
+                **({"instructions": instructions} if instructions else {}),
+            )
+            if r.status != "completed":
+                raise RuntimeError(f"{SPARK} response {r.status}: {r.incomplete_details}")
+            return {
+                "model": r.model, "output": [item.model_dump(exclude_none=True) for item in r.output],
+                "text": r.output_text, "usage": usage_of(r), "seconds": time.monotonic() - began,
+            }
+
+        r = self.store.fetch(SPARK, parts, lambda: with_retry(call, self.sleep))
+        return SparkTurn(r["model"], r["output"], r["text"], r["usage"], r.get("seconds"))
 
 
 @dataclass

@@ -3,7 +3,7 @@
 The builder takes an AdDescription and nothing else (docs/plan.md, evaluation protocol item 3; rule 8).
 Outputs go to data/raw/reconstructions/<ruling-id>/ and are never committed.
 
-    uv run --group fixtures python -m preflight.eval.reconstruct eval/splits/v1.yaml
+    uv run --extra render python -m preflight.eval.reconstruct eval/splits/v1.yaml
 """
 
 import argparse

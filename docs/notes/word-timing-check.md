@@ -28,15 +28,15 @@ The score is the median over letters of each letter's mean frame probability in 
 
 ## Segments on the smoke ad
 
-Each segment was cut from `audio.wav` at its start and end with ffmpeg and sent back through Voice Transcribe. "Words matched" means the clip's transcript has the same words with none missing at either edge.
+End times include the 0.15 s tail described under "Listening". Each segment was cut from `audio.wav` at its start and end with ffmpeg and sent back through Voice Transcribe. "Words matched" means the clip's transcript has the same words with none missing at either edge.
 
 | Segment | Turn | Start | End | Timing | Words matched |
 |---|---|---|---|---|---|
-| 0 | 0 | 0.14 | 4.82 | word | yes |
-| 1 | 0 | 5.82 | 8.85 | word | yes |
-| 2 | 0 | 9.81 | 11.99 | word | yes |
-| 3 | 0 | 12.97 | 13.47 | word | yes |
-| 4 | 1 | 14.53 | 15.74 | word | yes (a repeated "brighter" came back once) |
+| 0 | 0 | 0.14 | 4.97 | word | yes |
+| 1 | 0 | 5.82 | 9.00 | word | yes |
+| 2 | 0 | 9.81 | 12.14 | word | yes |
+| 3 | 0 | 12.97 | 13.62 | word | yes |
+| 4 | 1 | 14.53 | 15.89 | word | yes (a repeated "brighter" came back once) |
 
 The clip transcript also drops the stumble "the the" in segment 0 and writes "Brightleaf" for "Bright Leaf". These are transcriber differences, not clipped edges. Turn 0 ends at 13.74 s in Voice Transcribe's own times; the aligned last word ends at 13.47 s.
 
@@ -56,4 +56,8 @@ The first run of A23-1224570 found a fault: a word mixing digits and letters ("5
 
 Correct transcripts score close to 0.50 on every turn here and on the smoke ad, so the score detects a transcript that does not fit the audio; it does not grade alignment quality.
 
-Listened to by: <founder>, <date>
+## Listening
+
+A co-founder listened to the six segments of A23-1224570 on 1 Nov 2026: the segments were accurate, but several ended abruptly on their last word. The aligner places a letter where the model is most confident, before the sound fades, so word ends come early; the re-transcription check missed this because the clipped words were still recognisable. Each word-timed segment now runs on by 0.15 s (`TAIL`), stopping at the next segment's start and at the end of the audio. The co-founder listened to the re-cut segments and approved them.
+
+Listened to by: a co-founder, 1 Nov 2026

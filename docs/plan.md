@@ -61,6 +61,9 @@ The package is `preflight` (src layout). Stages exchange schema objects only, so
 | `preflight.evidence` | Transcription and region stages → segments, tracks, crops, on-screen text | via `models` |
 | `preflight.claims` | Claim extraction prompt and parser | via `models` |
 | `preflight.check` | Register shortlist, precedent retrieval, judge prompt, flag assembly | via `models` |
+| `preflight.pipeline` | The one screening function: runs the evidence stages, claim extraction and the check in order, and records a failed stage instead of hiding it | via `models` |
+| `preflight.report` | Renders a screening as one self-contained HTML page, flags grouped by claim with their sources and evidence | no |
+| `preflight.cli` | `preflight screen <file>`: writes the screening as JSON and the HTML report | via `models` |
 | `preflight.agent` | Fix loop, audit log, tool interface | via `models` |
 | `preflight.eval` | Split manifests, reconstructions, scoring, run registry, baseline | via `models` (reconstruction only) |
 | `preflight.api` | FastAPI app: upload, screen, progress over SSE, fix, approve, retention | no |

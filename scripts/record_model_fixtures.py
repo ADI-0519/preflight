@@ -9,6 +9,7 @@ from preflight.evidence.regions import find_regions
 from preflight.ingest import Frame, Ingested
 from preflight.models import Store, from_env
 from preflight.models.store import digest
+from preflight.pipeline import SNAPSHOTS, screen
 from preflight.schema import Ad
 
 FIXTURES = Path("tests/fixtures/models")
@@ -92,6 +93,32 @@ def record_evidence(m) -> None:
         print(t.track_id, [(r.frame_time, r.box) for r in t.regions])
 
 
+class NoPrecedents:
+    version = SNAPSHOTS.rulings
+
+    def top(self, query, k=3):
+        return []
+
+
+def record_screen(m) -> None:
+    clip = MEDIA / "captions.mp4"
+    work = Path("data/work/_screen")
+    (work / "frames").mkdir(parents=True, exist_ok=True)
+    run("ffmpeg", "-y", "-i", str(clip), "-fps_mode", "passthrough", str(work / "frames" / "%06d.png"))
+    frames = tuple(Frame(index=i, time=i / 2, path=p) for i, p in enumerate(sorted((work / "frames").glob("*.png"))))
+    ad = Ad(content_hash=digest(clip), media="video", width=320, height=180, duration=8.0, fps=2.0)
+    done = Ingested(
+        ad=ad, source=clip, audio=MEDIA / "speech.wav", video=clip, rate=2.0, threshold=0.3, frames=frames,
+        keyframes=(0,),
+    )
+    screening = screen(done, m, NoPrecedents(), "fixture", align=None)
+    print(screening.headline)
+    for c in screening.claims:
+        print(c.claim_id, c.kind, c.text)
+    for f in screening.flags:
+        print(f.flag_id, f.claim_id, f.kind, [r for r in f.sources])
+
+
 def shrink_image_fixture() -> None:
     # the model returns 1600x1600; the recorded copy is scaled down to keep the repo small
     for path in (FIXTURES / "muse-image-1.0").glob("*.json"):
@@ -138,6 +165,8 @@ def main() -> None:
             print(len(r.frames), [len(f.objects) for f in r.frames], r.usage)
     if "evidence" in steps:
         record_evidence(m)
+    if "screen" in steps:
+        record_screen(m)
     if "image" in steps:
         m.image.generate("a plain white tub labelled Brightleaf Daily D")
         shrink_image_fixture()

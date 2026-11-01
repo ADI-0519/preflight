@@ -2,26 +2,22 @@ import argparse
 import csv
 import json
 import subprocess
-from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from pathlib import Path
 
-from preflight.claims import EFFORT, PROMPT_VERSION, extract_claims
+from preflight.claims import EFFORT, PROMPT_VERSION
 from preflight.eval.check_reconstructions import carried, lines, words
 from preflight.eval.reconstruct import OUT_DIR, SPARK_IN, SPARK_OUT, ShotList
 from preflight.eval.split import ROOT, load_ground_truth, load_split
-from preflight.evidence.on_screen import read_on_screen, snap
-from preflight.evidence.regions import find_regions
-from preflight.evidence.transcribe import transcribe
 from preflight.ingest import ingest
 from preflight.models import Models, Spark, SparkResult, from_env
 from preflight.models.clients import SPARK
-from preflight.schema import Claim, Screening, Snapshots
+from preflight.pipeline import gather
+from preflight.schema import Claim, Screening
 
 # rule 5: prompts are tuned on dev; the test part runs once, in P33
 PART = "dev"
-SNAPSHOTS = Snapshots(gb_register="2026-05-19", on_hold="2021-01-12", cap_rules="2026-10-31", rulings="2026-10-31")
 RESULTS = ROOT / "results"
 RUNS = RESULTS / "runs.csv"
 WORK = ROOT / "data" / "work" / "runs"
@@ -56,19 +52,12 @@ def media_of(item_id: str) -> list[Path]:
 
 def screen(path: Path, models: Models, run_id: str, spark: Spark | Metered, **config) -> Screening:
     done = ingest(path)
-    with ThreadPoolExecutor(max_workers=3) as pool:
-        heard = pool.submit(transcribe, done, models.transcribe)
-        read = pool.submit(read_on_screen, done, models.spark)
-        found = pool.submit(find_regions, done, models.sam)
-        (segments, heard_run), (texts, read_run), (tracks, found_run) = heard.result(), read.result(), found.result()
-    texts = snap(texts, tracks)
-    claims, claims_run = extract_claims(done, spark, segments, texts, tracks, **config)
-    # the schema checks every claim's evidence against the screening's segments, texts and tracks
-    return Screening(
-        screening_id=f"{run_id}-{done.ad.content_hash[:12]}", ad=done.ad, snapshots=SNAPSHOTS,
-        stages=(heard_run, read_run, found_run, claims_run), screened_at=datetime.now(UTC),
-        segments=segments, on_screen=texts, tracks=tracks, claims=claims,
-    )
+    screening = gather(done, models, f"{run_id}-{done.ad.content_hash[:12]}", spark=spark, **config)
+    # a failed stage would be scored as a miss
+    failed = [r.stage for r in screening.stages if r.status == "failed"]
+    if failed:
+        raise RuntimeError(f"{path.name}: {', '.join(failed)} failed")
+    return screening
 
 
 def matches(truth: str, said: list[str], tight: bool) -> bool:

@@ -40,6 +40,16 @@ is bounded by the existing 100 MiB cap; public serving needs separate work.
 
 ## Migration Plan
 
+### Approved presentation follow-up
+
+The 1 November design review replaces the editorial header with a compact
+media-first workspace. Loaded results use evidence, editable-draft and saved-round
+views. A time axis supplements the complete accessible claim list; all claims and
+flags remain available. Saved rounds can be selected side by side with exact
+changed caption lines highlighted. Charcoal and light appearances use local CSS
+tokens. The full notice stays visible in the application shell. No API, policy,
+model, evaluation or decision-eligibility change is part of this pass.
+
 Install the locked web dependencies, build before starting Uvicorn and visit `/`.
 Existing API clients remain compatible. Without a build, `/` returns a clear 503.
 Configure final assets and run selection when their owning phases are complete.

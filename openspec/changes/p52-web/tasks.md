@@ -11,3 +11,7 @@
 - [x] 3.1 Exercise three labelled synthetic demo states and a fresh upload/fix through real HTTP/SSE/browser tests.
 - [x] 3.2 Finish full checks, document live synthetic smoke evidence and remaining P33/P53 acceptance dependencies.
 - [x] 3.3 Document run/build commands and add frontend build, type and browser CI gates.
+
+## 4. Presentation follow-up
+- [x] 4.1 Implement the approved media-first layout, accessible time axis, appearance switch and dedicated revision comparison without changing API or screening semantics.
+- [x] 4.2 Verify desktop/mobile layout, keyboard interaction and existing recovery workflows; document results and outstanding acceptance dependencies.

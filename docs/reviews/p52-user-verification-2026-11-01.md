@@ -1,6 +1,62 @@
 # P52 user verification — 1 November 2026
 
-The current uncommitted P52 workspace on `adi-branch` passes the checks below.
+## Presentation follow-up
+
+After the P52 implementation was committed as `dd0ba9b`, a separate frontend
+presentation pass implemented the [approved design direction](../notes/p52-design-research.md).
+This follow-up remains uncommitted. It adds dark/light appearance, a compact loaded
+workspace, recorded-evidence time-axis lanes, dedicated editor/comparison views
+and exact changed-line highlighting between any two saved rounds. No API,
+model, schema, source, evaluation or decision-eligibility logic changed.
+
+On the same retained synthetic video at 1511 × 870, video y=1018 became y=458,
+and the claim inspector begins at y=441. The first desktop viewport now shows the
+creative and selected claim together. This demonstrates placement, not improved
+task-completion time; no independent user study has been conducted.
+
+Current verification:
+
+- `npm --prefix web run build`: generated types, TypeScript and production build passed.
+- `npm --prefix web run test:browser -- tests/presentation.spec.ts`: 3 passed.
+- `npm --prefix web run test:browser`: 12 passed, including the existing recovery
+  suite and complete synthetic upload/fix/review/reload workflow.
+- `npm --prefix web test`: 6 passed.
+- `npm --prefix web run format:check`: passed.
+- `uv run --offline pytest tests/test_web_api.py -q`: 13 passed.
+- `uv run --offline pytest -m "not live" -rs`: 343 passed, 2 skipped, 5 deselected.
+- `uv run --offline ruff check`: passed.
+- `uv run --offline python scripts/verify_agent_setup.py`: passed.
+- `tooling/node_modules/.bin/openspec.cmd validate p52-web --strict`: valid.
+
+New browser coverage checks desktop media placement, theme changes without losing
+selection, text contrast for five token pairs in both themes, keyboard time-axis
+selection and seek, mobile evidence/editor/comparison overflow, doubled CSS content
+scale and round swapping. CSS scaling approximates magnification; it is not an
+exhaustive browser/assistive-technology accessibility audit. A contrast-test parser
+initially rejected minified three-digit hex colours; the helper now handles both
+three- and six-digit hex and the checks pass. The existing report-link assertion
+also caught a link hidden by the new editor view; the runtime link was moved into
+the shared result header and the complete workflow passes.
+The final repeat also exposed a test starting a programmatic upload before config
+loaded. Upload scenarios now wait for the enabled input, matching the actual user
+interaction rather than bypassing its disabled state.
+Async completion assertions also use the existing workflow's 30-second budget;
+one repeat found the synthetic pipeline still legitimately running after the
+default five-second assertion window. Recovery assertions retain their tighter
+timeouts, and no test retries or skipped scenarios were introduced.
+
+The rebuilt normal app runs on localhost port 8002. Retained live synthetic video
+evidence still seeks to 0.14 seconds; the real image-fix comparison shows the exact
+old/new caption and leaves the human decision untouched. No new paid model call
+was needed for this presentation pass. Screenshots under ignored
+`data/work/verification/p52-redesign/` were visually inspected in both appearances
+and at mobile width. The final P33/P53 and voiced-video-fix limits below still apply.
+No full WCAG certification, cross-browser certification or competition readiness
+is inferred from these tests.
+
+## Initial implementation verification
+
+At the initial review, the uncommitted P52 workspace on `adi-branch` passed the checks below.
 This review exercised the production frontend against real Uvicorn, both with
 network-blocked recordings and with live synthetic image/video inputs. It found
 and corrected seven defects; it does not establish model accuracy or completion

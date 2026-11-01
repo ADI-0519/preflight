@@ -1,5 +1,7 @@
 # Decisions
 
+- **1 Nov 2026 (P52 presentation).** Following the user-approved design research, loaded results use a compact media-first workspace with separate evidence, editable-draft and saved-round comparison views. Dark/light appearance is session-local. The time axis supplements the full claim list and preserves recorded timing; changed caption highlighting never rewrites wording. No API, model, evaluation or review-eligibility behavior changes. See [the design research](./p52-design-research.md) and [verification](../reviews/p52-user-verification-2026-11-01.md).
+
 - **1 Nov 2026 (P52 implementation).** The local React page consumes P51 and receives progress over SSE. Screening types are generated from the schema; private media and exact evidence crops are served through confined API reads. Demo outcomes are revealed from committed ruling metadata, while scoreboard rates require an explicit registered test-run selection in `results/final.md`. Missing final assets/metrics stay unavailable rather than being replaced with development or replay results. See [the web guide](../web.md).
 
 One dated line per decision the founders take. Changing a product rule needs all three founders and a line here.

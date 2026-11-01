@@ -14,6 +14,16 @@ and show source-verified claim evidence, exact source provenance and register wo
 - **THEN** the page explains the unavailable/incomplete result and cannot imply a
   clean screening or enable a review decision
 
+#### Scenario: Loaded result presentation
+- **WHEN** a retained result opens on a desktop viewport
+- **THEN** the media and selected evidence appear without the entry-page introduction,
+  appearance can change without resetting selection, and the full notice stays visible
+
+#### Scenario: Overlapping evidence navigation
+- **WHEN** multiple claims cite the same time
+- **THEN** every claim remains independently keyboard-selectable on the time axis
+  and full text list, with timing taken from its recorded evidence
+
 ### Requirement: Visible fix rounds and explicit human review
 The page SHALL compare saved re-screened rounds and require an explicit human action
 to record a decision on an eligible final draft, without claiming platform approval.
@@ -26,6 +36,11 @@ to record a decision on an eligible final draft, without claiming platform appro
 #### Scenario: A prior decision exists
 - **WHEN** the page reloads an already-reviewed fix
 - **THEN** it shows the persisted decision and no repeat review action
+
+#### Scenario: Compare saved revisions
+- **WHEN** a viewer selects two saved rounds
+- **THEN** their rendered media and exact captions appear side by side on desktop,
+  changed lines are highlighted, and mobile stacks the same content without overflow
 
 ### Requirement: Retention and private asset boundaries
 The API SHALL confine media/crop reads to retained inputs or explicitly configured

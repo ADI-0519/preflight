@@ -50,6 +50,7 @@ test('fresh upload uses SSE, compares fix rounds, records an explicit synthetic 
     if (/^\/jobs\/[a-f0-9]{32}$/.test(new URL(request.url()).pathname)) polling += 1;
   });
   await page.goto('/');
+  await expect(page.getByLabel('Upload ad')).toBeEnabled();
   await page
     .getByLabel('Upload ad')
     .setInputFiles(path.join(root, 'tests/fixtures/models/media/captions.mp4'));
@@ -57,6 +58,7 @@ test('fresh upload uses SSE, compares fix rounds, records an explicit synthetic 
     timeout: 30000,
   });
   await expect(page.getByRole('heading', { name: 'Source provenance' }).first()).toBeVisible();
+  await page.getByRole('button', { name: 'Prepare revision', exact: true }).click();
   await page
     .getByLabel('Scene still')
     .setInputFiles(path.join(root, 'tests/fixtures/agent/magnesium/still.png'));
@@ -72,9 +74,18 @@ test('fresh upload uses SSE, compares fix rounds, records an explicit synthetic 
     timeout: 30000,
   });
   await expect(page.getByRole('heading', { name: 'Round 1', exact: true })).toBeVisible();
-  await expect(page.getByRole('img', { name: 'Ad being screened', exact: true })).toBeVisible();
   const preview = page.getByRole('img', { name: 'Round 1 rendered draft' });
   await expect(preview).toBeVisible();
+  await expect(page.locator('.round mark').first()).toBeVisible();
+  await page.getByLabel('Left round').selectOption('1');
+  await page.getByLabel('Right round').selectOption('0');
+  await expect(page.locator('.round h3').first()).toHaveText('Round 1');
+  await expect(page.locator('.round h3').last()).toHaveText('Round 0');
+  await page.getByLabel('Left round').selectOption('0');
+  await page.getByLabel('Right round').selectOption('1');
+  await page.setViewportSize({ width: 390, height: 844 });
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  await page.setViewportSize({ width: 1280, height: 800 });
   await expect
     .poll(() => preview.evaluate((image) => (image as HTMLImageElement).naturalWidth))
     .toBeGreaterThan(0);
@@ -97,6 +108,7 @@ test('invalid media remains recoverable and the mobile layout does not overflow'
 }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/');
+  await expect(page.getByLabel('Upload ad')).toBeEnabled();
   await page
     .getByLabel('Upload ad')
     .setInputFiles({ name: 'invalid.png', mimeType: 'image/png', buffer: Buffer.from('invalid') });

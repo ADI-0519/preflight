@@ -27,6 +27,16 @@ available, dated source provenance and verbatim suggested register wording. Miss
 assets are labelled unavailable. Incomplete screens never become clean results.
 The report link opens the existing source report. Job URLs support reloading retained
 results; expired resources require another upload. There is no progress polling.
+Loaded results open in a compact media-first workspace. **Evidence** keeps the ad
+beside the selected claim and its sources; video evidence also has a keyboard-
+selectable time axis, with separate rows for overlapping claims. The complete
+claim list remains available. **Prepare revision** opens the editable-scene form.
+Completed fixes open **Compare rounds**, where left/right selectors expose every
+saved round and changed caption/voiceover lines are highlighted exactly. The
+Evidence view continues to show the final saved screening. The full source report
+is available from every review view. The header switches between dark and light
+appearance for this page session; no ad data or preference is persisted locally.
+The full screening notice stays in the application shell while scrolling.
 Native EventSource reconnect resumes progress after a dropped connection. Invalid
 progress data shows a recovery message and releases controls; reload the retained
 job to recover its result. Starting another ad clears the previous draft editor.

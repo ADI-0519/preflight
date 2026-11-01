@@ -12,18 +12,7 @@ import {
 } from './api';
 import type { Config, Demo, Fix, Job, Result, Reveal, Round, Scoreboard } from './api';
 import './style.css';
-
-function Preview({ src, label, video = false }: { src: string; label: string; video?: boolean }) {
-  const [missing, setMissing] = useState(false);
-  useEffect(() => setMissing(false), [src]);
-  if (missing)
-    return <p className="muted">Preview unavailable. The saved text and evidence remain below.</p>;
-  return video ? (
-    <video controls preload="none" src={src} aria-label={label} onError={() => setMissing(true)} />
-  ) : (
-    <img src={src} alt={label} onError={() => setMissing(true)} />
-  );
-}
+import { ClaimTimeline, Preview, RoundComparison } from './workspace';
 
 function Metrics({ board }: { board: Scoreboard }) {
   return (
@@ -96,9 +85,16 @@ function App() {
   const [draftText, setDraftText] = useState('');
   const [voiceover, setVoiceover] = useState('');
   const [still, setStill] = useState<File | null>(null);
+  const [view, setView] = useState<'evidence' | 'edit' | 'compare'>('evidence');
+  const [appearance, setAppearance] = useState<'dark' | 'light'>('dark');
+  const [currentTime, setCurrentTime] = useState(0);
   const player = useRef<HTMLVideoElement>(null);
   const generation = useRef(0);
   const active = busy || (!!job && !['completed', 'incomplete', 'failed'].includes(job.status));
+
+  useEffect(() => {
+    document.documentElement.dataset.appearance = appearance;
+  }, [appearance]);
 
   function fail(e: unknown) {
     setError(e instanceof Error ? e.message : 'Something went wrong. Please try again.');
@@ -165,6 +161,7 @@ function App() {
           if (isCurrent()) {
             setFix(fixed);
             setRounds(history);
+            setView('compare');
             if (history.length) setMedia(history[history.length - 1].media_url);
           }
         } else setSource(job!.job_id);
@@ -227,6 +224,8 @@ function App() {
     setDraftText('');
     setVoiceover('');
     setStill(null);
+    setView('evidence');
+    setCurrentTime(0);
     setStatus('Choose an ad to begin.');
     history.replaceState(null, '', location.pathname);
   }
@@ -341,6 +340,7 @@ function App() {
   const claim = result?.claims.find((c) => c.claim_id === selected);
   function select(id: string, seconds: number) {
     setSelected(id);
+    setCurrentTime(seconds);
     if (player.current) player.current.currentTime = seconds;
   }
 
@@ -348,108 +348,121 @@ function App() {
     <>
       <header>
         <a className="brand" href="/">
-          PreFlight<span>Evidence before submission</span>
+          <span className="brand-mark" aria-hidden="true" />
+          PreFlight
         </a>
-        <div className="local">LOCAL WORKSPACE</div>
+        <div className="header-actions">
+          <span className="local">Local workspace</span>
+          <button
+            className="appearance"
+            aria-pressed={appearance === 'light'}
+            onClick={() => setAppearance(appearance === 'dark' ? 'light' : 'dark')}
+          >
+            {appearance === 'dark' ? 'Light appearance' : 'Dark appearance'}
+          </button>
+        </div>
       </header>
-      <main>
-        <section className="intro">
-          <p className="eyebrow">AD REVIEW, WITH THE RECEIPTS</p>
-          <h1>
-            See the claim.
-            <br />
-            Check the evidence.
-          </h1>
-          <p>
-            Screen an ad against dated sources. Follow each flag back to the words or image that
-            raised it.
-          </p>
-        </section>
-        <aside className="notice" role="note">
-          {config?.notice ?? NOTICE}
-        </aside>
-        {config?.verification_label && <p className="verification">{config.verification_label}</p>}
-        <nav className="tabs" aria-label="Workspace mode">
-          <button
-            aria-pressed={mode === 'screen'}
-            disabled={active}
-            onClick={() => {
-              reset();
-              setMode('screen');
-              setDemo(null);
-            }}
-          >
-            Screen an ad
-          </button>
-          <button
-            aria-pressed={mode === 'demo'}
-            disabled={active}
-            onClick={() => {
-              reset();
-              setMode('demo');
-            }}
-          >
-            Explore demos
-          </button>
-        </nav>
-        {mode === 'screen' ? (
-          <section className="upload panel">
-            <div>
-              <h2>Start with your ad</h2>
-              <p>PNG, JPEG, WebP, MP4, WebM or QuickTime · up to 100 MiB.</p>
-              <p className="muted">
-                Local copies expire after {config ? config.retention_seconds / 3600 : 24} hours;
-                running jobs may defer deletion. Screening uses configured model credits.
-              </p>
-            </div>
-            <label className="file-button">
-              Choose image or video
-              <input
-                aria-label="Upload ad"
-                type="file"
-                accept="image/png,image/jpeg,image/webp,video/mp4,video/webm,video/quicktime"
-                disabled={active || !config}
-                onChange={(e) => {
-                  const file = e.target.files?.[0];
-                  e.target.value = '';
-                  if (file) void screenFile(file);
-                }}
-              />
-            </label>
-          </section>
-        ) : (
-          <section className="panel">
-            <h2>Demo library</h2>
+      <aside className="notice" role="note">
+        {config?.notice ?? NOTICE}
+      </aside>
+      <main id="workspace" className={result ? 'has-result' : ''}>
+        {!result && !active && (
+          <section className="intro">
+            <p className="eyebrow">Evidence before submission</p>
+            <h1>
+              Every claim.
+              <br />
+              <span>Back to its source.</span>
+            </h1>
             <p>
-              Reconstructions and team-made fixtures only. Outcomes stay hidden until you reveal
-              them.
+              Review the ad, inspect the evidence and compare revisions. You make the final call.
             </p>
-            {demos.length === 0 ? (
-              <p>
-                No demo assets configured yet. P53 supplies the selected reconstructions; no
-                examples or outcomes are invented here.
-              </p>
-            ) : (
-              <div className="demo-list">
-                {demos.map((d) => (
-                  <button
-                    key={d.id}
-                    disabled={active}
-                    aria-pressed={demo?.id === d.id}
-                    onClick={() => void chooseDemo(d)}
-                  >
-                    {d.title}
-                    <small>
-                      {d.kind === 'synthetic'
-                        ? 'Synthetic replay'
-                        : `Reconstruction · ${d.ruling_id}`}
-                    </small>
-                  </button>
-                ))}
-              </div>
-            )}
           </section>
         )}
+        {config?.verification_label && <p className="verification">{config.verification_label}</p>}
+        <div className={result && mode === 'screen' ? 'workspace-tools' : ''}>
+          <nav className="tabs" aria-label="Workspace mode">
+            <button
+              aria-pressed={mode === 'screen'}
+              disabled={active}
+              onClick={() => {
+                reset();
+                setMode('screen');
+                setDemo(null);
+              }}
+            >
+              Screen an ad
+            </button>
+            <button
+              aria-pressed={mode === 'demo'}
+              disabled={active}
+              onClick={() => {
+                reset();
+                setMode('demo');
+              }}
+            >
+              Explore demos
+            </button>
+          </nav>
+          {mode === 'screen' ? (
+            <section className={`upload panel ${result || active ? 'compact-upload' : ''}`}>
+              <div>
+                <h2>{result ? 'Screen another ad' : 'Start with your ad'}</h2>
+                <details className="upload-details" open={!result}>
+                  <summary>Formats and retention</summary>
+                  <p>PNG, JPEG, WebP, MP4, WebM or QuickTime · up to 100 MiB.</p>
+                  <p className="muted">
+                    Local copies expire after {config ? config.retention_seconds / 3600 : 24} hours;
+                    running jobs may defer deletion. Screening uses configured model credits.
+                  </p>
+                </details>
+              </div>
+              <label className="file-button">
+                {result ? 'Choose another ad' : 'Choose image or video'}
+                <input
+                  aria-label="Upload ad"
+                  type="file"
+                  accept="image/png,image/jpeg,image/webp,video/mp4,video/webm,video/quicktime"
+                  disabled={active || !config}
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    e.target.value = '';
+                    if (file) void screenFile(file);
+                  }}
+                />
+              </label>
+            </section>
+          ) : (
+            <section className={`panel demo-library ${result ? 'compact-library' : ''}`}>
+              <h2>Demo library</h2>
+              <p>
+                Reconstructions and team-made fixtures only. Outcomes stay hidden until you reveal
+                them.
+              </p>
+              {demos.length === 0 ? (
+                <p>No demo reconstructions are available yet.</p>
+              ) : (
+                <div className="demo-list">
+                  {demos.map((d) => (
+                    <button
+                      key={d.id}
+                      disabled={active}
+                      aria-pressed={demo?.id === d.id}
+                      onClick={() => void chooseDemo(d)}
+                    >
+                      {d.title}
+                      <small>
+                        {d.kind === 'synthetic'
+                          ? 'Synthetic replay'
+                          : `Reconstruction · ${d.ruling_id}`}
+                      </small>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </section>
+          )}
+        </div>
         {error && (
           <div className="error" role="alert">
             {error}
@@ -474,17 +487,48 @@ function App() {
               <h2>{demo?.title ?? 'Screening evidence'}</h2>
               <span className="badge">
                 {complete(result.screening)
-                  ? `${result.screening.flags.length} flags`
+                  ? `${result.screening.flags.length} flag${result.screening.flags.length === 1 ? '' : 's'}`
                   : 'Incomplete'}
               </span>
             </div>
             <p className="headline">{result.screening.headline}</p>
-            <div className="workspace">
+            {resultOwner && (
+              <a
+                className="report-link"
+                href={`/screenings/${resultOwner}/report`}
+                target="_blank"
+                rel="noreferrer"
+              >
+                Open full source report ↗
+              </a>
+            )}
+            <nav className="view-tabs" aria-label="Review views">
+              <button aria-pressed={view === 'evidence'} onClick={() => setView('evidence')}>
+                Evidence
+              </button>
+              {mode === 'screen' && source && !fix && complete(result.screening) && (
+                <button aria-pressed={view === 'edit'} onClick={() => setView('edit')}>
+                  Prepare revision
+                </button>
+              )}
+              {fix && (
+                <button aria-pressed={view === 'compare'} onClick={() => setView('compare')}>
+                  Compare rounds
+                </button>
+              )}
+            </nav>
+            <div className="workspace" hidden={view !== 'evidence'}>
               <section className="panel viewer" aria-label="Ad and claim timeline">
                 {media ? (
                   (fix ? fix.draft.format === 'video' : result.screening.ad.media === 'video') ? (
                     <video
                       ref={player}
+                      onLoadedMetadata={(e) => {
+                        const start = claim?.evidence[0]?.start ?? 0;
+                        e.currentTarget.currentTime = start;
+                        setCurrentTime(start);
+                      }}
+                      onTimeUpdate={(e) => setCurrentTime(e.currentTarget.currentTime)}
                       controls
                       preload="metadata"
                       src={media}
@@ -497,6 +541,16 @@ function App() {
                   <p>Preview unavailable after reload. The retained evidence is shown below.</p>
                 )}
                 <h3>Claim timeline</h3>
+                {result.screening.ad.media === 'video' &&
+                  !(fix && fix.draft.format !== 'video') && (
+                    <ClaimTimeline
+                      claims={result.claims}
+                      duration={result.screening.ad.duration ?? 0}
+                      selected={selected}
+                      currentTime={currentTime}
+                      onSelect={select}
+                    />
+                  )}
                 <p className="muted">
                   Select a claim to inspect its evidence
                   {result.screening.ad.media === 'video' ? ' and seek the video' : ''}.
@@ -525,14 +579,9 @@ function App() {
                       : 'No complete claim result is available.'}
                   </p>
                 )}
-                {resultOwner && (
-                  <a href={`/screenings/${resultOwner}/report`} target="_blank" rel="noreferrer">
-                    Open full source report ↗
-                  </a>
-                )}
               </section>
               <section className="panel evidence" aria-label="Selected claim evidence">
-                <p className="eyebrow">FOLLOW THE RECEIPTS</p>
+                <p className="eyebrow">Claim inspector</p>
                 <h3>{claim?.text ?? 'Choose a claim'}</h3>
                 {claim?.evidence.map((e, i) => (
                   <article className="evidence-item" key={i}>
@@ -619,7 +668,7 @@ function App() {
           </>
         )}
         {mode === 'screen' && source && !fix && result && complete(result.screening) && (
-          <section className="panel">
+          <section className="panel editor-panel" hidden={view !== 'edit'}>
             <h2>Make the ad editable</h2>
             <p>
               Supply a clean scene still and the actual caption/script. The fix loop re-screens this
@@ -677,34 +726,16 @@ function App() {
           </section>
         )}
         {fix && (
-          <section className="panel">
+          <section className="panel comparison-panel" hidden={view !== 'compare'}>
             <h2>Fix rounds</h2>
             <p>
               Each column is a saved, re-screened draft. Remaining flags need a person; the loop
               never makes the final decision.
             </p>
-            <div className="rounds">
-              {rounds.map((r) => (
-                <article className="round" key={r.round}>
-                  <h3>Round {r.round}</h3>
-                  <p>{r.screening.headline}</p>
-                  <Preview
-                    src={r.media_url}
-                    video={r.format === 'video'}
-                    label={`Round ${r.round} rendered draft`}
-                  />
-                  {r.scenes.map((s, i) => (
-                    <div key={i}>
-                      <h4>Scene {i + 1}</h4>
-                      {s.on_screen_text.map((t, j) => (
-                        <p key={j}>{t}</p>
-                      ))}
-                      {s.voiceover && <p>Voiceover: {s.voiceover}</p>}
-                    </div>
-                  ))}
-                </article>
-              ))}
-            </div>
+            <RoundComparison rounds={rounds} />
+            <p className="muted">
+              The Evidence view shows the final saved screening and its source provenance.
+            </p>
             {fix.decision ? (
               <div className="decision">
                 <h3>Human review recorded</h3>
@@ -758,8 +789,7 @@ function App() {
         {mode === 'demo' && config && <Metrics board={config.scoreboard} />}
       </main>
       <footer>
-        <strong>PreFlight</strong>
-        <p>{config?.notice ?? NOTICE}</p>
+        <span>PreFlight · Evidence before submission</span>
         <a href="/docs">API documentation ↗</a>
       </footer>
     </>

@@ -11,6 +11,7 @@ test('a malformed progress stream leaves the user able to start again', async ({
     }),
   );
   await page.goto('/');
+  await expect(page.getByLabel('Upload ad')).toBeEnabled();
   await page.getByLabel('Upload ad').setInputFiles(media);
   await expect(page.getByRole('alert')).toContainText('progress stream');
   await expect(page.getByLabel('Upload ad')).toBeEnabled({ timeout: 2000 });
@@ -50,12 +51,19 @@ test('a delayed reveal cannot attach one demos outcome to a different demo', asy
 
 test('starting another ad clears the previous editable draft', async ({ page }) => {
   await page.goto('/');
+  await expect(page.getByLabel('Upload ad')).toBeEnabled();
   await page.getByLabel('Upload ad').setInputFiles(media);
+  await expect(page.getByRole('button', { name: 'Prepare revision', exact: true })).toBeVisible({
+    timeout: 30000,
+  });
+  await page.getByRole('button', { name: 'Prepare revision', exact: true }).click();
   await expect(page.getByLabel('On-screen captions')).toBeVisible();
   await page.getByLabel('On-screen captions').fill('Previous synthetic draft captions');
   await page.getByRole('button', { name: 'Explore demos' }).click();
   await page.getByRole('button', { name: 'Screen an ad' }).click();
+  await expect(page.getByLabel('Upload ad')).toBeEnabled();
   await page.getByLabel('Upload ad').setInputFiles(media);
+  await page.getByRole('button', { name: 'Prepare revision', exact: true }).click();
   await expect(page.getByLabel('On-screen captions')).toBeVisible();
   await expect(page.getByLabel('On-screen captions')).toHaveValue('', { timeout: 2000 });
 });
@@ -101,6 +109,7 @@ test('a dropped SSE connection resumes without replaying earlier events', async 
     }
   });
   await page.goto('/');
+  await expect(page.getByLabel('Upload ad')).toBeEnabled();
   await page.getByLabel('Upload ad').setInputFiles(media);
   await expect(page.getByRole('heading', { name: 'Screening evidence' })).toBeVisible({
     timeout: 15000,

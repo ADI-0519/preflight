@@ -265,6 +265,16 @@ def test_periodic_sweep_survives_a_failed_sweep(tmp_path):
         assert not (root / upload_id).exists()
 
 
+def test_sweep_deletes_a_folder_a_late_worker_recreated(tmp_path):
+    root = tmp_path / "uploads"
+    app = create_app(Settings(root=root))
+    with TestClient(app):
+        orphan = root / ("f" * 32) / "jobs" / ("e" * 32) / "ingest"
+        orphan.mkdir(parents=True)
+        app.state.service.storage.sweep()
+        assert not (root / ("f" * 32)).exists()
+
+
 def test_periodic_retention_sweep_runs_without_an_http_cleanup_call(tmp_path):
     clock = [100.0]
     root = tmp_path / "uploads"

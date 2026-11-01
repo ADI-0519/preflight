@@ -187,10 +187,8 @@ class Retention:
                 if not directory.is_dir() or directory.is_symlink() or not IDENTIFIER.fullmatch(directory.name):
                     continue
                 meta = directory / "upload.json"
-                deadline = json.loads(meta.read_text(encoding="utf-8"))["expires_at"] if meta.exists() else (
-                    directory.stat().st_mtime + self.settings.retention_seconds
-                )
-                if deadline <= self.clock():
+                # begin() writes upload.json under the lock, so a folder without one is left by a late worker
+                if not meta.exists() or json.loads(meta.read_text(encoding="utf-8"))["expires_at"] <= self.clock():
                     expired.add(directory.name)
             for job_id, fields in list(self.jobs.items()):
                 expires_at = fields.get("expires_at", 0)

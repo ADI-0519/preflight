@@ -70,12 +70,32 @@ def test_a_flag_counts_only_with_a_related_rule_on_a_matching_claim():
     assert TOY[1].caught == 0
 
 
+def test_extra_rules_count_for_with_rule_but_not_exact_rules():
+    item = score_item(
+        truth("A3", [("cures anxiety fast", ["15.6.2"]), ("sleep deeper", ["15.1"])]),
+        [screening("s5", ["Cures anxiety fast", "Sleep deeper"], {0: ["15.6", "3.7", "15.7"], 1: ["15.1.1"]})],
+    )
+    assert (item.caught, item.caught_exact_rules) == (2, 1)
+    # 15.6 and 15.1.1 relate to their claims' rules; 3.7 and 15.7 do not
+    assert (item.rules_related, item.rules_cited) == (2, 4)
+
+
+def test_former_rule_numbers_are_read_in_current_numbering():
+    flags = [screening("s6", ["Half the price of the leading brand"], {0: ["3.39"]})]
+    before = truth("A23-1216841", [("Half the price of the leading brand", ["3.40"])])
+    after = truth("A99-0000001", [("Half the price of the leading brand", ["3.40"])])
+    assert score_item(before, flags).caught == 1  # this ruling cites the earlier 3.40, now 3.39
+    assert score_item(after, flags).caught == 0  # elsewhere 3.40 is the current rule on who made the product
+
+
 def test_toy_split_scores():
     m = by_name()
     assert (m["ad_recall"].hits, m["ad_recall"].total) == (1, 2)
     assert (m["claim_recall"].hits, m["claim_recall"].total) == (1, 4)
     assert (m["claim_recall_carried"].hits, m["claim_recall_carried"].total) == (1, 3)
     assert (m["claim_recall_any_rule"].hits, m["claim_recall_any_rule"].total) == (2, 4)
+    assert (m["claim_recall_exact_rules"].hits, m["claim_recall_exact_rules"].total) == (1, 4)
+    assert (m["rule_precision"].hits, m["rule_precision"].total) == (1, 2)
     assert (m["flags_per_positive_ad"].hits, m["flags_per_positive_ad"].total) == (3, 2)
     assert (m["negative_ads_flagged"].hits, m["negative_ads_flagged"].total) == (1, 2)
     assert (m["flags_per_negative_ad"].hits, m["flags_per_negative_ad"].total) == (1, 2)

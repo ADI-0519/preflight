@@ -1,0 +1,1332 @@
+{
+ "schema_version": "1",
+ "screening_id": "20261101T145140-1d107e6d8c02-1",
+ "previous_id": "20261101T145140-1d107e6d8c02-0",
+ "ad": {
+  "content_hash": "c8ba0a4338c7fe825cb10c14ba7d417743f3774c620b9115137c3dbc1fffe735",
+  "media": "video",
+  "width": 1280,
+  "height": 720,
+  "duration": 9.053,
+  "fps": 25.0
+ },
+ "snapshots": {
+  "gb_register": "2026-05-19",
+  "on_hold": "2021-01-12",
+  "cap_rules": "2026-10-31",
+  "rulings": "2026-11-01"
+ },
+ "stages": [
+  {
+   "stage": "transcribe",
+   "status": "done",
+   "model": "muse-voice-transcribe-1.0",
+   "prompt": null,
+   "effort": null
+  },
+  {
+   "stage": "on_screen",
+   "status": "done",
+   "model": "muse-spark-1.3",
+   "prompt": "on-screen-2",
+   "effort": "medium"
+  },
+  {
+   "stage": "regions",
+   "status": "done",
+   "model": "sam-3.1",
+   "prompt": "regions-2",
+   "effort": null
+  },
+  {
+   "stage": "claims",
+   "status": "done",
+   "model": "muse-spark-1.3",
+   "prompt": "claims_v3",
+   "effort": "high"
+  },
+  {
+   "stage": "check",
+   "status": "done",
+   "model": "muse-spark-1.3",
+   "prompt": "judge_v3",
+   "effort": "high"
+  }
+ ],
+ "screened_at": "2026-11-01T14:54:39.202408Z",
+ "segments": [
+  {
+   "start": 0.38,
+   "end": 8.62,
+   "segment_id": "segment-0",
+   "turn": 0,
+   "text": "Magnesium contributes to a reduction of tiredness and fatigue, magnesium contributes to normal functioning of the nervous system.",
+   "timing": "turn"
+  }
+ ],
+ "on_screen": [
+  {
+   "start": 0.0,
+   "end": 0.0,
+   "text_id": "text-0",
+   "text": "Food supplements should not be used as a",
+   "box": [
+    329,
+    442,
+    949,
+    489
+   ]
+  },
+  {
+   "start": 0.0,
+   "end": 0.0,
+   "text_id": "text-1",
+   "text": "Magnesium contributes to a reduction of",
+   "box": [
+    329,
+    442,
+    949,
+    489
+   ]
+  },
+  {
+   "start": 0.0,
+   "end": 0.0,
+   "text_id": "text-2",
+   "text": "Magnesium tablets",
+   "box": [
+    488,
+    397,
+    791,
+    444
+   ]
+  },
+  {
+   "start": 0.0,
+   "end": 0.0,
+   "text_id": "text-3",
+   "text": "PreFlight draft",
+   "box": [
+    0,
+    0,
+    236,
+    68
+   ]
+  },
+  {
+   "start": 0.0,
+   "end": 0.0,
+   "text_id": "text-4",
+   "text": "healthy lifestyle.",
+   "box": [
+    306,
+    530,
+    972,
+    577
+   ]
+  },
+  {
+   "start": 0.0,
+   "end": 0.0,
+   "text_id": "text-5",
+   "text": "substitute for a varied and balanced diet and a",
+   "box": [
+    306,
+    530,
+    972,
+    577
+   ]
+  },
+  {
+   "start": 0.0,
+   "end": 0.0,
+   "text_id": "text-6",
+   "text": "tiredness and fatigue",
+   "box": [
+    329,
+    442,
+    949,
+    489
+   ]
+  }
+ ],
+ "tracks": [
+  {
+   "track_id": "dark-rectangle-0",
+   "prompt": "dark rectangle",
+   "regions": [
+    {
+     "frame_time": 0.0,
+     "box": [
+      473,
+      487,
+      805,
+      533
+     ],
+     "crop": "crops/dark-rectangle-0.png"
+    },
+    {
+     "frame_time": 0.5,
+     "box": [
+      473,
+      488,
+      806,
+      533
+     ],
+     "crop": null
+    },
+    {
+     "frame_time": 1.0,
+     "box": [
+      473,
+      488,
+      806,
+      533
+     ],
+     "crop": null
+    },
+    {
+     "frame_time": 1.5,
+     "box": [
+      473,
+      488,
+      805,
+      533
+     ],
+     "crop": null
+    },
+    {
+     "frame_time": 2.0,
+     "box": [
+      473,
+      488,
+      805,
+      533
+     ],
+     "crop": null
+    },
+    {
+     "frame_time": 2.5,
+     "box": [
+      473,
+      488,
+      805,
+      533
+     ],
+     "crop": null
+    },
+    {
+     "frame_time": 3.0,
+     "box": [
+      473,
+      488,
+      805,
+      533
+     ],
+     "crop": null
+    },
+    {
+     "frame_time": 3.5,
+     "box": [
+      473,
+      488,
+      805,
+      533
+     ],
+     "crop": null
+    },
+    {
+     "frame_time": 4.0,
+     "box": [
+      473,
+      488,
+      805,
+      533
+     ],
+     "crop": null
+    },
+    {
+     "frame_time": 4.5,
+     "box": [
+      473,
+      488,
+      805,
+      533
+     ],
+     "crop": null
+    },
+    {
+     "frame_time": 5.0,
+     "box": [
+      473,
+      488,
+      805,
+      533
+     ],
+     "crop": null
+    },
+    {
+     "frame_time": 5.5,
+     "box": [
+      473,
+      488,
+      805,
+      533
+     ],
+     "crop": null
+    },
+    {
+     "frame_time": 6.0,
+     "box": [
+      473,
+      488,
+      805,
+      533
+     ],
+     "crop": null
+    },
+    {
+     "frame_time": 6.5,
+     "box": [
+      473,
+      488,
+      805,
+      533
+     ],
+     "crop": null
+    },
+    {
+     "frame_time": 7.0,
+     "box": [
+      473,
+      488,
+      805,
+      533
+     ],
+     "crop": null
+    },
+    {
+     "frame_time": 7.5,
+     "box": [
+      473,
+      488,
+      805,
+      533
+     ],
+     "crop": null
+    },
+    {
+     "frame_time": 8.0,
+     "box": [
+      473,
+      488,
+      805,
+      533
+     ],
+     "crop": null
+    },
+    {
+     "frame_time": 8.5,
+     "box": [
+      473,
+      488,
+      805,
+      532
+     ],
+     "crop": null
+    }
+   ]
+  },
+  {
+   "track_id": "dark-rectangle-1",
+   "prompt": "dark rectangle",
+   "regions": [
+    {
+     "frame_time": 0.0,
+     "box": [
+      329,
+      442,
+      949,
+      489
+     ],
+     "crop": null
+    },
+    {
+     "frame_time": 0.5,
+     "box": [
+      328,
+      442,
+      949,
+      490
+     ],
+     "crop": null
+    },
+    {
+     "frame_time": 1.0,
+     "box": [
+      328,
+      441,
+      949,
+      490
+     ],
+     "crop": "crops/dark-rectangle-1.png"
+    },
+    {
+     "frame_time": 1.5,
+     "box": [
+      328,
+      442,
+      949,
+      490
+     ],
+     "crop": null
+    },
+    {
+     "frame_time": 2.0,
+     "box": [
+      329,
+      442,
+      949,
+      489
+     ],
+     "crop": null
+    },
+    {
+     "frame_time": 2.5,
+     "box": [
+      328,
+      442,
+      949,
+      490
+     ],
+     "crop": null
+    },
+    {
+     "frame_time": 3.0,
+     "box": [
+      328,
+      441,
+      950,
+      489
+     ],
+     "crop": null
+    },
+    {
+     "frame_time": 3.5,
+     "box": [
+      328,
+      442,
+      949,
+      489
+     ],
+     "crop": null
+    },
+    {
+     "frame_time": 4.0,
+     "box": [
+      328,
+      442,
+      949,
+      489
+     ],
+     "crop": null
+    },
+    {
+     "frame_time": 4.5,
+     "box": [
+      328,
+      442,
+      950,
+      490
+     ],
+     "crop": null
+    },
+    {
+     "frame_time": 5.0,
+     "box": [
+      329,
+      442,
+      949,
+      489
+     ],
+     "crop": null
+    },
+    {
+     "frame_time": 5.5,
+     "box": [
+      328,
+      442,
+      950,
+      490
+     ],
+     "crop": null
+    },
+    {
+     "frame_time": 6.0,
+     "box": [
+      328,
+      442,
+      949,
+      489
+     ],
+     "crop": null
+    },
+    {
+     "frame_time": 6.5,
+     "box": [
+      328,
+      442,
+      949,
+      489
+     ],
+     "crop": null
+    },
+    {
+     "frame_time": 7.0,
+     "box": [
+      329,
+      442,
+      949,
+      489
+     ],
+     "crop": null
+    },
+    {
+     "frame_time": 7.5,
+     "box": [
+      329,
+      442,
+      949,
+      489
+     ],
+     "crop": null
+    },
+    {
+     "frame_time": 8.0,
+     "box": [
+      329,
+      442,
+      950,
+      489
+     ],
+     "crop": null
+    },
+    {
+     "frame_time": 8.5,
+     "box": [
+      328,
+      442,
+      950,
+      490
+     ],
+     "crop": null
+    }
+   ]
+  },
+  {
+   "track_id": "dark-rectangle-2",
+   "prompt": "dark rectangle",
+   "regions": [
+    {
+     "frame_time": 0.0,
+     "box": [
+      306,
+      530,
+      972,
+      577
+     ],
+     "crop": null
+    },
+    {
+     "frame_time": 0.5,
+     "box": [
+      305,
+      530,
+      974,
+      578
+     ],
+     "crop": "crops/dark-rectangle-2.png"
+    },
+    {
+     "frame_time": 1.0,
+     "box": [
+      305,
+      530,
+      974,
+      578
+     ],
+     "crop": null
+    },
+    {
+     "frame_time": 1.5,
+     "box": [
+      305,
+      530,
+      974,
+      578
+     ],
+     "crop": null
+    },
+    {
+     "frame_time": 2.0,
+     "box": [
+      305,
+      530,
+      974,
+      578
+     ],
+     "crop": null
+    },
+    {
+     "frame_time": 2.5,
+     "box": [
+      305,
+      530,
+      974,
+      578
+     ],
+     "crop": null
+    },
+    {
+     "frame_time": 3.0,
+     "box": [
+      305,
+      530,
+      974,
+      578
+     ],
+     "crop": null
+    },
+    {
+     "frame_time": 3.5,
+     "box": [
+      305,
+      530,
+      974,
+      578
+     ],
+     "crop": null
+    },
+    {
+     "frame_time": 4.0,
+     "box": [
+      305,
+      530,
+      974,
+      578
+     ],
+     "crop": null
+    },
+    {
+     "frame_time": 4.5,
+     "box": [
+      305,
+      530,
+      974,
+      578
+     ],
+     "crop": null
+    },
+    {
+     "frame_time": 5.0,
+     "box": [
+      305,
+      530,
+      974,
+      578
+     ],
+     "crop": null
+    },
+    {
+     "frame_time": 5.5,
+     "box": [
+      305,
+      530,
+      974,
+      578
+     ],
+     "crop": null
+    },
+    {
+     "frame_time": 6.0,
+     "box": [
+      305,
+      530,
+      974,
+      578
+     ],
+     "crop": null
+    },
+    {
+     "frame_time": 6.5,
+     "box": [
+      305,
+      530,
+      974,
+      578
+     ],
+     "crop": null
+    },
+    {
+     "frame_time": 7.0,
+     "box": [
+      305,
+      530,
+      974,
+      578
+     ],
+     "crop": null
+    },
+    {
+     "frame_time": 7.5,
+     "box": [
+      305,
+      530,
+      974,
+      578
+     ],
+     "crop": null
+    },
+    {
+     "frame_time": 8.0,
+     "box": [
+      305,
+      530,
+      974,
+      578
+     ],
+     "crop": null
+    },
+    {
+     "frame_time": 8.5,
+     "box": [
+      305,
+      530,
+      974,
+      578
+     ],
+     "crop": null
+    }
+   ]
+  },
+  {
+   "track_id": "dark-rectangle-3",
+   "prompt": "dark rectangle",
+   "regions": [
+    {
+     "frame_time": 0.0,
+     "box": [
+      282,
+      574,
+      997,
+      615
+     ],
+     "crop": null
+    },
+    {
+     "frame_time": 0.5,
+     "box": [
+      282,
+      574,
+      996,
+      618
+     ],
+     "crop": "crops/dark-rectangle-3.png"
+    },
+    {
+     "frame_time": 1.0,
+     "box": [
+      282,
+      574,
+      996,
+      618
+     ],
+     "crop": null
+    },
+    {
+     "frame_time": 1.5,
+     "box": [
+      282,
+      574,
+      996,
+      618
+     ],
+     "crop": null
+    },
+    {
+     "frame_time": 2.0,
+     "box": [
+      282,
+      574,
+      996,
+      617
+     ],
+     "crop": null
+    },
+    {
+     "frame_time": 2.5,
+     "box": [
+      282,
+      574,
+      996,
+      618
+     ],
+     "crop": null
+    },
+    {
+     "frame_time": 3.0,
+     "box": [
+      282,
+      574,
+      996,
+      618
+     ],
+     "crop": null
+    },
+    {
+     "frame_time": 3.5,
+     "box": [
+      282,
+      574,
+      996,
+      618
+     ],
+     "crop": null
+    },
+    {
+     "frame_time": 4.0,
+     "box": [
+      282,
+      574,
+      996,
+      617
+     ],
+     "crop": null
+    },
+    {
+     "frame_time": 4.5,
+     "box": [
+      282,
+      574,
+      996,
+      617
+     ],
+     "crop": null
+    },
+    {
+     "frame_time": 5.0,
+     "box": [
+      282,
+      574,
+      996,
+      617
+     ],
+     "crop": null
+    },
+    {
+     "frame_time": 5.5,
+     "box": [
+      282,
+      574,
+      996,
+      617
+     ],
+     "crop": null
+    },
+    {
+     "frame_time": 6.0,
+     "box": [
+      282,
+      574,
+      996,
+      617
+     ],
+     "crop": null
+    },
+    {
+     "frame_time": 6.5,
+     "box": [
+      282,
+      574,
+      996,
+      617
+     ],
+     "crop": null
+    },
+    {
+     "frame_time": 7.0,
+     "box": [
+      282,
+      574,
+      996,
+      617
+     ],
+     "crop": null
+    },
+    {
+     "frame_time": 7.5,
+     "box": [
+      282,
+      574,
+      996,
+      617
+     ],
+     "crop": null
+    },
+    {
+     "frame_time": 8.0,
+     "box": [
+      282,
+      574,
+      996,
+      618
+     ],
+     "crop": null
+    },
+    {
+     "frame_time": 8.5,
+     "box": [
+      282,
+      574,
+      996,
+      617
+     ],
+     "crop": null
+    }
+   ]
+  },
+  {
+   "track_id": "dark-rectangle-4",
+   "prompt": "dark rectangle",
+   "regions": [
+    {
+     "frame_time": 0.0,
+     "box": [
+      488,
+      397,
+      791,
+      444
+     ],
+     "crop": "crops/dark-rectangle-4.png"
+    },
+    {
+     "frame_time": 0.5,
+     "box": [
+      488,
+      398,
+      791,
+      445
+     ],
+     "crop": null
+    },
+    {
+     "frame_time": 1.0,
+     "box": [
+      488,
+      398,
+      790,
+      444
+     ],
+     "crop": null
+    },
+    {
+     "frame_time": 1.5,
+     "box": [
+      488,
+      398,
+      791,
+      445
+     ],
+     "crop": null
+    },
+    {
+     "frame_time": 2.0,
+     "box": [
+      488,
+      398,
+      791,
+      445
+     ],
+     "crop": null
+    },
+    {
+     "frame_time": 2.5,
+     "box": [
+      488,
+      398,
+      791,
+      445
+     ],
+     "crop": null
+    },
+    {
+     "frame_time": 3.0,
+     "box": [
+      488,
+      398,
+      791,
+      445
+     ],
+     "crop": null
+    },
+    {
+     "frame_time": 3.5,
+     "box": [
+      488,
+      398,
+      791,
+      445
+     ],
+     "crop": null
+    },
+    {
+     "frame_time": 4.0,
+     "box": [
+      488,
+      398,
+      791,
+      445
+     ],
+     "crop": null
+    },
+    {
+     "frame_time": 4.5,
+     "box": [
+      488,
+      398,
+      791,
+      445
+     ],
+     "crop": null
+    },
+    {
+     "frame_time": 5.0,
+     "box": [
+      488,
+      398,
+      791,
+      445
+     ],
+     "crop": null
+    },
+    {
+     "frame_time": 5.5,
+     "box": [
+      488,
+      398,
+      791,
+      445
+     ],
+     "crop": null
+    },
+    {
+     "frame_time": 6.0,
+     "box": [
+      488,
+      398,
+      791,
+      445
+     ],
+     "crop": null
+    },
+    {
+     "frame_time": 6.5,
+     "box": [
+      488,
+      398,
+      791,
+      445
+     ],
+     "crop": null
+    },
+    {
+     "frame_time": 7.0,
+     "box": [
+      488,
+      398,
+      791,
+      445
+     ],
+     "crop": null
+    },
+    {
+     "frame_time": 7.5,
+     "box": [
+      488,
+      398,
+      791,
+      445
+     ],
+     "crop": null
+    },
+    {
+     "frame_time": 8.0,
+     "box": [
+      488,
+      398,
+      791,
+      445
+     ],
+     "crop": null
+    },
+    {
+     "frame_time": 8.5,
+     "box": [
+      488,
+      398,
+      790,
+      444
+     ],
+     "crop": null
+    }
+   ]
+  },
+  {
+   "track_id": "dark-rectangle-5",
+   "prompt": "dark rectangle",
+   "regions": [
+    {
+     "frame_time": 0.0,
+     "box": [
+      511,
+      617,
+      768,
+      665
+     ],
+     "crop": null
+    },
+    {
+     "frame_time": 0.5,
+     "box": [
+      511,
+      617,
+      769,
+      665
+     ],
+     "crop": "crops/dark-rectangle-5.png"
+    },
+    {
+     "frame_time": 1.0,
+     "box": [
+      511,
+      617,
+      769,
+      665
+     ],
+     "crop": null
+    },
+    {
+     "frame_time": 1.5,
+     "box": [
+      511,
+      617,
+      769,
+      665
+     ],
+     "crop": null
+    },
+    {
+     "frame_time": 2.0,
+     "box": [
+      511,
+      617,
+      769,
+      665
+     ],
+     "crop": null
+    },
+    {
+     "frame_time": 2.5,
+     "box": [
+      511,
+      618,
+      768,
+      665
+     ],
+     "crop": null
+    },
+    {
+     "frame_time": 3.0,
+     "box": [
+      511,
+      618,
+      768,
+      665
+     ],
+     "crop": null
+    },
+    {
+     "frame_time": 3.5,
+     "box": [
+      511,
+      618,
+      768,
+      665
+     ],
+     "crop": null
+    },
+    {
+     "frame_time": 4.0,
+     "box": [
+      511,
+      617,
+      769,
+      665
+     ],
+     "crop": null
+    },
+    {
+     "frame_time": 4.5,
+     "box": [
+      511,
+      617,
+      769,
+      665
+     ],
+     "crop": null
+    },
+    {
+     "frame_time": 5.0,
+     "box": [
+      511,
+      617,
+      769,
+      665
+     ],
+     "crop": null
+    },
+    {
+     "frame_time": 5.5,
+     "box": [
+      511,
+      617,
+      769,
+      665
+     ],
+     "crop": null
+    },
+    {
+     "frame_time": 6.0,
+     "box": [
+      511,
+      617,
+      769,
+      665
+     ],
+     "crop": null
+    },
+    {
+     "frame_time": 6.5,
+     "box": [
+      511,
+      617,
+      769,
+      665
+     ],
+     "crop": null
+    },
+    {
+     "frame_time": 7.0,
+     "box": [
+      511,
+      617,
+      769,
+      665
+     ],
+     "crop": null
+    },
+    {
+     "frame_time": 7.5,
+     "box": [
+      511,
+      617,
+      769,
+      665
+     ],
+     "crop": null
+    },
+    {
+     "frame_time": 8.0,
+     "box": [
+      511,
+      617,
+      769,
+      665
+     ],
+     "crop": null
+    },
+    {
+     "frame_time": 8.5,
+     "box": [
+      511,
+      617,
+      769,
+      665
+     ],
+     "crop": null
+    }
+   ]
+  }
+ ],
+ "claims": [
+  {
+   "claim_id": "claim-0",
+   "text": "Magnesium contributes to a reduction of tiredness and fatigue, magnesium contributes to normal functioning of the nervous system.",
+   "kind": "explicit",
+   "substance": "Magnesium",
+   "evidence": [
+    {
+     "kind": "transcript",
+     "segment_id": "segment-0"
+    }
+   ]
+  },
+  {
+   "claim_id": "claim-1",
+   "text": "Magnesium contributes to a reduction of tiredness and fatigue",
+   "kind": "explicit",
+   "substance": "Magnesium",
+   "evidence": [
+    {
+     "kind": "transcript",
+     "segment_id": "segment-0"
+    },
+    {
+     "kind": "on_screen",
+     "text_id": "text-1"
+    },
+    {
+     "kind": "on_screen",
+     "text_id": "text-6"
+    }
+   ]
+  },
+  {
+   "claim_id": "claim-2",
+   "text": "magnesium contributes to normal functioning of the nervous system",
+   "kind": "explicit",
+   "substance": "magnesium",
+   "evidence": [
+    {
+     "kind": "transcript",
+     "segment_id": "segment-0"
+    }
+   ]
+  },
+  {
+   "claim_id": "claim-3",
+   "text": "Magnesium tablets",
+   "kind": "explicit",
+   "substance": "Magnesium",
+   "evidence": [
+    {
+     "kind": "on_screen",
+     "text_id": "text-2"
+    }
+   ]
+  }
+ ],
+ "flags": [],
+ "notice": "PreFlight screens ads against the dated sources named in this report. It is not legal advice, and it does not decide whether an ad may run: a person makes that call.",
+ "headline": "No issues found against the GB register (2026-05-19), the on-hold list (2021-01-12), the CAP Code rule pack (2026-10-31) and the ASA rulings index (2026-11-01)."
+}

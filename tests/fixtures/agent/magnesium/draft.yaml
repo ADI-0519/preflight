@@ -1,0 +1,8 @@
+format: video
+scenes:
+  - still: still.png
+    voiceover: Our magnesium tablets banish tiredness for good. Magnesium keeps your nerves calm under any pressure.
+    on_screen_text:
+      - Magnesium tablets
+      - Beats fatigue in seven days
+      - Food supplements should not be used as a substitute for a varied and balanced diet and a healthy lifestyle.

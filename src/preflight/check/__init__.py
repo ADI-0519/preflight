@@ -1,3 +1,4 @@
+from collections import Counter
 from functools import cache
 from typing import Literal
 
@@ -21,15 +22,19 @@ from preflight.schema import (
     verify_sources,
 )
 from preflight.sources.cap import CapRule, load_cap_rules
-from preflight.sources.on_hold import load_on_hold
+from preflight.sources.on_hold import OnHoldClaim, load_on_hold
 from preflight.sources.register import load_register
 from preflight.sources.rulings import Ruling
 
-PROMPT_VERSION = "judge_v3"
+PROMPT_VERSION = "judge_v5"
 EFFORT = "high"
 PRECEDENTS = 3
+# per-claim retrieval: each claim's closest ruling, the most shared first, up to this many in the call
+PRECEDENTS_PER_CLAIM_MAX = 5
 # a ruling's assessment runs to several thousand words; its opening carries the finding
 RULING_CHARS = 3000
+# a prompt file may hold this line: what comes before it opens the call, what comes after it closes it
+CLOSE = "---"
 
 
 @cache
@@ -54,6 +59,8 @@ def ids(values: list[str]) -> dict:
 def output_schema(claims: list[Claim], found: Shortlist, rules: list[CapRule], rulings: list[Ruling]) -> dict:
     verdict = {
         "claim_id": {"type": "string", "enum": [c.claim_id for c in claims]},
+        # the reason comes before the verdict, so the model reasons before it commits
+        "reason": {"type": "string"},
         "verdict": {"type": "string", "enum": ["possible_breach", "on_hold", "no_issue"]},
         "cap_rules": ids([r.rule for r in rules]),
     }
@@ -64,7 +71,6 @@ def output_schema(claims: list[Claim], found: Shortlist, rules: list[CapRule], r
         verdict["on_hold_ids"] = ids([c.on_hold_id for c in found.on_hold])
     if rulings:
         verdict["ruling_ids"] = ids([r.ruling_id for r in rulings])
-    verdict["reason"] = {"type": "string"}
     authorised = [e.register_id for e in found.register if e.status == "authorised"]
     if authorised:
         # rule 2: the model picks an entry; its wording is copied from the register
@@ -80,31 +86,47 @@ def output_schema(claims: list[Claim], found: Shortlist, rules: list[CapRule], r
     }
 
 
-def question(screening: Screening, found: Shortlist, rules: list[CapRule], rulings: list[Ruling], prompt: str) -> str:
-    out = [(PROMPTS / f"{prompt}.txt").read_text(encoding="utf-8")]
-    out += ["Claims:"]
+def _on_hold_line(c: OnHoldClaim, with_wording: bool) -> str:
+    substance = " ".join(c.substance.split())
+    relationship = c.health_relationship or "no relationship given"
+    if not with_wording or not c.proposed_wording:
+        return f"{c.on_hold_id} [on hold; {substance}]: {relationship}"
+    wording = " ".join(c.proposed_wording.split())
+    return f'{c.on_hold_id} [on hold; {substance}; {relationship}]: "{wording}"'
+
+
+def question(
+    screening: Screening, found: Shortlist, rules: list[CapRule], rulings: list[Ruling], prompt: str,
+    closest: dict[str, list[str]] | None = None,
+) -> str:
+    text = (PROMPTS / f"{prompt}.txt").read_text(encoding="utf-8")
+    opening, _, closing = text.partition(f"\n{CLOSE}\n")
+    claims = ["Claims:"]
     for c in screening.claims:
-        out.append(f'{c.claim_id} ({c.kind}, substance: {c.substance or "none named"}): "{c.text}"')
-    out += ["", listing(list(screening.segments), list(screening.on_screen), list(screening.tracks))]
-    out += ["", "CAP Code rules:"]
-    out += [f"{r.rule}: {r.summary} Breach looks like: {r.breach_evidence}" for r in rules]
-    out += ["", "Register entries:"]
-    out += [f'{e.register_id} [{e.status}; {e.substance}]: "{e.wording}"' for e in found.register] or ["none"]
-    out += ["", "On-hold entries:"]
-    out += [
-        f"{c.on_hold_id} [on hold; {' '.join(c.substance.split())}]: {c.health_relationship or 'no relationship given'}"
-        for c in found.on_hold
-    ] or ["none"]
-    out += ["", "Past rulings:"]
+        found_near = closest.get(c.claim_id) if closest else None
+        near = f"; closest past rulings: {', '.join(found_near)}" if found_near else ""
+        claims.append(f'{c.claim_id} ({c.kind}, substance: {c.substance or "none named"}{near}): "{c.text}"')
+    evidence = [listing(list(screening.segments), list(screening.on_screen), list(screening.tracks))]
+    reference = ["CAP Code rules:"]
+    reference += [f"{r.rule}: {r.summary} Breach looks like: {r.breach_evidence}" for r in rules]
+    reference += ["", "Register entries:"]
+    reference += [f'{e.register_id} [{e.status}; {e.substance}]: "{e.wording}"' for e in found.register] or ["none"]
+    reference += ["", "On-hold entries:"]
+    reference += [_on_hold_line(c, bool(closing)) for c in found.on_hold] or ["none"]
+    reference += ["", "Past rulings:"]
     for r in rulings:
-        out += [
+        reference += [
             f"{r.ruling_id} ({r.date:%d %B %Y}; CAP rules {', '.join(r.cap_rules) or 'none listed'})",
             f"Ad description: {r.ad_description[:RULING_CHARS]}",
             f"Assessment: {r.assessment[:RULING_CHARS]}",
         ]
     if not rulings:
-        out.append("none")
-    return "\n".join(out)
+        reference.append("none")
+    if not closing:
+        # v1 to v3: the whole prompt, then the claims, the ad and the reference material
+        return "\n".join([opening, *claims, "", *evidence, "", *reference])
+    # the reference material first and the claims last, next to the instructions that apply to them
+    return "\n".join([opening, "", *reference, "", *evidence, "", *claims, "", closing.strip()])
 
 
 class _Verdict(BaseModel):
@@ -181,9 +203,22 @@ def parse(
     return flags
 
 
+def precedents_for(claims: list[Claim], precedents: PrecedentIndex, per_claim: bool):
+    if not per_claim:
+        return precedents.top(" ".join(c.text for c in claims), k=PRECEDENTS), None
+    # each claim's own closest ruling, so claims in one ad no longer share the same three
+    nearest = {c.claim_id: precedents.top(c.text, k=1) for c in claims}
+    counts = Counter(r.ruling_id for found in nearest.values() for r in found)
+    by_id = {r.ruling_id: r for found in nearest.values() for r in found}
+    rulings = [by_id[i] for i, _ in counts.most_common(PRECEDENTS_PER_CLAIM_MAX)]
+    kept = {r.ruling_id for r in rulings}
+    closest = {i: [r.ruling_id for r in found if r.ruling_id in kept] for i, found in nearest.items()}
+    return rulings, closest
+
+
 def check(
     screening: Screening, spark: Spark, precedents: PrecedentIndex, *, prompt: str = PROMPT_VERSION,
-    effort: str = EFFORT,
+    effort: str = EFFORT, per_claim: bool = True,
 ) -> Screening:
     if screening.flags or any(r.stage == "check" for r in screening.stages):
         raise ValueError("screening already contains flags or a check stage")
@@ -197,9 +232,9 @@ def check(
     else:
         found = shortlist(claims, _register(s.gb_register), _on_hold(s.on_hold))
         rules = list(_rules(s.cap_rules))
-        rulings = precedents.top(" ".join(c.text for c in claims), k=PRECEDENTS)
+        rulings, closest = precedents_for(claims, precedents, per_claim)
         r = spark.ask(
-            question(screening, found, rules, rulings, prompt), prompt_version=prompt, effort=effort,
+            question(screening, found, rules, rulings, prompt, closest), prompt_version=prompt, effort=effort,
             schema=output_schema(claims, found, rules, rulings),
         )
         flags = parse(r.data, claims, found, rulings, rules)

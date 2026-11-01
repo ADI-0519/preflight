@@ -1,0 +1,15 @@
+# Team-written negative for split v2 dev: realistic marketing copy whose only health claims are authorised
+# GB register wording, copied exactly (register 2026-05-19). Written on 1 Nov 2026, after the v1 dev positives were read.
+item_id: T18
+format: image
+product: magnesium tablets
+register_ids:
+- gbhc-ec4ca7e01201
+on_screen_text:
+- Magnesium tablets
+- Magnesium contributes to normal muscle function
+- Easy-to-swallow tablets
+- Take one with breakfast
+- 60-day supply
+- Food supplements should not be used as a substitute for a varied and balanced diet and a healthy lifestyle.
+voiceover: ''

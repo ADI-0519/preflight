@@ -1,0 +1,15 @@
+# Team-written negative for split v2 dev: realistic marketing copy whose only health claims are authorised
+# GB register wording, copied exactly (register 2026-05-19). Written on 1 Nov 2026, after the v1 dev positives were read.
+item_id: T17
+format: video
+product: vitamin D gummies
+register_ids:
+- gbhc-8ed4428d48ae
+on_screen_text:
+- Vitamin D gummies
+- Strawberry flavour
+- Suitable for vegetarians
+- Take one gummy a day. Do not exceed the stated dose.
+- Food supplements should not be used as a substitute for a varied and balanced diet and a healthy lifestyle.
+voiceover: Shorter days don't have to mean a new routine. One small gummy a day, for your everyday well-being. Vitamin D contributes
+  to the normal function of the immune system.

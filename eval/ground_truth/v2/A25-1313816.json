@@ -1,0 +1,140 @@
+{
+  "item_id": "A25-1313816",
+  "kind": "ruling",
+  "label": "positive",
+  "outcome": "upheld",
+  "claims": [
+    {
+      "claim": "Your all-in-one menopause support – without HRT",
+      "rules": [
+        "15.6",
+        "15.6.2",
+        "12.1",
+        "12.11"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "Feel Like You Again With 2 Capsules Daily",
+      "rules": [
+        "15.6",
+        "15.6.2",
+        "12.1",
+        "12.11"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "Say goodbye to hot flashes",
+      "rules": [
+        "15.6",
+        "15.6.2",
+        "12.1",
+        "12.11"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "I can’t believe how much better I have been feeling generally since I started taking these supplements",
+      "rules": [
+        "15.6",
+        "15.6.2",
+        "12.1",
+        "12.11"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "better sleep quality",
+      "rules": [
+        "15.6",
+        "15.6.2",
+        "12.1",
+        "12.11"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "Natural Menopause Relief",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "Supports Hormonal Balance and Metabolism",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "supplements for menopause",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "all-in-one natural menopause supplement",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "helps support hormonal balance, cognitive and physiological functions",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "anxiety, low mood, fatigue, bloating, sleep, hot flushes, sluggish metabolism, night sweats and skin",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "adaptogenic herbs",
+      "rules": [
+        "15.1",
+        "15.1.1"
+      ],
+      "points": [
+        2
+      ]
+    }
+  ],
+  "written_by": "draft: scripts/draft_split_v1.py",
+  "checked_by": "NEESAY"
+}

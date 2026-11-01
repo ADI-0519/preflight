@@ -136,8 +136,34 @@ def test_schema_asks_for_every_claim_and_only_listed_ids():
     assert None in item["suggested_register_id"]["enum"]
     assert NON_AUTHORISED not in item["suggested_register_id"]["enum"]
     assert '"15.6.2"' not in prompt and "15.6.2:" in prompt
-    assert 'claim-2 (explicit, substance: none named): "Clinically proven"' in prompt
+    assert 'claim-2 (explicit, substance: none named; closest past rulings: A25-1317840): "Clinically proven"' in prompt
     assert "A25-1317840 (25 March 2026; CAP rules 15.1.1)" in prompt
+
+
+def test_claims_follow_the_reference_material_and_precede_the_instructions():
+    _, ((prompt, _),) = run({f"claim-{n}": verdict() for n in range(3)})
+    order = [prompt.index(s) for s in ("CAP Code rules:", "Register entries:", "Past rulings:", "Transcript segments:",
+                                       "Claims:", "Instructions")]
+    assert order == sorted(order)
+
+
+def test_v3_layout_keeps_the_claims_first():
+    spark = FakeSpark({f"claim-{n}": verdict() for n in range(3)})
+    check(screening(), spark, FakeIndex(), prompt="judge_v3", per_claim=False)
+    ((prompt, _),) = spark.calls
+    assert prompt.index("Claims:") < prompt.index("CAP Code rules:")
+    assert 'claim-2 (explicit, substance: none named): "Clinically proven"' in prompt
+
+
+def test_on_hold_entries_include_their_proposed_wording():
+    _, ((prompt, _),) = run({f"claim-{n}": verdict() for n in range(3)})
+    assert '3251 [on hold; Ashwagandha root (Withania somnifera); Adaptogenic properties]: "' in prompt
+
+
+def test_reason_comes_before_the_verdict():
+    _, ((_, kwargs),) = run({f"claim-{n}": verdict() for n in range(3)})
+    keys = list(kwargs["schema"]["properties"]["verdicts"]["items"]["properties"])
+    assert keys.index("reason") < keys.index("verdict")
 
 
 def test_nothing_to_cite_is_left_out_of_the_schema():

@@ -1,0 +1,83 @@
+{
+  "item_id": "A24-1240834",
+  "kind": "ruling",
+  "label": "positive",
+  "outcome": "upheld",
+  "claims": [
+    {
+      "claim": "equally good, or in my eyes better",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.3"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "substantially cheaper",
+      "rules": [
+        "3.1",
+        "3.7"
+      ],
+      "points": [
+        2
+      ]
+    },
+    {
+      "claim": "Reduce tiredness and fatigue with 26 essential vitamins & minerals like iron",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.7"
+      ],
+      "points": [
+        3
+      ]
+    },
+    {
+      "claim": "Excellent source of biotin and collagen to support smooth, healthy skin",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.7"
+      ],
+      "points": [
+        3
+      ]
+    },
+    {
+      "claim": "Superfoods to supercharge your health",
+      "rules": [
+        "15.2",
+        "15.7"
+      ],
+      "points": [
+        3
+      ]
+    },
+    {
+      "claim": "gut-friendly probiotics",
+      "rules": [
+        "15.2",
+        "15.7"
+      ],
+      "points": [
+        3
+      ]
+    },
+    {
+      "claim": "All the nutrients your body needs to thrive",
+      "rules": [
+        "15.2",
+        "15.7"
+      ],
+      "points": [
+        3
+      ]
+    }
+  ],
+  "written_by": "draft: scripts/draft_split_v1.py",
+  "checked_by": "NEESAY"
+}

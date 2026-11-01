@@ -1,0 +1,76 @@
+{
+  "item_id": "A23-1224570",
+  "kind": "ruling",
+  "label": "positive",
+  "outcome": "upheld",
+  "claims": [
+    {
+      "claim": "Vitamins (grams per daily serving)",
+      "rules": [
+        "15.1",
+        "15.1.1"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "We out-vitamin the competition",
+      "rules": [
+        "15.1",
+        "15.1.1"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "dump the sugars",
+      "rules": [
+        "15.1",
+        "15.1.1"
+      ],
+      "points": [
+        2
+      ]
+    },
+    {
+      "claim": "Dump the Junk",
+      "rules": [
+        "3.42"
+      ],
+      "points": [
+        3
+      ]
+    },
+    {
+      "claim": "Dump the sugars, chemicals and fillers",
+      "rules": [
+        "3.42"
+      ],
+      "points": [
+        3
+      ]
+    },
+    {
+      "claim": "the bad boys Berocca sent an official complaint to the ASA because they don’t like the fact that we’re telling you what’s in their product and what the facts are for what’s healthy",
+      "rules": [
+        "3.42"
+      ],
+      "points": [
+        3
+      ]
+    },
+    {
+      "claim": "They don’t want to look after your health like we do",
+      "rules": [
+        "3.42"
+      ],
+      "points": [
+        3
+      ]
+    }
+  ],
+  "written_by": "draft: scripts/draft_split_v1.py",
+  "checked_by": "NEESAY"
+}

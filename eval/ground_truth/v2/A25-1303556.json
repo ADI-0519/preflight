@@ -1,0 +1,150 @@
+{
+  "item_id": "A25-1303556",
+  "kind": "ruling",
+  "label": "positive",
+  "outcome": "upheld",
+  "claims": [
+    {
+      "claim": "Cranberry: Good for Prostates? - These 5 Remedies Ranked Higher",
+      "rules": [
+        "12.1",
+        "12.11",
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "Saw Palmetto for Prostates? - These 5 Remedies Ranked Higher",
+      "rules": [
+        "12.1",
+        "12.11",
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "Out of 100s of prostate supplements for urine flow, we rated these 5 higher",
+      "rules": [
+        "12.1",
+        "12.11",
+        "15.6",
+        "15.6.2",
+        "2.1",
+        "2.3",
+        "3.1",
+        "3.9"
+      ],
+      "points": [
+        1,
+        2
+      ]
+    },
+    {
+      "claim": "Out of hundreds of prostate supplements, we rated these 5 higher than saw palmetto alone",
+      "rules": [
+        "12.1",
+        "12.11",
+        "15.6",
+        "15.6.2",
+        "2.1",
+        "2.3",
+        "3.1",
+        "3.9"
+      ],
+      "points": [
+        1,
+        2
+      ]
+    },
+    {
+      "claim": "Our experts rated these 5 prostate supplements above cranberry for safety & effectiveness",
+      "rules": [
+        "12.1",
+        "12.11",
+        "15.6",
+        "15.6.2",
+        "2.1",
+        "2.3",
+        "3.1",
+        "3.9"
+      ],
+      "points": [
+        1,
+        2
+      ]
+    },
+    {
+      "claim": "Our experts rated these 5 brands higher than saw palmetto for effectiveness",
+      "rules": [
+        "12.1",
+        "12.11",
+        "15.6",
+        "15.6.2",
+        "2.1",
+        "2.3",
+        "3.1",
+        "3.9"
+      ],
+      "points": [
+        1,
+        2
+      ]
+    },
+    {
+      "claim": "5 Best for Bladder Urges",
+      "rules": [
+        "12.1",
+        "12.11",
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "5 Best for Urinary Urges",
+      "rules": [
+        "12.1",
+        "12.11",
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "Prostacor",
+      "rules": [
+        "12.1",
+        "12.11",
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "Top 5 Supplements www.top5supplements.com/prostate-health",
+      "rules": [
+        "2.1",
+        "2.3",
+        "3.1",
+        "3.9"
+      ],
+      "points": [
+        2
+      ]
+    }
+  ],
+  "written_by": "draft: scripts/draft_split_v1.py",
+  "checked_by": "NEESAY"
+}

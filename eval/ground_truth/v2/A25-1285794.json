@@ -1,0 +1,105 @@
+{
+  "item_id": "A25-1285794",
+  "kind": "ruling",
+  "label": "positive",
+  "outcome": "upheld",
+  "claims": [
+    {
+      "claim": "supports immune function",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.7"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "strengthening your immune system",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.7"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "boosts bone health",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.7"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "promoting healthy bones",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.7"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "improves mood and mental clarity",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.7"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "enhances energy levels",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.7"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "enhancing mood and energy levels",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.7"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "there is one supplement that I always recommend",
+      "rules": [
+        "15.6.3"
+      ],
+      "points": [
+        2
+      ]
+    },
+    {
+      "claim": "I take the BetterVits Vitamin D because it’s a premium high-quality supplement",
+      "rules": [
+        "15.6.3"
+      ],
+      "points": [
+        2
+      ]
+    }
+  ],
+  "written_by": "draft: scripts/draft_split_v1.py",
+  "checked_by": "NEESAY"
+}

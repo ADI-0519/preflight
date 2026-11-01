@@ -100,7 +100,9 @@ def test_replayed_upload_screening_progress_and_reconnect(app):
         response = client.get(f"/screenings/{job_id}")
         assert response.status_code == 200
         result = Screening.model_validate(response.json())
-        assert len(result.claims) == 3 and len(result.flags) == 1
+        assert len(result.claims) == 3
+        assert {flag.claim_id for flag in result.flags} == {"claim-1", "claim-2"}
+        assert all(flag.sources for flag in result.flags)
         assert result.notice == NOTICE
         report = client.get(f"/screenings/{job_id}/report")
         assert report.status_code == 200 and NOTICE in report.text

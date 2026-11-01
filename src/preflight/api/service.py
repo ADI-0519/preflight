@@ -5,6 +5,7 @@ import mimetypes
 from collections.abc import Callable
 from concurrent.futures import ThreadPoolExecutor
 from contextlib import contextmanager
+from functools import cache
 from pathlib import Path
 
 from preflight.agent import Draft, DraftScene, DraftScreener, approve, fix, is_clean
@@ -42,7 +43,7 @@ class Service:
     ):
         self.storage = Retention(settings, **({"clock": clock} if clock else {}))
         self.models_factory, self.ingester, self.draft_screener = models_factory, ingester, draft_screener
-        self.precedents_factory = precedents_factory or (lambda: load_precedents(SNAPSHOTS.rulings))
+        self.precedents_factory = precedents_factory or cache(lambda: load_precedents(SNAPSHOTS.rulings))
         self.executor = ThreadPoolExecutor(max_workers=settings.workers, thread_name_prefix="preflight-api")
 
     def stage(self, job_id: str, stage: StageRun) -> None:

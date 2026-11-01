@@ -64,15 +64,14 @@ class Service:
                 # Provider/validation exceptions can contain captions, keys or paths.
                 self.storage.event(job["job_id"], "failed", error="processing_failed")
             finally:
-                with self.storage.lock:
-                    self.storage.release(job["upload_ids"])
+                self.storage.unpin(job)
 
         try:
             self.executor.submit(work)
         except RuntimeError:
             with self.storage.lock:
                 self.storage.event(job["job_id"], "failed", error="worker_unavailable")
-                self.storage.release(job["upload_ids"])
+                self.storage.unpin(job)
             raise APIError(503, "worker_unavailable") from None
         return job
 

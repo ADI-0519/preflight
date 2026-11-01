@@ -216,9 +216,28 @@ def test_active_upload_is_not_deleted_until_released(tmp_path):
         storage.sweep()
         assert (root / upload_id).exists()
         storage.event(job["job_id"], "failed")
-        storage.release([upload_id])
+        storage.unpin(job)
         storage.sweep()
         assert not (root / upload_id).exists()
+
+
+def test_hung_job_is_failed_and_its_upload_deleted_after_the_grace_period(tmp_path):
+    clock = [100.0]
+    root = tmp_path / "uploads"
+    app = create_app(Settings(root=root, retention_seconds=10, job_grace_seconds=5), clock=lambda: clock[0])
+    with TestClient(app) as client:
+        upload_id = upload(client)
+        storage = app.state.service.storage
+        job = storage.create_job("screening", [upload_id])
+        storage.event(job["job_id"], "running")
+        clock[0] = 116
+        storage.sweep()
+        assert not (root / upload_id).exists() and job["job_id"] not in storage.jobs
+        assert job["status"] == "failed" and job["events"][-1]["error"] == "expired_while_running"
+        # the worker reporting late neither revives the job nor releases another job's pin
+        storage.event(job["job_id"], "completed")
+        storage.unpin(job)
+        assert job["status"] == "failed"
 
 
 def test_periodic_sweep_survives_a_failed_sweep(tmp_path):

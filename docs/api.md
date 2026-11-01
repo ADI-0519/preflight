@@ -121,7 +121,9 @@ retention covers local storage, not the model provider's separate retention poli
 All clients use the existing Standard-mode model guard.
 
 Startup and a 30-second background sweep remove expired uploads. Active jobs pin
-their inputs until processing ends. A multi-upload fix expires with its earliest
+their inputs until processing ends, for at most an hour past expiry
+(`job_grace_seconds`); a job still running then is failed with
+`expired_while_running` and its data deleted. A multi-upload fix expires with its earliest
 input, including when deletion must be retried after that input has already gone.
 Expired data cannot be retrieved or used to start another job. The retention journal
 contains only opaque IDs, timestamps and storage/deletion events; failed deletions

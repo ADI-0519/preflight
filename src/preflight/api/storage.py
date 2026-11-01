@@ -23,6 +23,8 @@ class APIError(Exception):
 class Settings:
     root: Path = Path("data/raw/uploads")
     retention_seconds: float = 86400
+    # a job still running this long after its input expired is taken as hung; a screening takes minutes
+    job_grace_seconds: float = 3600
     max_upload_bytes: int = 100 * 1024 * 1024
     max_json_bytes: int = 256 * 1024
     sweep_seconds: float = 30
@@ -30,7 +32,7 @@ class Settings:
     max_pending: int = 16
 
     def __post_init__(self):
-        for value in (self.retention_seconds, self.sweep_seconds):
+        for value in (self.retention_seconds, self.job_grace_seconds, self.sweep_seconds):
             if not math.isfinite(value) or value <= 0:
                 raise ValueError("retention and sweep periods must be positive and finite")
         if min(self.max_upload_bytes, self.max_json_bytes, self.workers, self.max_pending) < 1:
@@ -118,6 +120,12 @@ class Retention:
         for upload_id in upload_ids:
             self.active[upload_id] = max(0, self.active.get(upload_id, 0) - 1)
 
+    def unpin(self, fields: dict) -> None:
+        # both the worker and the sweep may unpin a job, and each pin is released once
+        with self.lock:
+            if fields.pop("pinned", False):
+                self.release(fields["upload_ids"])
+
     def discard(self, upload_id: str) -> None:
         with self.lock:
             self.release((upload_id,))
@@ -152,7 +160,7 @@ class Retention:
             deadline = min(self.upload(upload_id)["expires_at"] for upload_id in upload_ids)
             fields = {
                 "job_id": uuid4().hex, "kind": kind, "upload_ids": upload_ids,
-                "expires_at": deadline, "status": "queued", "events": [],
+                "expires_at": deadline, "status": "queued", "events": [], "pinned": True,
             }
             self.job_dir(fields).mkdir(parents=True)
             self.jobs[fields["job_id"]] = fields
@@ -163,7 +171,10 @@ class Retention:
 
     def event(self, job_id: str, status: str | None = None, **data) -> None:
         with self.lock:
-            fields = self.jobs[job_id]
+            fields = self.jobs.get(job_id)
+            # a worker outlived by the sweep reports into a job that has already failed or been deleted
+            if fields is None or (status and fields["status"] in TERMINAL):
+                return
             if status:
                 fields["status"] = status
             fields["events"].append({"id": len(fields["events"]) + 1, "status": fields["status"], **data})
@@ -182,17 +193,25 @@ class Retention:
                 if deadline <= self.clock():
                     expired.add(directory.name)
             for job_id, fields in list(self.jobs.items()):
-                if fields.get("expires_at", 0) <= self.clock() and fields["status"] in TERMINAL:
-                    if any(self.active.get(i, 0) for i in fields["upload_ids"]):
+                expires_at = fields.get("expires_at", 0)
+                if expires_at > self.clock():
+                    continue
+                if fields["status"] not in TERMINAL:
+                    if expires_at + self.settings.job_grace_seconds > self.clock():
                         continue
-                    try:
-                        shutil.rmtree(self.job_dir(fields))
-                    except FileNotFoundError:
-                        pass
-                    except OSError:
-                        self.journal("delete_failed", fields["upload_ids"][0])
-                        continue
-                    del self.jobs[job_id]
+                    # rule 6: a hung job must not keep its input past expiry and grace
+                    self.event(job_id, "failed", error="expired_while_running")
+                    self.unpin(fields)
+                if any(self.active.get(i, 0) for i in fields["upload_ids"]):
+                    continue
+                try:
+                    shutil.rmtree(self.job_dir(fields))
+                except FileNotFoundError:
+                    pass
+                except OSError:
+                    self.journal("delete_failed", fields["upload_ids"][0])
+                    continue
+                del self.jobs[job_id]
             for upload_id in expired:
                 if not self.active.get(upload_id, 0):
                     try:

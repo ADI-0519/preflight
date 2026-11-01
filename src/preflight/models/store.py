@@ -67,16 +67,24 @@ class Store:
         return response
 
 
+RETRY_STATUSES = {429, 500, 502, 503, 504}
+
+
 def with_retry(call: Callable[[], dict], sleep: Callable[[float], None] = time.sleep) -> dict:
     for attempt in range(MAX_ATTEMPTS):
+        headers = {}
         try:
             return call()
         except (openai.APIStatusError, httpx.HTTPStatusError) as e:
-            if e.response.status_code != 429 or attempt == MAX_ATTEMPTS - 1:
+            if e.response.status_code not in RETRY_STATUSES or attempt == MAX_ATTEMPTS - 1:
                 raise
-            try:
-                delay = float(e.response.headers["Retry-After"])
-            except (KeyError, ValueError):
-                delay = 2.0**attempt
-            sleep(delay)
+            headers = e.response.headers
+        except (openai.APIConnectionError, httpx.TransportError):
+            if attempt == MAX_ATTEMPTS - 1:
+                raise
+        try:
+            delay = float(headers["Retry-After"])
+        except (KeyError, ValueError):
+            delay = 2.0**attempt
+        sleep(delay)
     raise AssertionError("unreachable")

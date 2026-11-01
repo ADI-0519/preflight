@@ -66,7 +66,7 @@ class FakeApi:
 def status_error(code, headers=None):
     request = httpx.Request("POST", "https://example.invalid")
     r = httpx.Response(code, headers=headers, request=request)
-    cls = openai.RateLimitError if code == 429 else openai.BadRequestError
+    cls = {429: openai.RateLimitError, 503: openai.InternalServerError}.get(code, openai.BadRequestError)
     return cls("failed", response=r, body=None)
 
 
@@ -236,13 +236,23 @@ def test_rate_limit_retried_then_succeeds(tmp_path):
     assert len(attempts) == 2
 
 
-def test_other_errors_not_retried(tmp_path):
+def test_other_client_errors_are_not_retried(tmp_path):
     sleeps = []
     api = FakeApi(fail=[status_error(400)])
     with pytest.raises(openai.BadRequestError):
         Spark(Store(tmp_path), api, sleeps.append).ask("hello", prompt_version=PV, effort="low")
     assert api.requests == 1
     assert sleeps == []
+
+
+def test_server_errors_and_dropped_connections_are_retried(tmp_path):
+    sleeps = []
+    request = httpx.Request("POST", "https://example.invalid")
+    api = FakeApi(fail=[status_error(503), openai.APIConnectionError(request=request)])
+    spark = Spark(Store(tmp_path), api, sleeps.append)
+    assert spark.ask("hello", prompt_version=PV, effort="low").text == "ok"
+    assert api.requests == 3
+    assert sleeps == [1.0, 2.0]
 
 
 def test_rate_limit_gives_up_after_five_attempts(tmp_path):

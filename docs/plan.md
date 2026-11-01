@@ -71,13 +71,23 @@ The package is `preflight` (src layout). Stages exchange schema objects only, so
 
 Prompts live in `prompts/` as versioned text files; the prompt version is part of the cache key and of every run record.
 
-**P26–P28 implementation status (1 Nov, branch integration):** The implementation merged from `dev` includes claim extraction, source-verified checking, the complete screening pipeline, CLI and HTML report. Registered development reconstruction measurements are documented in [claim-extraction.md](./notes/claim-extraction.md) and [checker.md](./notes/checker.md); these are historical results for the measured configuration, not final test results or measurements of the integration safeguards. The duplicate adi extractor/checker modules have been removed. The integrated checker validates responses locally and restricts register/on-hold references and replacement selections to candidates for each claim. A missing or skipped check gives an incomplete headline and CLI exit status 1; a completed extraction with no claims can finish checking without a model call. Reports confine crops to their supplied directory and show only the crop of the cited frame. API, agent and frontend work remain separate tasks; live quality and final evaluation have not been rerun during integration.
+The [engineering workflow](./research/engineering-workflow.md) records the evidence-driven development cycle and the network-blocked synthetic replay command. It supplements verification; it does not replace the evaluation protocol below or establish live model quality.
+
+**P26–P28 implementation status (1 Nov, branch integration):** The implementation merged from `dev` includes claim extraction, source-verified checking, the complete screening pipeline, CLI and HTML report. Registered development reconstruction measurements are documented in [claim-extraction.md](./notes/claim-extraction.md) and [checker.md](./notes/checker.md); these are historical results for the measured configuration, not final test results or measurements of the integration safeguards. The duplicate adi extractor/checker modules have been removed. The integrated checker validates responses locally and restricts register/on-hold references and replacement selections to candidates for each claim. A missing or skipped check gives an incomplete headline and CLI exit status 1; a completed extraction with no claims can finish checking without a model call. Reports confine crops to their supplied directory and show only the crop of the cited frame. P41/P51 progress is recorded below; frontend work, live quality verification and final evaluation remain separate.
 
 **P31 integration status (1 Nov):** The evaluation runner, shared registry/scorer and
 team-negative renderer from dev through `2386df1` are integrated. Attempts with failed
 stages or without a completed check retain diagnostic rows but are not registered.
 This is a correctness gate, not a new measurement or a change to split v1. Historical
 run results remain unchanged; the integrated configuration still needs dev evaluation.
+
+**P41/P51 implementation status (1 Nov):** P41 from dev through `51bc0f4` is integrated.
+The local FastAPI service now delegates upload-backed screening, fix and explicit
+human approval to the existing pipeline/agent, with persisted metadata-only SSE,
+source verification on retrieval/use and automatic private upload/derivative expiry.
+The API is a single-process localhost prototype; authentication, public deployment
+and the React interface remain separate work. See [the API guide](./api.md) for the
+HTTP contract, retention policy and replay-verification limits.
 
 ### Output schema (contract for P21)
 

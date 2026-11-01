@@ -20,7 +20,7 @@ jobs:
       - name: Install FFmpeg
         run: sudo apt-get update && sudo apt-get install -y --no-install-recommends ffmpeg
       - name: Install locked dependencies
-        run: uv sync --locked --extra page
+        run: uv sync --locked --extra page --extra api
       - name: Install Chromium
         run: uv run playwright install --with-deps chromium
       - name: Check agent setup

@@ -134,7 +134,7 @@ def render_draft(draft: Draft, out_dir: Path) -> Rendered:
     video = draft.format == "video"
     voice = ensure_voice() if video and any(s.voiceover.strip() for s in draft.scenes) else None
     clips, bounds, start = [], [], 0.0
-    with tempfile.TemporaryDirectory() as tmp:
+    with tempfile.TemporaryDirectory(dir=out_dir) as tmp:
         work = Path(tmp)
         for i, scene in enumerate(draft.scenes):
             audio = None

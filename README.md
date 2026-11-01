@@ -32,7 +32,21 @@ uv run ruff check
 
 Tests that call the real Meta Model API are marked `live` and run only with `uv run pytest -m live`.
 
+For an inspectable synthetic replay with no credentials or network requests (requires FFmpeg):
+
+```powershell
+uv run --offline python scripts/verify_screening_replay.py --out data/work/verification/replay-001
+```
+
+Choose a new output directory on each run. It writes labelled HTML, screening JSON and a provenance manifest. This checks recorded-response contracts and rendering, not live model accuracy or ruling-text retrieval. See [the development workflow](docs/research/engineering-workflow.md) for the research, limitations and next verification steps.
+
 ## Status
+
+The [local API guide](docs/api.md) documents P51 endpoints, SSE, retention and the
+localhost run command. API verification uses synthetic replay, not live models.
+
+Optional agent coordination, Context7, OpenSpec, Promptfoo, browser checks and tracing
+setup are documented in [the development toolkit](tooling/README.md).
 
 Work in progress for the Meta Global AI Developer Hackathon (submission 4 November 2026). The plan, architecture and task list are in [docs/plan.md](docs/plan.md); tasks are tracked as issues on the project board.
 

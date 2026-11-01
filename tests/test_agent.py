@@ -130,9 +130,19 @@ def test_flag_without_wording_goes_to_person(tmp_path):
         draft_of(tmp_path), Scripted(lambda i, p: screening(i, [c], [flag("f0", "c0")])), tmp_path
     )
     assert result.state == "needs_person"
-    assert records[0]["for_person"] == [{"flag_id": "f0", "reason": "no authorised wording"}]
+    assert records[0]["for_person"] == [{"flag_id": "f0", "reason": "no authorised wording", "line": "0/voiceover/0"}]
     assert not records[0]["substitutions"]
     assert lines(result.draft) == lines(draft_of(tmp_path))
+
+
+def test_nested_flags_are_handed_off_as_one_line(tmp_path):
+    claims = [claim("c0", "Banish tiredness for good"), claim("c1", "Banish tiredness")]
+    flags = [flag("f0", "c0"), flag("f1", "c1")]
+    result, records = run(draft_of(tmp_path), Scripted(lambda i, p: screening(i, claims, flags)), tmp_path)
+    (group,) = result.open
+    assert group["line"] == "0/voiceover/0" and group["text"] == "Banish tiredness for good."
+    assert [f["flag_id"] for f in group["flags"]] == ["f0", "f1"]
+    assert records[-1]["open"] == result.open
 
 
 def test_unmatched_or_ambiguous_flag_goes_to_person(tmp_path):
@@ -146,7 +156,9 @@ def test_unmatched_or_ambiguous_flag_goes_to_person(tmp_path):
             draft, Scripted(lambda i, p, c=c: screening(i, [c], [flag("f0", "c0", FATIGUE)])), tmp_path / "x"
         )
         assert result.state == "needs_person"
-        assert records[0]["for_person"] == [{"flag_id": "f0", "reason": "could not locate the claim in the draft"}]
+        assert records[0]["for_person"] == [
+            {"flag_id": "f0", "reason": "could not locate the claim in the draft", "line": None}
+        ]
         assert lines(result.draft) == lines(draft)
 
 
@@ -173,7 +185,7 @@ def test_round_limit(tmp_path):
     assert result.state == "needs_person"
     assert len(image.calls) == 2
     assert [r["round"] for r in records if r["event"] == "round"] == [0, 1, 2]
-    assert records[-2]["for_person"] == [{"flag_id": "f0", "reason": "round limit reached"}]
+    assert records[-2]["for_person"] == [{"flag_id": "f0", "reason": "round limit reached", "line": None}]
     assert [r["previous_id"] for r in map(lambda s: json.loads(s.read_text(encoding="utf-8")), sorted(
         (tmp_path / "work").glob("*-?.json")))] == [None, records[0]["screening_id"], records[1]["screening_id"]]
 
@@ -199,7 +211,7 @@ def test_ambiguous_caption_claim_leaves_still_alone(tmp_path):
     result, records = run(draft, Scripted(lambda i, p: screening(i, [c], [flag("f0", "c0")])), tmp_path, image=image)
     assert result.state == "needs_person"
     assert not image.calls
-    assert records[0]["for_person"] == [{"flag_id": "f0", "reason": "no authorised wording"}]
+    assert records[0]["for_person"] == [{"flag_id": "f0", "reason": "no authorised wording", "line": None}]
 
 
 def test_fix_never_writes_approval(tmp_path):

@@ -45,6 +45,7 @@ class FixResult:
     screening: Screening
     draft: Draft
     log: Path
+    open: list[dict]
 
 
 class DraftScreener:
@@ -149,11 +150,34 @@ def plan_round(
             edited.add(scene)
             done.still_edits.append(edit_still(done, flag, claim, scene, image, work_dir))
             continue
-        done.for_person.append({"flag_id": flag.flag_id, "reason": NO_WORDING if wording is None else NOT_LOCATED})
+        done.for_person.append(hand_off(flag, NO_WORDING if wording is None else NOT_LOCATED, address))
     # last line first, so a wording that holds two sentences cannot shift the addresses still to be edited
     for sub in sorted(done.substitutions, key=lambda s: Address.parse(s["line"]), reverse=True):
         done.draft = with_line(done.draft, Address.parse(sub["line"]), sub["after"])
     return done
+
+
+def hand_off(flag: Flag, reason: str, address: Address | None) -> dict:
+    return {"flag_id": flag.flag_id, "reason": reason, "line": address and str(address)}
+
+
+def open_lines(screening: Screening, draft: Draft, for_person: list[dict]) -> list[dict]:
+    # the extractor can return a claim and a phrase inside it, so flags are grouped by the draft line they sit on
+    flags = {f.flag_id: f for f in screening.flags}
+    claims = {c.claim_id: c for c in screening.claims}
+    texts = {str(a): t for a, t in lines(draft).items()}
+    grouped: dict[str, dict] = {}
+    for item in for_person:
+        flag = flags[item["flag_id"]]
+        key = item["line"] or flag.flag_id
+        group = grouped.setdefault(key, {
+            "line": item["line"], "text": texts[item["line"]] if item["line"] else claims[flag.claim_id].text,
+            "flags": [],
+        })
+        group["flags"].append({
+            "flag_id": flag.flag_id, "kind": flag.kind, "why": flag.reason, "reason": item["reason"],
+        })
+    return list(grouped.values())
 
 
 def edit_still(done: Round, flag: Flag, claim: Claim, scene: int, image: Image, work_dir: Path) -> dict:
@@ -203,7 +227,10 @@ def fix(
         if is_clean(screening):
             state = "awaiting_approval"
         elif n == rounds:
-            record["for_person"] = [{"flag_id": f.flag_id, "reason": ROUND_LIMIT} for f in screening.flags]
+            claims = {c.claim_id: c for c in screening.claims}
+            record["for_person"] = [
+                hand_off(f, ROUND_LIMIT, locate(scores(claims[f.claim_id], draft))) for f in screening.flags
+            ]
             state = "needs_person"
         else:
             planned = plan_round(draft, screening, image, work_dir, getattr(screen_draft, "scene_bounds", None))
@@ -214,11 +241,12 @@ def fix(
             state = None if planned.substitutions or planned.still_edits else "needs_person"
         append(log, record)
         if state:
+            left = open_lines(screening, draft, record["for_person"]) if state == "needs_person" else []
             append(log, {
                 "event": "state", "state": state, "screening_id": screening_id, "at": now(),
-                "draft": draft.model_dump(mode="json"),
+                "draft": draft.model_dump(mode="json"), "open": left,
             })
-            return FixResult(state, screening, draft, log)
+            return FixResult(state, screening, draft, log, left)
         draft, previous = planned.draft, screening_id
     raise AssertionError("the last round always ends the loop")
 

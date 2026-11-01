@@ -1,6 +1,7 @@
 import json
 import logging
 import shutil
+import sys
 from datetime import UTC, datetime
 from pathlib import Path
 
@@ -11,6 +12,8 @@ from preflight.agent import draft as draft_module
 from preflight.agent.draft import Address, lines, render_draft, with_line
 from preflight.agent.fix import ALREADY_WORDING
 from preflight.ingest import png_size
+from preflight.models import Store
+from preflight.models.store import CacheMiss
 from preflight.pipeline import SNAPSHOTS
 from preflight.schema import (
     Ad,
@@ -371,3 +374,16 @@ def test_picture_only_claim_without_a_picture_goes_to_person(tmp_path):
     assert result.state == "needs_person"
     assert image.calls == []
 
+
+def test_replay_store_raises_on_a_missing_recording(tmp_path):
+    store = Store(tmp_path, mode="replay")
+    with pytest.raises(CacheMiss):
+        store.fetch("some-model", {"text": "x"}, lambda: pytest.fail("a replay calls no model"))
+
+
+def test_demo_accepts_replay():
+    sys.path.insert(0, str(Path(__file__).parent.parent / "scripts"))
+    import agent_demo
+
+    assert agent_demo.parse_args(["draft.yaml", "--replay"]).replay
+    assert not agent_demo.parse_args(["draft.yaml"]).replay

@@ -6,6 +6,7 @@ from typing import Literal
 from preflight.agent.fix import FixResult, fix_draft
 from preflight.check.precedents import PrecedentIndex
 from preflight.models import Models
+from preflight.models.store import CacheMiss
 from preflight.pipeline import screen_target
 from preflight.schema import Evidence, Flag, Screening, SourceRef
 from preflight.view import build_view, incomplete_stages
@@ -136,6 +137,9 @@ class Toolbox:
                 case "fix_ad":
                     return self.fix_ad(arguments["draft"])
             return {"error": f"unknown tool: {name}"}
+        # a replay with a missing recording is a broken demo, not a tool result to report
+        except CacheMiss:
+            raise
         # an agent should see any failure as a result it can report, never as a dropped call
         except Exception as e:
             # rule 6: exception messages can hold ad text, so only the class is logged

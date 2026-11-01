@@ -29,8 +29,9 @@ frontend, external telemetry or live evaluation is introduced.
   opaque IDs, timestamps and storage/deletion events. A background sweep and startup
   sweep enforce expiry; running jobs pin all referenced uploads.
 - Expiring any input invalidates a multi-upload fix and removes its derived job data.
-  Model caches are per job. Draft rendering uses its output directory for temporary
-  files rather than the global temporary directory.
+  A screening's model cache sits with its upload; a fix's stays in its job folder.
+  Draft rendering uses its output directory for temporary files rather than the
+  global temporary directory.
 - Approval records a supplied human name; it does not authenticate identity or claim
   Meta approval. Incomplete, flagged and already-decided results cannot be approved.
 

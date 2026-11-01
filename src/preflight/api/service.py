@@ -80,7 +80,8 @@ class Service:
 
         def call(job, directory):
             done = self.ingester(path, directory / "ingest")
-            with self.models_factory(directory) as models:
+            # one upload per screening, so its cache can sit with the upload: a rescreen reuses it, expiry deletes it
+            with self.models_factory(self.storage.upload_dir(upload_id)) as models:
                 return screen(
                     done, models, self.precedents_factory(), job["job_id"], align="mms" if align else None,
                     on_stage=lambda stage: self.stage(job["job_id"], stage),

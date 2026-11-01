@@ -2,12 +2,11 @@ import argparse
 import sys
 from pathlib import Path
 
-from preflight.agent import DraftScreener, approve, fix, load_draft, new_fix_id
+from preflight.agent import approve
+from preflight.agent.fix import fix_draft
 from preflight.check.precedents import load_precedents
-from preflight.ingest import capture, ingest
 from preflight.models import from_env
-from preflight.pipeline import SNAPSHOTS, default_id, screen
-from preflight.report import render_html
+from preflight.pipeline import SNAPSHOTS, screen_target
 
 OUT_DIR = Path("data/work/screenings")
 FIX_DIR = Path("data/work/fixes")
@@ -45,38 +44,27 @@ def main(argv: list[str] | None = None) -> int:
         return 2
     if args.command == "fix":
         return run_fix(args, precedents)
+    align = None if args.no_align else "mms"
     try:
-        done = capture(args.target) if args.target.startswith(("http://", "https://")) else ingest(Path(args.target))
+        screening, json_path, html_path = screen_target(args.target, from_env(), precedents, args.out, align=align)
     except (RuntimeError, ValueError, FileNotFoundError) as e:
         print(e, file=sys.stderr)
         return 2
-    screening = screen(
-        done, from_env(), precedents, default_id(done), align=None if args.no_align else "mms"
-    )
-    args.out.mkdir(parents=True, exist_ok=True)
-    stem = args.out / screening.screening_id
-    stem.with_suffix(".json").write_text(screening.model_dump_json(indent=1), encoding="utf-8")
-    crops = done.frames[0].path.parent.parent
-    stem.with_suffix(".html").write_text(render_html(screening, crops), encoding="utf-8")
     print(screening.headline)
-    print(stem.with_suffix(".json"))
-    print(stem.with_suffix(".html"))
+    print(json_path)
+    print(html_path)
     return 1 if any(r.status == "failed" for r in screening.stages) else 0
 
 
 def run_fix(args, precedents) -> int:
     try:
-        draft = load_draft(args.draft)
+        result = fix_draft(
+            args.draft, from_env(), precedents, args.out, rounds=args.rounds,
+            align=None if args.no_align else "mms",
+        )
     except (RuntimeError, ValueError, FileNotFoundError) as e:
         print(e, file=sys.stderr)
         return 2
-    models = from_env()
-    work_dir = args.out / new_fix_id(draft)
-    screener = DraftScreener(models, precedents, work_dir, align=None if args.no_align else "mms")
-    result = fix(
-        draft, screen_draft=screener, image=models.image, rounds=args.rounds, log=work_dir / "audit.jsonl",
-        work_dir=work_dir,
-    )
     print(result.state)
     print(result.screening.headline)
     for group in result.open:

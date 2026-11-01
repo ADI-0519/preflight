@@ -11,6 +11,7 @@ from preflight.agent.draft import (
     Draft,
     digest,
     lines,
+    load_draft,
     nominal_bounds,
     render_draft,
     scene_at,
@@ -269,6 +270,19 @@ def fix(
             return FixResult(state, screening, draft, log, left)
         draft, previous = planned.draft, screening_id
     raise AssertionError("the last round always ends the loop")
+
+
+def fix_draft(
+    path: Path, models: Models, precedents: PrecedentIndex, out: Path, *, rounds: int = 3,
+    align: Literal["mms"] | None = "mms",
+) -> FixResult:
+    draft = load_draft(path)
+    work_dir = out / new_fix_id(draft)
+    screener = DraftScreener(models, precedents, work_dir, align=align)
+    return fix(
+        draft, screen_draft=screener, image=models.image, rounds=rounds, log=work_dir / "audit.jsonl",
+        work_dir=work_dir,
+    )
 
 
 def read_log(log: Path) -> list[dict]:

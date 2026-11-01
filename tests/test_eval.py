@@ -101,6 +101,31 @@ def test_toy_split_scores():
     assert (m["flags_per_negative_ad"].hits, m["flags_per_negative_ad"].total) == (1, 2)
 
 
+def test_line_metrics_count_top_level_claims():
+    nested = screening(
+        "s5", ["sleep deeper tonight", "sleep deeper", "other words"], {0: ["15.1"], 1: ["15.1"], 2: ["3.7"]}
+    )
+    shared = (OnScreenEvidence(text_id="text-0"),)
+    nested = nested.model_copy(update={"claims": [
+        c.model_copy(update={"evidence": shared}) if c.claim_id != "claim-2" else c for c in nested.claims
+    ]})  # fmt: skip
+    item = score_item(truth("A3", [("sleep deeper", ["15.1"])]), [nested])
+    # the second claim folds under the first, so three flags make two lines and only "other words" matches nothing
+    assert (item.flags, item.lines, item.unmatched_lines) == (3, 2, 1)
+    m = {x.name: x for x in metrics([item])}
+    assert (m["flagged_lines_per_positive_ad"].hits, m["flagged_lines_per_positive_ad"].total) == (2, 1)
+    assert m["unmatched_lines_per_positive_ad"].hits == 1
+
+
+def test_existing_metrics_keep_their_values():
+    found = {x.name: (x.hits, x.total) for x in metrics(TOY)}
+    assert {n: found[n] for n in ("ad_recall", "claim_recall", "claim_recall_carried", "claim_recall_any_rule",
+                                  "flags_per_positive_ad")} == {
+        "ad_recall": (1, 2), "claim_recall": (1, 4), "claim_recall_carried": (1, 3),
+        "claim_recall_any_rule": (2, 4), "flags_per_positive_ad": (3, 2),
+    }  # fmt: skip
+
+
 def test_intervals_hold_the_point_estimate_and_repeat():
     for m in metrics(TOY):
         if m.low is not None:

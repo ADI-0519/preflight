@@ -32,6 +32,8 @@ class SparkResult:
     text: str
     data: dict | None
     usage: dict
+    # wall time of the original call; None for responses cached before it was recorded
+    seconds: float | None = None
 
 
 @dataclass
@@ -116,6 +118,7 @@ class Spark:
             kwargs = {}
             if schema is not None:
                 kwargs["text"] = {"format": {"type": "json_schema", "name": "output", "schema": schema, "strict": True}}
+            began = time.monotonic()
             r = self.api.responses.create(
                 model=SPARK,
                 input=[{"type": "message", "role": "user", "content": content}],
@@ -127,7 +130,9 @@ class Spark:
                 raise RuntimeError(f"{SPARK} response {r.status}: {r.incomplete_details}")
             if schema is not None:
                 json.loads(r.output_text)
-            return {"model": r.model, "text": r.output_text, "usage": usage_of(r)}
+            return {
+                "model": r.model, "text": r.output_text, "usage": usage_of(r), "seconds": time.monotonic() - began,
+            }
 
         def call() -> dict:
             content = [{"type": "input_text", "text": text}]
@@ -139,7 +144,8 @@ class Spark:
                 return respond([*content, {"type": "input_file", "file_id": file_id}])
 
         r = self.store.fetch(SPARK, parts, lambda: with_retry(call, self.sleep))
-        return SparkResult(r["model"], r["text"], json.loads(r["text"]) if schema is not None else None, r["usage"])
+        data = json.loads(r["text"]) if schema is not None else None
+        return SparkResult(r["model"], r["text"], data, r["usage"], r.get("seconds"))
 
 
 @dataclass

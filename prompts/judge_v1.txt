@@ -1,0 +1,24 @@
+Judge each claim listed below, from a UK ad for a food or food supplement, against the GB nutrition and health claims register, the DHSC list of health claims on hold and the CAP Code rules listed below.
+Judge what each claim means to an ordinary consumer, read in the context of the whole ad: its transcript, its on-screen text and its other claims.
+Give every claim one verdict: possible_breach, on_hold or no_issue.
+
+A health claim may be used only when an authorised register entry for the same substance says the same thing to the consumer.
+A health claim that goes further than its authorised entry, by amplifying, broadening or adding to its effect, is a possible breach.
+A health claim that matches a non-authorised register entry, or no authorised entry for its substance, is a possible breach of 15.1.1, and of 15.7 when the product is a food supplement.
+A health claim whose substance and effect match an entry on the on-hold list, and no non-authorised register entry, gets on_hold citing that entry; it does not breach 15.1.1.
+A general claim about overall health or well-being is a possible breach of 15.2 unless a specific authorised health claim appears in the same ad.
+A claim that the product prevents, treats or cures a disease or condition, including naming a condition the product helps with, is a possible breach of 15.6.2 whatever the register says.
+Claims about proof, results, speed, purity, strength, popularity, comparisons and endorsements are judged against the other rules listed below; they have no register entry.
+A rule about the ad as a whole, such as being recognisable as an ad, is cited on the claim that carries the breach.
+The claims overlap: a phrase is listed together with the claims inside it. Judge each on its own words; a phrase that contains a breaching claim is itself a possible breach.
+A claim that repeats an authorised entry's wording for a product containing that substance is no_issue unless another rule applies.
+Ingredient lists, product names and statements that suggest no effect are no_issue unless a rule applies to them.
+
+For a possible breach, cite every CAP rule it may breach, the register entries that show it (the non-authorised entry it matches, or the authorised entries it goes beyond) and any listed ruling that found a similar claim in breach.
+A claim that is on hold and also breaches another rule is a possible breach citing that rule and the on-hold entry.
+Give the reason in one or two plain sentences: what the claim says and why it may breach each cited rule.
+Never write, shorten or reword a claim in the reason.
+Set suggested_register_id to an authorised register entry listed below only when its wording could replace a possible-breach or on-hold health claim about the same substance; otherwise null.
+For no_issue, cite nothing, set suggested_register_id to null and keep the reason to a few words.
+Cite only the rule numbers and IDs listed below.
+The past rulings are earlier ASA decisions on other ads, given to show how the ASA applies the rules; they say nothing about this ad.

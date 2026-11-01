@@ -17,7 +17,6 @@ from preflight.schema import (
     verify_sources,
 )
 from preflight.sources.register import load_register
-from preflight.sources.rulings import load_ruling_index
 
 REGISTER = load_register("2026-05-19")
 AUTHORISED = next(e for e in REGISTER if e.status == "authorised" and e.substance == "Magnesium")
@@ -39,6 +38,7 @@ def screening(**overrides) -> dict:
         "stages": [
             {"stage": "transcribe", "status": "done", "model": "muse-voice-transcribe-1.0"},
             {"stage": "claims", "status": "done", "model": "muse-spark-1.3", "prompt": "1", "effort": "low"},
+            {"stage": "check", "status": "done", "model": "muse-spark-1.3", "prompt": "judge_v3", "effort": "high"},
         ],
         "screened_at": "2026-10-31T12:00:00Z",
         "segments": [
@@ -154,13 +154,18 @@ def test_rules_2_and_3_sources_verified_against_snapshots(fields):
         verify_sources(s)
 
 
-def test_ruling_sources_verified_against_snapshot():
-    ruling = load_ruling_index("2026-10-31")[0]
-    fields = with_flag(sources=[{"kind": "ruling", "ruling_id": ruling.ruling_id, "date": ruling.date}])
-    verify_sources(Screening.model_validate(fields))
-    fields["flags"][0]["sources"][0]["date"] = "2026-01-01"
-    with pytest.raises(ValueError, match="absent from its snapshot"):
-        verify_sources(Screening.model_validate(fields))
+@pytest.mark.parametrize(
+    "ruling_id, day, listed",
+    [("A26-1341476", "2026-10-14", True), ("A26-1341476", "2026-10-15", False), ("A26-0000000", "2026-10-14", False)],
+    ids=["listed", "wrong-date", "absent"],
+)
+def test_ruling_refs_are_checked_against_the_rulings_snapshot(ruling_id, day, listed):
+    s = Screening.model_validate(with_flag(sources=[{"kind": "ruling", "ruling_id": ruling_id, "date": day}]))
+    if listed:
+        verify_sources(s)
+    else:
+        with pytest.raises(ValueError, match="absent from its snapshot"):
+            verify_sources(s)
 
 
 def test_on_hold_flags_cite_on_hold_and_breaches_cite_more():

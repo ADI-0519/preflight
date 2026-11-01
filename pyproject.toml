@@ -11,7 +11,11 @@ dependencies = [
     "pydantic>=2.10",
     "python-dotenv>=1.0",
     "pyyaml>=6.0.3",
+    "rank-bm25>=0.2.2",
 ]
+
+[project.scripts]
+preflight = "preflight.cli:main"
 
 [project.optional-dependencies]
 page = ["playwright>=1.48"]

@@ -61,6 +61,9 @@ The package is `preflight` (src layout). Stages exchange schema objects only, so
 | `preflight.evidence` | Transcription and region stages → segments, tracks, crops, on-screen text | via `models` |
 | `preflight.claims` | Claim extraction prompt and parser | via `models` |
 | `preflight.check` | Register shortlist, precedent retrieval, judge prompt, flag assembly | via `models` |
+| `preflight.pipeline` | The one screening function: runs the evidence stages, claim extraction and the check in order, and records a failed stage instead of hiding it | via `models` |
+| `preflight.report` | Renders a screening as one self-contained HTML page, flags grouped by claim with their sources and evidence | no |
+| `preflight.cli` | `preflight screen <file>`: writes the screening as JSON and the HTML report | via `models` |
 | `preflight.agent` | Fix loop, audit log, tool interface | via `models` |
 | `preflight.eval` | Split manifests, reconstructions, scoring, run registry, baseline | via `models` (reconstruction only) |
 | `preflight.api` | FastAPI app: upload, screen, progress over SSE, fix, approve, retention | no |
@@ -68,7 +71,7 @@ The package is `preflight` (src layout). Stages exchange schema objects only, so
 
 Prompts live in `prompts/` as versioned text files; the prompt version is part of the cache key and of every run record.
 
-**P26/P27 implementation status (1 Nov):** The extraction stage can send a full video or still to Spark with timestamped region references; visual claim accuracy remains unmeasured. The checker has BM25 precedent retrieval and a screening-level snapshot-verification entry point. These components are not yet wired into P28's complete pipeline, and neither a live P26/P27 model call nor the planned dev-split claim-recall run has been completed. Treat both issues as open until their acceptance criteria are met.
+**P26–P28 implementation status (1 Nov, branch integration):** The implementation merged from `dev` includes claim extraction, source-verified checking, the complete screening pipeline, CLI and HTML report. Registered development reconstruction measurements are documented in [claim-extraction.md](./notes/claim-extraction.md) and [checker.md](./notes/checker.md); these are historical results for the measured configuration, not final test results or measurements of the integration safeguards. The duplicate adi extractor/checker modules have been removed. The integrated checker validates responses locally and restricts register/on-hold references and replacement selections to candidates for each claim. A missing or skipped check gives an incomplete headline and CLI exit status 1; a completed extraction with no claims can finish checking without a model call. Reports confine crops to their supplied directory and show only the crop of the cited frame. API, agent and frontend work remain separate tasks; live quality and final evaluation have not been rerun during integration.
 
 ### Output schema (contract for P21)
 

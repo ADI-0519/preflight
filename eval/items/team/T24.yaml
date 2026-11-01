@@ -1,0 +1,14 @@
+# Team-written negative for split v2 dev: realistic marketing copy whose only health claims are authorised
+# GB register wording, copied exactly (register 2026-05-19). Written on 1 Nov 2026, after the v1 dev positives were read.
+item_id: T24
+format: image
+product: biotin gummies
+register_ids:
+- gbhc-070dd4b125bd
+on_screen_text:
+- Biotin gummies
+- Raspberry flavour
+- Biotin contributes to the maintenance of normal hair
+- Subscribe and get free delivery
+- Food supplements should not be used as a substitute for a varied and balanced diet and a healthy lifestyle.
+voiceover: ''

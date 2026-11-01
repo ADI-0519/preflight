@@ -1,0 +1,95 @@
+{
+  "item_id": "A24-1239907",
+  "kind": "ruling",
+  "label": "positive",
+  "outcome": "upheld",
+  "claims": [
+    {
+      "claim": "combat stress",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "Reduce stress and anxiety",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "Strengthen muscles",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.7"
+      ],
+      "points": [
+        2
+      ]
+    },
+    {
+      "claim": "fight fatigue",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.7"
+      ],
+      "points": [
+        2
+      ]
+    },
+    {
+      "claim": "Amplify mental awareness",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.7"
+      ],
+      "points": [
+        2
+      ]
+    },
+    {
+      "claim": "Improve mental function",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.7"
+      ],
+      "points": [
+        2
+      ]
+    },
+    {
+      "claim": "Enhance memory",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.7"
+      ],
+      "points": [
+        2
+      ]
+    },
+    {
+      "claim": "Unlock a stronger body and state of mind",
+      "rules": [
+        "15.2",
+        "15.7"
+      ],
+      "points": [
+        3
+      ]
+    }
+  ],
+  "written_by": "draft: scripts/draft_split_v1.py",
+  "checked_by": "NEESAY"
+}

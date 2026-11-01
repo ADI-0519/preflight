@@ -1,0 +1,120 @@
+# Split v2: split v1 unchanged, plus team-written negatives that read like real ads (T16 onwards).
+# Item IDs are ASA ruling IDs (positives) or T-numbers (team-written negatives).
+version: v2
+frozen: false
+created: '2026-11-01'
+status: 'open: dev negatives T16-T25 await a founder check; test negatives to come'
+sources:
+  rulings: '2026-10-31'
+  register: '2026-05-19'
+topics: all in-scope supplement rulings, any CAP breach (see docs/notes/rulings-corpus.md)
+counts:
+  dev:
+    positive: 25
+    negative: 15
+  test:
+    positive: 49
+    negative: 10
+shortfall: 'test negatives 10 of 20: no in-scope ruling in the window was not upheld, so negatives are team-written only until
+  partner ads arrive (P06)'
+dev:
+- A24-1243213
+- A24-1240828
+- A24-1241017
+- G24-1248968
+- A24-1239910
+- A24-1239908
+- A24-1239907
+- A24-1239905
+- A24-1239904
+- A24-1246372
+- A24-1241023
+- A24-1241337
+- A24-1238193
+- A24-1231792
+- A24-1229687
+- A24-1241024
+- A24-1241022
+- G24-1241706
+- A24-1228813
+- A23-1224570
+- G23-1215538
+- A23-1216841
+- A23-1202159
+- A23-1196136
+- A23-1191380
+- T01
+- T05
+- T09
+- T12
+- T15
+- T16
+- T17
+- T18
+- T19
+- T20
+- T21
+- T22
+- T23
+- T24
+- T25
+test:
+- A26-1341476
+- G26-1339905
+- A26-1345353
+- A26-1338353
+- A26-1337420
+- A26-1330390
+- A26-1325179
+- A25-1317723
+- G25-1323444
+- A25-1313834
+- A25-1313823
+- A25-1313822
+- A25-1313821
+- A25-1313816
+- A25-1315087
+- A24-1261050
+- A25-1310999
+- A25-1310978
+- A25-1305207
+- A25-1306897
+- A25-1303989
+- A25-1303986
+- A25-1303750
+- A25-1303746
+- A25-1303742
+- A25-1303556
+- A25-1303555
+- A25-1303538
+- A25-1303537
+- A25-1291498
+- A25-1289625
+- A25-1285794
+- A25-1281271
+- A25-1281266
+- A25-1281265
+- A25-1281264
+- A25-1281257
+- A24-1251814
+- A25-1277097
+- A24-1269415
+- A25-1284063
+- A25-1282503
+- A25-1274162
+- A25-1279959
+- A24-1253730
+- G24-1252527
+- A24-1253019
+- A24-1242030
+- A24-1240834
+- T02
+- T03
+- T04
+- T06
+- T07
+- T08
+- T10
+- T11
+- T13
+- T14

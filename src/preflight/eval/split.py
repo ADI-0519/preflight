@@ -53,7 +53,7 @@ class GroundTruth(BaseModel):
 
 
 class TeamAd(BaseModel):
-    """An ad the team wrote using only verbatim authorised register wording."""
+    """An ad the team wrote whose only health claims are verbatim authorised register wording."""
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 

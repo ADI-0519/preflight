@@ -1,0 +1,204 @@
+{
+  "item_id": "A25-1313822",
+  "kind": "ruling",
+  "label": "positive",
+  "outcome": "upheld",
+  "claims": [
+    {
+      "claim": "I went from a size XL to a M…and finally feel like myself again",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "I became apple-shaped overnight, no waist, no bum, skinny arms and legs",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "a natural menopause supplement designed to tackle what’s really going on: Hormonal weight gain",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "helps support hormonal balance, allowing your body to release stubborn fat and return to its natural, feminine shape",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "I could actually see my waist again",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "Dresses fit properly",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "my tummy flattened noticeably",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "I dropped nearly 4kg without even trying",
+      "rules": [
+        "15.6",
+        "15.6.2",
+        "15.6.6"
+      ],
+      "points": [
+        1,
+        2
+      ]
+    },
+    {
+      "claim": "I went from XL to M at 54",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "Tackle Stubborn Apron Belly",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "Relieve Bloating",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "menopausal and no matter what I ate or how much I walked, the weight just kept creeping up",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "I was bloated, tired and felt like a stranger in my own body",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "support for hormones",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "inflammation",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "metabolism",
+      "rules": [
+        "15.1",
+        "15.1.1"
+      ],
+      "points": [
+        3
+      ]
+    },
+    {
+      "claim": "by week 2 I was sleeping better",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "by week 4, the scale finally moved",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "nearly 3 months in, I’m down 11 lbs",
+      "rules": [
+        "15.6",
+        "15.6.2",
+        "15.6.6"
+      ],
+      "points": [
+        1,
+        2
+      ]
+    }
+  ],
+  "written_by": "draft: scripts/draft_split_v1.py",
+  "checked_by": "NEESAY"
+}

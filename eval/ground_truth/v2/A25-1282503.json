@@ -1,0 +1,46 @@
+{
+  "item_id": "A25-1282503",
+  "kind": "ruling",
+  "label": "positive",
+  "outcome": "upheld",
+  "claims": [
+    {
+      "claim": "WPC Transformed My Life – Overcoming Anorexia",
+      "rules": [
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "Winning Battle WITH ANOREXIA",
+      "rules": [
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "Protein World helped me fuel my body, rebuild strength and find a healthier relationship with food",
+      "rules": [
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "Recover Rebuild & Rise with WPC!",
+      "rules": [
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    }
+  ],
+  "written_by": "draft: scripts/draft_split_v1.py",
+  "checked_by": "NEESAY"
+}

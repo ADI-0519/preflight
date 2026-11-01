@@ -1,0 +1,94 @@
+{
+  "item_id": "A23-1216841",
+  "kind": "ruling",
+  "label": "positive",
+  "outcome": "upheld",
+  "claims": [
+    {
+      "claim": "powerful drug-free natural remedy",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "I have only been taking these ‘miracle’ tablets a short while and can’t tell you the difference they have made to my life",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "I first noticed the difference a few days later when I felt more confident",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "advanced bladder support",
+      "rules": [
+        "15.2"
+      ],
+      "points": [
+        2
+      ]
+    },
+    {
+      "claim": "promote a healthy urinary tract",
+      "rules": [
+        "15.2"
+      ],
+      "points": [
+        2
+      ]
+    },
+    {
+      "claim": "50% off",
+      "rules": [
+        "3.1",
+        "3.7",
+        "3.17",
+        "3.40"
+      ],
+      "points": [
+        3
+      ]
+    },
+    {
+      "claim": "HALF PRICE!",
+      "rules": [
+        "3.1",
+        "3.7",
+        "3.17",
+        "3.40"
+      ],
+      "points": [
+        3
+      ]
+    },
+    {
+      "claim": "RRP £29.99 NOW ONLY £14.99",
+      "rules": [
+        "3.1",
+        "3.7",
+        "3.17",
+        "3.40"
+      ],
+      "points": [
+        3
+      ]
+    }
+  ],
+  "written_by": "draft: scripts/draft_split_v1.py",
+  "checked_by": "NEESAY"
+}

@@ -172,3 +172,22 @@ def fix(
         draft, previous = planned.draft, screening_id
     raise AssertionError("the last round always ends the loop")
 
+
+def read_log(log: Path) -> list[dict]:
+    return [json.loads(line) for line in log.read_text(encoding="utf-8").splitlines() if line]
+
+
+def approve(log: Path, by: str, note: str = "") -> dict:
+    # rule 4: the only place an ad is marked approved, and it records who did it
+    if not by.strip():
+        raise ValueError("an approval names the person who approved")
+    records = read_log(log)
+    if any(r["event"] == "approved" for r in records):
+        raise ValueError("this fix is already approved")
+    if not records or records[-1].get("state") != "awaiting_approval":
+        raise ValueError("only a fix that ended awaiting approval can be approved")
+    record = {
+        "event": "approved", "by": by.strip(), "at": now(), "screening_id": records[-1]["screening_id"], "note": note,
+    }
+    append(log, record)
+    return record

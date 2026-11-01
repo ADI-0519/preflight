@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-from preflight.agent import Draft, DraftScene, digest, fix, is_clean, load_draft
+from preflight.agent import Draft, DraftScene, approve, digest, fix, is_clean, load_draft
 from preflight.agent.draft import Address, lines
 from preflight.pipeline import SNAPSHOTS
 from preflight.schema import (
@@ -161,6 +161,30 @@ def test_fix_never_writes_approval(tmp_path):
     assert result.state == "awaiting_approval"
     assert "approved" not in {r["event"] for r in records}
     assert not hasattr(result, "approved")
+
+
+def test_approve_rules(tmp_path):
+    _, _ = run(load_draft(FIXTURE / "draft.yaml"), recorded, tmp_path)
+    log = tmp_path / "work" / "audit.jsonl"
+    before = log.read_bytes()
+    with pytest.raises(ValueError):
+        approve(log, "  ")
+    assert log.read_bytes() == before
+    record = approve(log, "Ana", "checked the footnote")
+    after = log.read_bytes()
+    assert after.startswith(before)
+    assert json.loads(after[len(before):]) == record
+    assert record["by"] == "Ana" and record["screening_id"] == json.loads(before.splitlines()[-1])["screening_id"]
+    with pytest.raises(ValueError):
+        approve(log, "Ben")
+    assert log.read_bytes() == after
+
+
+def test_approve_refuses_needs_person(tmp_path):
+    c = claim("c0", "Banish tiredness for good")
+    run(draft_of(tmp_path), Scripted(lambda i, p: screening(i, [c], [flag("f0", "c0")])), tmp_path)
+    with pytest.raises(ValueError):
+        approve(tmp_path / "work" / "audit.jsonl", "Ana")
 
 
 def test_no_ad_text_in_logging(tmp_path, caplog):

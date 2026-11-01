@@ -1,5 +1,6 @@
 import asyncio
 import json
+import logging
 from contextlib import asynccontextmanager, suppress
 
 from fastapi import FastAPI, HTTPException, Request
@@ -13,6 +14,8 @@ from preflight.api.service import Service
 from preflight.api.storage import TERMINAL, APIError, Settings
 from preflight.ingest import MAX_SECONDS, probe, run
 from preflight.schema import NOTICE, Screening
+
+log = logging.getLogger(__name__)
 
 MEDIA = {
     "image/png": ".png", "image/jpeg": ".jpg", "image/webp": ".webp",
@@ -68,9 +71,11 @@ def create_app(settings: Settings | None = None, **dependencies) -> FastAPI:
     async def reap():
         while True:
             await asyncio.sleep(settings.sweep_seconds)
-            # Failed deletion is retained in the journal and retried next sweep.
-            with suppress(OSError):
+            try:
                 await asyncio.to_thread(storage.sweep)
+            except Exception as e:
+                # rule 6: one bad sweep must not end expiry for the life of the process; the next one retries
+                log.warning("retention sweep failed: %s", type(e).__name__)
 
     @asynccontextmanager
     async def lifespan(app):

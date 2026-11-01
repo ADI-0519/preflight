@@ -221,6 +221,31 @@ def test_active_upload_is_not_deleted_until_released(tmp_path):
         assert not (root / upload_id).exists()
 
 
+def test_periodic_sweep_survives_a_failed_sweep(tmp_path):
+    clock = [100.0]
+    root = tmp_path / "uploads"
+    app = create_app(Settings(root=root, retention_seconds=10, sweep_seconds=0.02), clock=lambda: clock[0])
+    storage = app.state.service.storage
+    sweep, calls = storage.sweep, []
+
+    def flaky():
+        calls.append(1)
+        if len(calls) == 2:
+            raise ValueError("bad upload.json")
+        sweep()
+
+    storage.sweep = flaky
+    with TestClient(app) as client:
+        upload_id = upload(client)
+        deadline = time.monotonic() + 2
+        while len(calls) < 3 and time.monotonic() < deadline:
+            time.sleep(0.02)
+        clock[0] = 111
+        while (root / upload_id).exists() and time.monotonic() < deadline:
+            time.sleep(0.02)
+        assert not (root / upload_id).exists()
+
+
 def test_periodic_retention_sweep_runs_without_an_http_cleanup_call(tmp_path):
     clock = [100.0]
     root = tmp_path / "uploads"

@@ -15,6 +15,9 @@ dist/
 build/
 .next/
 *.tsbuildinfo
+.promptfoo/
+playwright-report/
+test-results/
 
 # secrets
 .env

@@ -1,0 +1,47 @@
+schema: spec-driven
+
+context: |
+  PreFlight screens ads for possible policy issues; it does not approve ads.
+  Read AGENTS.md and docs/product-rules.md before proposing changes.
+  docs/plan.md owns roadmap scope; docs/notes/decisions.md owns durable decisions.
+  docs/handoff-2026-11-01.md records the current integration and verification limits.
+  OpenSpec proposals supplement these documents and must not silently replace them.
+  Use synthetic/dev inputs only; never inspect held-out labels to tune behavior.
+  Every visible flag requires evidence and repository-backed source provenance.
+  Do not commit, push, deploy, use credentials or call paid services without approval.
+  Work on the current branch; inspect git status before changing files.
+  Normal checks: uv run ruff check; uv run pytest -m "not live";
+  python scripts/verify_agent_setup.py.
+githubCopilot:
+  cloudAgent: false
+
+# Project context (optional)
+# Add only constraints that should guide OpenSpec artifacts and workflows.
+# Include constraints an agent cannot infer by reading the code.
+# Keep general project documentation and discoverable codebase facts out.
+# Example:
+#   context: |
+#     Designs and tasks must cover Windows, macOS, and Linux
+#     Write all artifacts in Spanish
+
+# Per-artifact rules (optional)
+# Add custom rules for specific artifacts.
+# Example:
+#   rules:
+#     proposal:
+#       - Keep proposals under 500 words
+#       - Always state what is out of scope
+#     tasks:
+#       - Break tasks into chunks of max 2 hours
+
+# Per-operation guidance (optional)
+# Add advisory guidance for how apply and archive work should be conducted.
+# This is separate from artifact rules above.
+# Example:
+#   operations:
+#     apply:
+#       guidance:
+#         - Keep test summaries concise
+#     archive:
+#       guidance:
+#         - Summarize the archive outcome before finishing

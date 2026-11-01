@@ -77,10 +77,19 @@ class Scripted:
         return self.builders.pop(0)(screening_id, previous_id)
 
 
-def run(draft, screen_draft, tmp_path, rounds=3):
+class Image:
+    def __init__(self):
+        self.calls = []
+
+    def edit(self, image, prompt):
+        self.calls.append((image, prompt))
+        return b"edited-%d" % len(self.calls)
+
+
+def run(draft, screen_draft, tmp_path, rounds=3, image=None):
     work = tmp_path / "work"
     result = fix(
-        draft, screen_draft=screen_draft, rounds=rounds, log=work / "audit.jsonl", work_dir=work
+        draft, screen_draft=screen_draft, image=image or Image(), rounds=rounds, log=work / "audit.jsonl", work_dir=work
     )
     return result, [json.loads(line) for line in (work / "audit.jsonl").read_text(encoding="utf-8").splitlines()]
 
@@ -154,6 +163,43 @@ def test_no_change_stops_with_needs_person(tmp_path):
     result, records = run(draft_of(tmp_path), screener, tmp_path)
     assert result.state == "needs_person"
     assert [r["event"] for r in records] == ["round", "state"]
+
+
+def test_round_limit(tmp_path):
+    c = claim("c0", "Cures every illness", "on_screen")
+    screener = Scripted(*[lambda i, p: screening(i, [c], [flag("f0", "c0")])] * 3)
+    image = Image()
+    result, records = run(draft_of(tmp_path), screener, tmp_path, rounds=2, image=image)
+    assert result.state == "needs_person"
+    assert len(image.calls) == 2
+    assert [r["round"] for r in records if r["event"] == "round"] == [0, 1, 2]
+    assert records[-2]["for_person"] == [{"flag_id": "f0", "reason": "round limit reached"}]
+    assert [r["previous_id"] for r in map(lambda s: json.loads(s.read_text(encoding="utf-8")), sorted(
+        (tmp_path / "work").glob("*-?.json")))] == [None, records[0]["screening_id"], records[1]["screening_id"]]
+
+
+def test_still_edit_on_unmatched_on_screen_claim(tmp_path):
+    c = claim("c0", "Cures every illness", "on_screen")
+    screener = Scripted(lambda i, p: screening(i, [c], [flag("f0", "c0")]), lambda i, p: screening(i, previous_id=p))
+    image = Image()
+    start = draft_of(tmp_path)
+    result, records = run(start, screener, tmp_path, image=image)
+    assert result.state == "awaiting_approval"
+    (edit,) = records[0]["still_edits"]
+    assert edit["scene"] == 0 and "Cures every illness" in edit["prompt"]
+    assert image.calls[0][0] == start.scenes[0].still.read_bytes()
+    assert screener.drafts[1].scenes[0].still.read_bytes() == b"edited-1"
+    assert lines(screener.drafts[1]) == lines(start)
+
+
+def test_ambiguous_caption_claim_leaves_still_alone(tmp_path):
+    draft = draft_of(tmp_path, voiceover="", captions=("Magnesium tablets", "Magnesium tablets today"))
+    c = claim("c0", "Magnesium tablets", "on_screen")
+    image = Image()
+    result, records = run(draft, Scripted(lambda i, p: screening(i, [c], [flag("f0", "c0")])), tmp_path, image=image)
+    assert result.state == "needs_person"
+    assert not image.calls
+    assert records[0]["for_person"] == [{"flag_id": "f0", "reason": "no authorised wording"}]
 
 
 def test_fix_never_writes_approval(tmp_path):

@@ -11,19 +11,27 @@ from preflight.agent.draft import (
     Draft,
     digest,
     lines,
+    nominal_bounds,
     render_draft,
+    scene_at,
     with_line,
+    with_still,
 )
 from preflight.check.precedents import PrecedentIndex
 from preflight.ingest import ingest
-from preflight.models import Models
+from preflight.models import Image, Models
+from preflight.models.store import digest as bytes_digest
 from preflight.pipeline import screen
-from preflight.schema import Claim, Screening, verify_sources
+from preflight.schema import Claim, Flag, Screening, verify_sources
 
 # a line must hold at least this share of the claim's words to be its source
 MIN_SCORE = 0.6
 # and must beat the next best line by this much, or the flag goes to a person
 MIN_MARGIN = 0.15
+STILL_EDIT_PROMPT = (
+    "Remove this claim from the image wherever it appears: {claim}. "
+    "Keep everything else as it is and add no new text, letters, labels or logos."
+)
 NO_WORDING = "no authorised wording"
 NOT_LOCATED = "could not locate the claim in the draft"
 ROUND_LIMIT = "round limit reached"
@@ -44,9 +52,11 @@ class DraftScreener:
         self, models: Models, precedents: PrecedentIndex, work_dir: Path, align: Literal["mms"] | None = "mms"
     ):
         self.models, self.precedents, self.work_dir, self.align = models, precedents, work_dir, align
+        self.scene_bounds: tuple[tuple[float, float], ...] | None = None
 
     def __call__(self, draft: Draft, screening_id: str, previous_id: str | None) -> Screening:
         rendered = render_draft(draft, self.work_dir / "renders" / screening_id)
+        self.scene_bounds = rendered.scene_bounds
         done = ingest(rendered.media, self.work_dir / "ingest")
         return screen(done, self.models, self.precedents, screening_id, align=self.align)
 
@@ -85,18 +95,33 @@ def locate(scored: list[tuple[float, Address]]) -> Address | None:
     return scored[0][1] if scored[0][0] - runner_up >= MIN_MARGIN else None
 
 
+def evidence_time(screening: Screening, claim: Claim) -> float | None:
+    texts = {t.text_id: t for t in screening.on_screen}
+    for e in claim.evidence:
+        if e.kind == "region":
+            return e.frame_time
+        if e.kind == "on_screen":
+            return texts[e.text_id].start
+    return None
+
+
 @dataclass
 class Round:
     draft: Draft
     substitutions: list[dict]
+    still_edits: list[dict]
     superseded: list[str]
     for_person: list[dict]
 
 
-def plan_round(draft: Draft, screening: Screening) -> Round:
+def plan_round(
+    draft: Draft, screening: Screening, image: Image, work_dir: Path,
+    bounds: tuple[tuple[float, float], ...] | None,
+) -> Round:
     claims = {c.claim_id: c for c in screening.claims}
-    done = Round(draft, [], [], [])
+    done = Round(draft, [], [], [], [])
     replaced: set[Address] = set()
+    edited: set[int] = set()
     for flag in screening.flags:
         claim = claims[flag.claim_id]
         scored = scores(claim, draft)
@@ -113,11 +138,36 @@ def plan_round(draft: Draft, screening: Screening) -> Round:
                 "line": str(address), "before": lines(draft)[address], "after": wording.wording,
             })
             continue
+        time = evidence_time(screening, claim)
+        # a claim that fits two lines equally is ambiguous text, so only a claim no line holds is in the picture
+        in_text = bool(scored) and scored[0][0] >= MIN_SCORE
+        if wording is None and not in_text and time is not None:
+            scene = scene_at(draft, time, bounds or nominal_bounds(draft))
+            if scene in edited:
+                done.superseded.append(flag.flag_id)
+                continue
+            edited.add(scene)
+            done.still_edits.append(edit_still(done, flag, claim, scene, image, work_dir))
+            continue
         done.for_person.append({"flag_id": flag.flag_id, "reason": NO_WORDING if wording is None else NOT_LOCATED})
     # last line first, so a wording that holds two sentences cannot shift the addresses still to be edited
     for sub in sorted(done.substitutions, key=lambda s: Address.parse(s["line"]), reverse=True):
         done.draft = with_line(done.draft, Address.parse(sub["line"]), sub["after"])
     return done
+
+
+def edit_still(done: Round, flag: Flag, claim: Claim, scene: int, image: Image, work_dir: Path) -> dict:
+    before = done.draft.scenes[scene].still.read_bytes()
+    prompt = STILL_EDIT_PROMPT.format(claim=claim.text)
+    after = image.edit(before, prompt)
+    path = work_dir / "stills" / f"{bytes_digest(after)[:16]}.png"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_bytes(after)
+    done.draft = with_still(done.draft, scene, path)
+    return {
+        "flag_id": flag.flag_id, "scene": scene, "before": bytes_digest(before), "after": bytes_digest(after),
+        "prompt": prompt,
+    }
 
 
 def append(log: Path, record: dict) -> None:
@@ -130,7 +180,7 @@ def now() -> str:
 
 
 def fix(
-    draft: Draft, *, screen_draft: ScreenDraft, rounds: int = 3, log: Path, work_dir: Path
+    draft: Draft, *, screen_draft: ScreenDraft, image: Image, rounds: int = 3, log: Path, work_dir: Path
 ) -> FixResult:
     work_dir.mkdir(parents=True, exist_ok=True)
     log.parent.mkdir(parents=True, exist_ok=True)
@@ -147,7 +197,7 @@ def fix(
             "event": "round", "fix_id": fix_id, "round": n, "at": now(), "digest": digest(draft),
             "draft": draft.model_dump(mode="json"), "screening_id": screening_id, "headline": screening.headline,
             "flags": [f.flag_id for f in screening.flags],
-            "substitutions": [], "superseded": [], "for_person": [],
+            "substitutions": [], "still_edits": [], "superseded": [], "for_person": [],
         }
         planned = None
         if is_clean(screening):
@@ -156,12 +206,12 @@ def fix(
             record["for_person"] = [{"flag_id": f.flag_id, "reason": ROUND_LIMIT} for f in screening.flags]
             state = "needs_person"
         else:
-            planned = plan_round(draft, screening)
+            planned = plan_round(draft, screening, image, work_dir, getattr(screen_draft, "scene_bounds", None))
             record |= {
-                "substitutions": planned.substitutions,
+                "substitutions": planned.substitutions, "still_edits": planned.still_edits,
                 "superseded": planned.superseded, "for_person": planned.for_person,
             }
-            state = None if planned.substitutions else "needs_person"
+            state = None if planned.substitutions or planned.still_edits else "needs_person"
         append(log, record)
         if state:
             append(log, {

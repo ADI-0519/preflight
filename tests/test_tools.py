@@ -1,3 +1,4 @@
+import asyncio
 import json
 from pathlib import Path
 
@@ -110,3 +111,48 @@ def test_summary_never_says_compliant_or_approved(box, monkeypatch):
     for text in texts:
         for word in ("compliant", "passes", "approved", "ready to publish", "safe", "cleared"):
             assert word not in text.lower()
+
+
+class FakeBox:
+    def __init__(self):
+        self.calls = []
+
+    def call(self, name, arguments):
+        self.calls.append((name, arguments))
+        return {"headline": "h"}
+
+
+def test_mcp_lists_the_same_tools():
+    pytest.importorskip("mcp")
+    from preflight.agent.mcp_server import build_server
+
+    listed = asyncio.run(build_server(FakeBox()).list_tools())
+    assert {t.name: t.description for t in listed} == {t["name"]: t["description"] for t in TOOLS}
+    for t in listed:
+        wanted = next(x for x in TOOLS if x["name"] == t.name)["parameters"]["properties"]
+        assert {k: v["description"] for k, v in t.inputSchema["properties"].items()} == {
+            k: v["description"] for k, v in wanted.items()
+        }
+
+
+def test_mcp_error_is_a_tool_error():
+    pytest.importorskip("mcp")
+    from mcp.server.fastmcp.exceptions import ToolError
+
+    from preflight.agent.mcp_server import build_server
+
+    class Broken(FakeBox):
+        def call(self, name, arguments):
+            return {"error": "no such draft"}
+
+    with pytest.raises(ToolError, match="no such draft"):
+        asyncio.run(build_server(Broken()).call_tool("fix_ad", {"draft": "d.yaml"}))
+
+
+def test_mcp_call_delegates_to_toolbox():
+    pytest.importorskip("mcp")
+    from preflight.agent.mcp_server import build_server
+
+    fake = FakeBox()
+    asyncio.run(build_server(fake).call_tool("fix_ad", {"draft": "d.yaml"}))
+    assert fake.calls == [("fix_ad", {"draft": "d.yaml"})]

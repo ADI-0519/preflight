@@ -28,7 +28,18 @@ def main(argv: list[str] | None = None) -> int:
     approval.add_argument("log", type=Path)
     approval.add_argument("--by", required=True)
     approval.add_argument("--note", default="")
+    commands.add_parser("mcp", help="serve screen_ad and fix_ad as MCP tools over stdio")
     args = parser.parse_args(argv)
+    if args.command == "mcp":
+        try:
+            from preflight.agent.mcp_server import main as serve
+        except ModuleNotFoundError as e:
+            if (e.name or "").split(".")[0] != "mcp":
+                raise
+            print("install the mcp extra: uv sync --extra mcp", file=sys.stderr)
+            return 2
+        serve()
+        return 0
     if args.command == "approve":
         try:
             approve(args.log, args.by, args.note)

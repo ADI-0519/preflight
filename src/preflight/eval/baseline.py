@@ -61,11 +61,16 @@ def judge(sentence: str, register: tuple[RegisterEntry, ...]) -> tuple[list[str]
     claim = Claim(claim_id="c", text=sentence, kind="explicit", evidence=(OnScreenEvidence(text_id="t"),))
     named = shortlist([claim], register, []).register
     said = _normalise(sentence)
+    worded = [w for e in named if e.status == "authorised" and (w := _normalise(e.wording)) in said]
+    rest = said
+    # an authorised wording may name a condition ("normal thyroid function"); only the words around it are checked
+    for w in worded:
+        rest = rest.replace(w, " ")
     rules, why = [], []
-    if named and not any(_normalise(e.wording) in said for e in named if e.status == "authorised"):
+    if named and not worded:
         rules += HEALTH_RULES
         why.append("names a register substance without an authorised entry's wording")
-    found = [t for t in DISEASE_TERMS if re.search(rf"(?<![a-z']){re.escape(t)}(?![a-z'])", said)]
+    found = [t for t in DISEASE_TERMS if re.search(rf"(?<![a-z']){re.escape(t)}(?![a-z'])", rest)]
     if found:
         rules += DISEASE_RULES
         why.append(f"names {', '.join(found)}")

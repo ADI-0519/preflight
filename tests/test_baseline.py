@@ -18,6 +18,14 @@ def test_disease_terms_are_flagged_as_whole_words():
     assert judge("Our Spain-grown oranges", register) is None
 
 
+def test_authorised_wording_naming_a_condition_is_not_flagged():
+    register = _register(REGISTER)
+    wording = "Iodine contributes to the normal production of thyroid hormones and normal thyroid function"
+    assert judge(wording, register) is None
+    assert judge("Iodine supports your thyroid", register)[0] == ["15.1", "15.1.1", "15.6", "15.6.2"]
+    assert judge(f"{wording} and cures your goitre", register)[0] == ["15.6", "15.6.2"]
+
+
 def test_a_team_ad_is_screened_line_by_line_with_no_model():
     s = screen_item("N01")
     flagged = {c.text for c in s.claims if any(f.claim_id == c.claim_id for f in s.flags)}

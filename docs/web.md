@@ -27,17 +27,23 @@ available, dated source provenance and verbatim suggested register wording. Miss
 assets are labelled unavailable. Incomplete screens never become clean results.
 The report link opens the existing source report. Job URLs support reloading retained
 results; expired resources require another upload. There is no progress polling.
-Loaded results open in a compact media-first workspace. **Evidence** keeps the ad
-beside the selected claim and its sources; video evidence also has a keyboard-
-selectable time axis, with separate rows for overlapping claims. The complete
-claim list remains available. **Prepare revision** opens the editable-scene form.
-Completed fixes open **Compare rounds**, where left/right selectors expose every
-saved round and changed caption/voiceover lines are highlighted exactly. The
-Evidence view continues to show the final saved screening. The full source report
-is available from every review view. The page opens in the browser's preferred
-colour scheme, and the header switches between dark and light appearance for the
-page session; no ad data or preference is persisted locally.
-The full screening notice stays in the application shell while scrolling.
+While a job runs, the uploaded ad stays on screen beside the stages the server has
+reported. Loaded results open in a media-first workspace. **Evidence** shows the ad
+above a claim track: one keyboard-selectable row per claim, with its start time, its
+words and, for video, its evidence spans on the ad's time axis (overlapping claims keep
+their own rows). Beside it, the inspector opens on the ad's words and the register's
+exact wording with its register ID, or says that no register wording matches; each
+flag's reason, sources and evidence follow. **Prepare revision** shows the chosen scene
+still beside the editable-scene form, with each flagged claim's register wording.
+Completed fixes open **Compare rounds**, where a selector on each column exposes every
+saved round and changed caption/voiceover lines are underlined. The Evidence view
+continues to show the final saved screening. The full source report is available from
+every review view. The page opens in the browser's preferred colour scheme, and the
+header switches between dark and light appearance for the page session; no ad data or
+preference is persisted locally. The design is described in
+[the redesign plan](./notes/p52-redesign-plan.md); its two typefaces are self-hosted
+under `web/src/fonts/` with their SIL Open Font Licence texts.
+The full screening notice stays in a sticky header with the top bar while scrolling.
 Native EventSource reconnect resumes progress after a dropped connection. Invalid
 progress data shows a recovery message and releases controls; reload the retained
 job to recover its result. Starting another ad clears the previous draft editor.

@@ -272,3 +272,15 @@ def test_unfinished_stages_are_named():
     page = render_html(variants()[2])
     assert "Stages that did not finish: check." in page
     assert "Stages that did not finish" not in render_html(build())
+
+
+def test_lines_show_a_tier_chip_and_the_review_order():
+    page = render_html(build(flags=(breach(), breach("flag-1", ("12.1",)))))
+    assert '<span class="tier high">High</span> “Boosts energy all day”' in page
+    assert "Review order: 1 high · 0 medium · 0 low" in page
+    assert "A tier is not a finding of breach." in page and "Couldn’t check" not in page
+
+
+def test_claims_the_check_did_not_run_on_read_couldnt_check():
+    page = render_html(variants()[2])
+    assert "Couldn’t check" in page.split("Claims not checked")[1] and "Review order" not in page

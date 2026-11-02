@@ -21,6 +21,10 @@ td, th { border: 1px solid #ccc; padding: 0.2rem 0.6rem; text-align: left; }
 .claim { border: 1px solid #ccc; padding: 0.5rem 1rem; margin: 1rem 0; }
 .flag { border-top: 1px solid #ddd; margin-top: 0.8rem; padding-top: 0.4rem; }
 .kind { font-weight: 600; }
+.tier { border: 1px solid #888; border-radius: 3px; padding: 0 0.4rem; font-size: 0.8rem; font-weight: 600; }
+.tier.high { background: #1b1b1b; color: #fff; }
+.tier.low { font-weight: 400; }
+.tier.unchecked { border-style: dashed; font-weight: 400; }
 img { max-width: min(100%, 480px); display: block; border: 1px solid #ccc; }
 """
 
@@ -122,6 +126,24 @@ def flag_block(screening: Screening, flag: Flag, shown: frozenset = frozenset())
     return "".join(out) + "</div>"
 
 
+TIER_LABEL = {"high": "High", "medium": "Medium", "low": "Low", "unchecked": "Couldn\u2019t check"}
+TIER_CAPTION = (
+    "Tiers order the review by the CAP rules cited: disease and medicinal claims (CAP 12 and 15.6) first, "
+    "then other section 15 and section 3 rules. A tier is not a finding of breach."
+)
+
+
+def tier_chip(tier: str) -> str:
+    return f'<span class="tier {tier}">{TIER_LABEL[tier]}</span>'
+
+
+# rule 1: an order for review, not a verdict
+def tier_summary(tiers: dict) -> str:
+    order = f"Review order: {tiers['high']} high \u00b7 {tiers['medium']} medium \u00b7 {tiers['low']} low"
+    unchecked = f" \u00b7 {TIER_LABEL['unchecked']}: {tiers['unchecked']}" if tiers["unchecked"] else ""
+    return f"<p>{order}{unchecked}</p><p>{TIER_CAPTION}</p>"
+
+
 def rule_links(screening: Screening, rules: list[str]) -> str:
     caps = _caps(screening.snapshots.cap_rules)
     return ", ".join(link(caps[r].url, f"CAP {r}") for r in rules)
@@ -143,7 +165,7 @@ def line_block(screening: Screening, line: dict, crops: Path | None, seen: set[s
     )
     nested = f"<p>Flagged phrases inside this line:</p><ul>{folded}</ul>" if folded else ""
     return (
-        f'<div class="claim"><h3>“{escape(line["text"])}”</h3>'
+        f'<div class="claim"><h3>{tier_chip(line["tier"])} “{escape(line["text"])}”</h3>'
         f"<p>{escape(line['kind'])}{substance}</p><p>{rules}</p><ul>{items}</ul>{blocks}{nested}</div>"
     )
 
@@ -206,7 +228,11 @@ def render_html(screening: Screening, crops: Path | None = None) -> str:
         empty = "<p>The check did not run, so no flags were raised.</p>"
     seen: set[str] = set()
     lines = "".join(line_block(screening, line, crops, seen) for line in view["lines"])
-    quiet = "".join(f"<li>\u201c{escape(c['text'])}\u201d</li>" for c in view["quiet_claims"])
+    quiet = "".join(
+        f"<li>{tier_chip(c['tier']) + ' ' if c['tier'] else ''}\u201c{escape(c['text'])}\u201d</li>"
+        for c in view["quiet_claims"]
+    )
+    summary = tier_summary(view["tiers"]) if view["lines"] else ""
     notice = f'<p class="notice">{escape(screening.notice)}</p>'
     return f"""<!DOCTYPE html>
 <html lang="en"><head><meta charset="utf-8"><title>PreFlight screening {escape(screening.screening_id)}</title>
@@ -220,7 +246,7 @@ def render_html(screening: Screening, crops: Path | None = None) -> str:
 <h2>Stages</h2>
 <table><tr><th>Stage</th><th>Status</th><th>Model</th><th>Prompt</th><th>Effort</th></tr>{stages}</table>
 <h2>Flagged lines</h2>
-{lines or empty}
+{summary}{lines or empty}
 {may_say_block(view)}
 {f"<h2>{rest}</h2><ul>{quiet}</ul>" if quiet else ""}
 <h2>Notice</h2>

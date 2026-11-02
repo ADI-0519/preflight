@@ -123,8 +123,12 @@ def main() -> None:
     args = parser.parse_args()
     if args.part == "test" and args.only:
         raise SystemExit("the test part runs whole")
+    split = load_split(args.split)
+    if args.part == "test" and not split.frozen:
+        # rule 5: the test part is run once, on a split that can no longer change
+        raise SystemExit(f"split {args.split} is not frozen; check and freeze it before a test run")
     sha = revision(args.part)
-    items = [i for i in getattr(load_split(args.split), args.part) if not args.only or i in args.only]
+    items = [i for i in getattr(split, args.part) if not args.only or i in args.only]
     truths = [load_ground_truth(args.split, i) for i in items]
     scores = [score_item(t, [screen_item(t.item_id)], kept(t)) for t in truths]
     created = datetime.now(UTC)

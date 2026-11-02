@@ -6,6 +6,8 @@ const media = path.resolve(import.meta.dirname, '../../tests/fixtures/models/med
 const screenshots = path.resolve(import.meta.dirname, '../../data/work/verification/p52-redesign');
 mkdirSync(screenshots, { recursive: true });
 
+test.use({ colorScheme: 'dark' });
+
 async function checkTextContrast(page: import('@playwright/test').Page) {
   const tokens = await page.evaluate(() => {
     const style = getComputedStyle(document.documentElement);
@@ -129,4 +131,15 @@ test('leaving the evidence view pauses the ad video', async ({ page }) => {
   expect(await video.evaluate((v: HTMLVideoElement) => v.paused)).toBe(false);
   await page.getByRole('button', { name: 'Prepare revision', exact: true }).click();
   await expect.poll(() => video.evaluate((v: HTMLVideoElement) => v.paused)).toBe(true);
+});
+
+test.describe('light system preference', () => {
+  test.use({ colorScheme: 'light' });
+
+  test('initial appearance follows prefers-color-scheme', async ({ page }) => {
+    await page.goto('/');
+    await expect(page.locator('html')).toHaveAttribute('data-appearance', 'light');
+    expect(await page.evaluate(() => document.documentElement.dataset.appearance)).toBe('light');
+    await expect(page.getByRole('button', { name: 'Dark appearance', exact: true })).toBeVisible();
+  });
 });

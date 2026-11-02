@@ -34,8 +34,9 @@ claim list remains available. **Prepare revision** opens the editable-scene form
 Completed fixes open **Compare rounds**, where left/right selectors expose every
 saved round and changed caption/voiceover lines are highlighted exactly. The
 Evidence view continues to show the final saved screening. The full source report
-is available from every review view. The header switches between dark and light
-appearance for this page session; no ad data or preference is persisted locally.
+is available from every review view. The page opens in the browser's preferred
+colour scheme, and the header switches between dark and light appearance for the
+page session; no ad data or preference is persisted locally.
 The full screening notice stays in the application shell while scrolling.
 Native EventSource reconnect resumes progress after a dropped connection. Invalid
 progress data shows a recovery message and releases controls; reload the retained

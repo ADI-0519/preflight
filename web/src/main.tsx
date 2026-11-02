@@ -86,7 +86,9 @@ function App() {
   const [voiceover, setVoiceover] = useState('');
   const [still, setStill] = useState<File | null>(null);
   const [view, setView] = useState<'evidence' | 'edit' | 'compare'>('evidence');
-  const [appearance, setAppearance] = useState<'dark' | 'light'>('dark');
+  const [appearance, setAppearance] = useState<'dark' | 'light'>(() =>
+    window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark',
+  );
   const [currentTime, setCurrentTime] = useState(0);
   const player = useRef<HTMLVideoElement>(null);
   const generation = useRef(0);

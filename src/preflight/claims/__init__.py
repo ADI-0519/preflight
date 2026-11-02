@@ -130,14 +130,15 @@ def extract_claims(
     media = {"video": done.source} if done.ad.media == "video" else {"image": done.frames[0].path.read_bytes()}
     version = f"{prompt}+{MISSED_VERSION}" if second_pass else prompt
 
-    def ask(question: str):
-        return spark.ask(question, prompt_version=version, effort=effort, schema=schema, **media)
+    def ask(question: str, prompt_version: str):
+        return spark.ask(question, prompt_version=prompt_version, effort=effort, schema=schema, **media)
 
-    r = ask(text)
+    # the first call is the single-pass call, so a second-pass run reuses its cached answer
+    r = ask(text, prompt)
     found = r.data["claims"]
     if second_pass:
         missed = (PROMPTS / f"{MISSED_VERSION}.txt").read_text(encoding="utf-8")
         shown = "\n".join(json.dumps(c, ensure_ascii=False) for c in found)
-        found = found + ask(f"{text}\n\n{missed}\n{shown}").data["claims"]
+        found = found + ask(f"{text}\n\n{missed}\n{shown}", version).data["claims"]
     run = StageRun(stage="claims", status="done", model=r.model, prompt=version, effort=effort)
     return parse({"claims": found}, evidence), run

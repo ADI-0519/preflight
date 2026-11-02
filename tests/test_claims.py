@@ -194,9 +194,10 @@ def test_second_pass_is_shown_the_first_and_adds_what_it_missed(tmp_path):
     claims, stage = extract_claims(ingested(tmp_path, "video"), spark, [SEGMENT], [TEXT], [TRACK], second_pass=True)
     assert [c.text for c in claims] == ["100% natural", "Feel calmer"]
     assert stage.prompt == "claims_v3+claims_missed_v1"
-    (asked, _), (second, kwargs) = spark.calls
+    (asked, first_kwargs), (second, kwargs) = spark.calls
     assert second.startswith(asked) and '"text": "100% natural"' in second
-    assert kwargs["prompt_version"] == "claims_v3+claims_missed_v1"
+    # the first call is keyed as a single-pass call, so its cached answer is shared
+    assert (first_kwargs["prompt_version"], kwargs["prompt_version"]) == ("claims_v3", "claims_v3+claims_missed_v1")
 
 
 def test_a_quote_covering_much_more_than_the_claim_scores_only_loosely():

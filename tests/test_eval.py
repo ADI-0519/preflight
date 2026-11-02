@@ -2,10 +2,11 @@ import csv
 import io
 import wave
 from datetime import UTC, datetime
+from types import SimpleNamespace
 
 import pytest
 
-from preflight.eval import check_recall, registry
+from preflight.eval import check_recall, registry, run
 from preflight.eval.reconstruct import LABEL, overlay_filter
 from preflight.eval.registry import Metric, register, revision
 from preflight.eval.run import MeteredSam, MeteredTranscribe
@@ -198,6 +199,30 @@ def test_register_adds_new_columns_to_old_rows(tmp_path, monkeypatch):
     assert [(r["run_id"], r["metric"], r["low"]) for r in rows] == [
         ("old", "claim_recall", ""), ("new", "ad_recall", ""), ("new", "x", "0.5"),
     ]
+
+
+def test_rescore_registers_a_saved_run_again(tmp_path, monkeypatch):
+    runs, work = tmp_path / "runs.csv", tmp_path / "work"
+    monkeypatch.setattr(registry, "RUNS", runs)
+    monkeypatch.setattr(run, "RUNS", runs)
+    monkeypatch.setattr(run, "RESULTS", tmp_path)
+    monkeypatch.setattr(run, "WORK", work)
+    monkeypatch.setattr(run, "revision", lambda part: "abc")
+    monkeypatch.setattr(run, "kept", lambda t: None)
+    truths = {"A24-1": truth("A24-1", [("cures anxiety fast", ["15.6.2"])]), "T16": truth("T16", [])}
+    monkeypatch.setattr(run, "load_ground_truth", lambda split, i: truths[i])
+    monkeypatch.setattr(run, "load_split", lambda split: SimpleNamespace(dev=["T16", "A24-1"]))
+    register({"run_id": "screen-1", "split": "v2", "part": "dev", "prompt": "judge_v5"}, [("ad_recall", 0, 1)])
+    (work / "screen-1").mkdir(parents=True)
+    for name, s in [("screen-1-A24-1-reconstruction", screening("a", ["Cures anxiety fast"], {0: ["15.6"]})),
+                    ("screen-1-T16-ad", screening("b", ["Tasty"], {}))]:  # fmt: skip
+        (work / "screen-1" / f"{name}.json").write_text(s.model_dump_json(), encoding="utf-8")
+    run.rescore("screen-1")
+    with runs.open(newline="", encoding="utf-8") as f:
+        rows = {r["metric"]: r for r in csv.DictReader(f) if r["run_id"].startswith("screen-1-rescored-")}
+    ad = rows["ad_recall"]
+    assert (ad["hits"], ad["high"], ad["prompt"]) == ("1", "1.0", "judge_v5")
+    assert (rows["negative_ads_flagged"]["total"], rows["negative_ads_flagged"]["high"]) == ("1", "0.975")
 
 
 @pytest.mark.parametrize(("status", "part", "expected"), [("", "test", "abc"), (" M x.py", "dev", "abc-dirty")])

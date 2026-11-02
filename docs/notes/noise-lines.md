@@ -51,3 +51,23 @@ IDs are `<item>/<claim>` in `data/work/runs/screen-20261102T014816/` (the screen
 - **E3 (2):** A24-1241022/80; A24-1228813/10
 
 One person (NEESAY) assigned these classes. P33 step 3's two-person labels of 20 unmatched lines measure how far a second reader agrees.
+
+## judge_v7
+
+`prompts/judge_v7.txt` adds five lines of guidance to judge_v6, each aimed at a class above:
+
+- E1: an ad names a condition anywhere (headline, product name, an expert's title, a hashtag, a testimonial) presents the product for it; menopause counts, and in such an ad claims about energy, mood, sleep, weight, bloating or hormones cite 15.6 and 15.6.2 (the CAP pack's breach text for 15.6.2 names "menopause symptoms framed as a condition"). Claims to repair or regrow damaged tissue are claims to treat a condition. Telling consumers to drop rival products cites 3.41, with 15.6.5 kept for saying other foods are unsafe or inadequate. A claim that a product supports a body system, naming no function, is a general claim under 15.2.
+- E2: a picture description is no issue when the ad's words make the same claim.
+- Precedents: a ruling is cited only for a claim about the same condition, body function or ingredient; most claims cite none.
+
+Class A guidance is unchanged. The prompt holds no ruling ID and no three-word phrase from a ground-truth claim (`tests/test_claims.py`).
+
+| Run | Judge | `claim_recall_carried` | `_by_chance` | `_weighted` | unmatched lines | negatives flagged | ruling citations (top six) |
+|---|---|---|---|---|---|---|---|
+| `screen-20261102T144143-rescored-20261102T163114` | judge_v6 | 167/238 | 60.0/238 | 161.9/238 | 116/25 | 0/15 | 485 (347) |
+| `screen-20261102T172225` | judge_v7 draft | 193/238 | 56.6/238 | 184.7/238 | 77/25 | 0/15 | 283 (216) |
+| `screen-20261102T173132` | judge_v7 | 192/238 | 55.3/238 | 185.0/238 | 81/25 | 0/15 | 315 (220) |
+
+Both judge_v7 runs used turn timing (`--no-align`), as the judge_v6 run did, so every stage but the check came from the cache. Carried recall rose by 25 claims while recall by chance fell, so the gain does not come from citing more rules; rule precision rose from 446/594 to 494/543. The two judge_v7 runs agree within one claim. About 20 of the 25 extra claims come from one menopause ad (A24-1241022), and 4 from the joint ad (G24-1241706), so the size of the gain on another split depends on how many of its ads are framed around a condition.
+
+Blind read of cited rulings: 40 citations sampled from each run were shuffled together and graded by a reader who saw only the claim and the start of the ruling's ad description (2 similar claim, 1 same broad area, 0 unrelated). judge_v6 scored 49 of 80 with 3 unrelated citations; judge_v7 scored 52 of 80 with 1. The difference in the share is within what 40 citations can resolve, but judge_v7 also cites rulings 315 times against 485, so it makes fewer unrelated citations overall. Six rulings still carry 70% of citations, since claims in one ad cite the same on-topic ruling.

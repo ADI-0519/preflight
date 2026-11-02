@@ -1,30 +1,21 @@
 import { StrictMode, useEffect, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
-import {
-  canApprove,
-  complete,
-  NOTICE,
-  post,
-  progressMessage,
-  request,
-  timestamp,
-  upload,
-} from './api';
+import { canApprove, complete, NOTICE, post, progressMessage, request, upload } from './api';
 import type { Config, Demo, Fix, Job, Result, Reveal, Round, Scoreboard } from './api';
 import './style.css';
-import { ClaimTimeline, Preview, RoundComparison } from './workspace';
+import { ClaimTrack, Inspector } from './evidence';
+import { FlagCount, FlaggedList, RoundComparison, StageList, StillStage } from './workspace';
 
 function Metrics({ board }: { board: Scoreboard }) {
   return (
-    <section className="panel scoreboard" aria-labelledby="score-title">
+    <section className="score" aria-labelledby="score-title">
       <h2 id="score-title">Registered test scoreboard</h2>
       {!board.available ? (
-        <p>{board.reason} Development runs and synthetic replays are not final test results.</p>
+        <p>{board.reason} Only the registered final test run is shown here.</p>
       ) : (
         <>
           <p>
-            Run <code>{board.run_id}</code> · split {board.split} · revision{' '}
-            <code>{board.git_sha}</code>
+            Run {board.run_id} on split {board.split}, revision {board.git_sha}
           </p>
           <table>
             <thead>
@@ -47,7 +38,7 @@ function Metrics({ board }: { board: Scoreboard }) {
                   </td>
                   <td>
                     {m.low !== null && m.high !== null
-                      ? `${(m.low * 100).toFixed(1)}–${(m.high * 100).toFixed(1)}%`
+                      ? `${(m.low * 100).toFixed(1)} to ${(m.high * 100).toFixed(1)}%`
                       : 'Not registered'}
                   </td>
                 </tr>
@@ -59,6 +50,12 @@ function Metrics({ board }: { board: Scoreboard }) {
     </section>
   );
 }
+
+function initialAppearance(): 'dark' | 'light' {
+  return window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+}
+
+document.documentElement.dataset.appearance = initialAppearance();
 
 function App() {
   const [config, setConfig] = useState<Config | null>(null);
@@ -73,7 +70,7 @@ function App() {
   const [media, setMedia] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
-  const [status, setStatus] = useState('Choose an ad to begin.');
+  const [status, setStatus] = useState('No ad loaded.');
   const [stages, setStages] = useState<Record<string, string>>({});
   const [selected, setSelected] = useState<string | null>(null);
   const [fix, setFix] = useState<Fix | null>(null);
@@ -86,9 +83,9 @@ function App() {
   const [voiceover, setVoiceover] = useState('');
   const [still, setStill] = useState<File | null>(null);
   const [view, setView] = useState<'evidence' | 'edit' | 'compare'>('evidence');
-  const [appearance, setAppearance] = useState<'dark' | 'light'>(() =>
-    window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark',
-  );
+  const [appearance, setAppearance] = useState<'dark' | 'light'>(initialAppearance);
+  const [chosen, setChosen] = useState<{ name: string; video: boolean } | null>(null);
+  const chrome = useRef<HTMLDivElement>(null);
   const [currentTime, setCurrentTime] = useState(0);
   const player = useRef<HTMLVideoElement>(null);
   const generation = useRef(0);
@@ -103,7 +100,11 @@ function App() {
   }, [view]);
 
   function fail(e: unknown) {
-    setError(e instanceof Error ? e.message : 'Something went wrong. Please try again.');
+    setError(
+      e instanceof Error
+        ? e.message
+        : 'The request failed and the server gave no reason. Try again.',
+    );
   }
 
   useEffect(() => {
@@ -142,10 +143,10 @@ function App() {
       setJob((j) => (j ? { ...j, status } : j));
       setStatus(
         status === 'failed'
-          ? 'Processing failed. No complete result is available.'
+          ? 'Screening failed before it produced a result.'
           : status === 'incomplete'
-            ? 'Screening is incomplete. Review the stage details.'
-            : 'Screening finished. Review the evidence.',
+            ? 'Some stages did not finish. They are listed under Screening stages.'
+            : 'Screening finished.',
       );
       if (status === 'failed') return;
       try {
@@ -199,9 +200,11 @@ function App() {
       if (fetching || !isCurrent()) return;
       if (events.readyState === EventSource.CLOSED) {
         setJob((j) => (j ? { ...j, status: 'failed' } : j));
-        setError('Progress is unavailable. The item may have expired; reload or upload again.');
+        setError(
+          'Progress is unavailable. The item may have expired. Reload, or upload the ad again.',
+        );
         setStatus('Progress stream closed.');
-      } else setStatus('Progress connection interrupted; reconnecting…');
+      } else setStatus('Connection lost. Reconnecting…');
     };
     return () => {
       events.close();
@@ -232,18 +235,21 @@ function App() {
     setStill(null);
     setView('evidence');
     setCurrentTime(0);
-    setStatus('Choose an ad to begin.');
+    setChosen(null);
+    setStatus('No ad loaded.');
     history.replaceState(null, '', location.pathname);
   }
 
   async function screenFile(file: File) {
     reset();
     setDemo(null);
+    setChosen({ name: file.name, video: file.type.startsWith('video/') });
     setBusy(true);
     setStatus('Uploading ad…');
     const current = generation.current;
     try {
-      if (!config) throw new Error('Service configuration is not ready. Reload and try again.');
+      if (!config)
+        throw new Error('The page has not loaded its settings yet. Reload and try again.');
       if (file.size > config.max_upload_bytes)
         throw new Error('The upload limit is 100 MiB. Choose a smaller file.');
       const saved = await upload(file);
@@ -272,7 +278,7 @@ function App() {
       if (current !== generation.current) return;
       setResult(value);
       setMedia(value.media_url ?? '');
-      setStatus('Recorded demo result. No live model call.');
+      setStatus('Replaying a recorded screening. Nothing is sent to a model.');
       setSelected(
         value.claims.find((c) => c.flags.length)?.claim_id ?? value.claims[0]?.claim_id ?? null,
       );
@@ -318,7 +324,7 @@ function App() {
       });
       setJob(queued);
       setStages({});
-      setStatus('Fix queued…');
+      setStatus('Revision queued…');
       history.replaceState(null, '', `?job=${queued.job_id}`);
     } catch (e) {
       fail(e);
@@ -335,7 +341,7 @@ function App() {
     try {
       await post(`/fixes/${job.job_id}/approve`, { by, note });
       setFix(await request<Fix>(`/fixes/${job.job_id}`));
-      setStatus('Your review decision was recorded. This is not a Meta decision.');
+      setStatus('Your decision is recorded. Meta has not reviewed this ad.');
     } catch (e) {
       fail(e);
     } finally {
@@ -350,337 +356,330 @@ function App() {
     if (player.current) player.current.currentTime = seconds;
   }
 
+  function openScreen() {
+    reset();
+    setMode('screen');
+    setDemo(null);
+  }
+
+  function openDemos() {
+    reset();
+    setMode('demo');
+  }
+
+  useEffect(() => {
+    const el = chrome.current!;
+    const measure = () =>
+      document.documentElement.style.setProperty('--chrome-h', `${el.offsetHeight}px`);
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  const processing =
+    mode === 'screen' && !result && (active || (!!job && job.status !== 'failed' && !error));
+  const entry = mode === 'screen' && !result && !processing;
+  const lanes = result?.screening.ad.media === 'video' && !(fix && fix.draft.format !== 'video');
+  const lastRound = rounds[rounds.length - 1];
+
+  const demoChoices =
+    demos.length === 0 ? (
+      <p>No demo reconstructions are available yet.</p>
+    ) : (
+      <div className="demos">
+        {demos.map((d) => (
+          <button
+            key={d.id}
+            className="outline"
+            disabled={active}
+            aria-pressed={demo?.id === d.id}
+            onClick={() => void chooseDemo(d)}
+          >
+            {d.title}
+            <small>
+              {d.kind === 'synthetic'
+                ? 'Synthetic replay'
+                : `Reconstruction of ASA ruling ${d.ruling_id}`}
+            </small>
+          </button>
+        ))}
+      </div>
+    );
+
   return (
     <>
-      <header>
-        <a className="brand" href="/">
-          <span className="brand-mark" aria-hidden="true" />
-          PreFlight
-        </a>
-        <div className="header-actions">
-          <span className="local">Local workspace</span>
-          <button
-            className="appearance"
-            aria-pressed={appearance === 'light'}
-            onClick={() => setAppearance(appearance === 'dark' ? 'light' : 'dark')}
-          >
-            {appearance === 'dark' ? 'Light appearance' : 'Dark appearance'}
-          </button>
-        </div>
-      </header>
-      <aside className="notice" role="note">
-        {config?.notice ?? NOTICE}
-      </aside>
-      <main id="workspace" className={result ? 'has-result' : ''}>
-        {!result && !active && (
-          <section className="intro">
-            <p className="eyebrow">Evidence before submission</p>
-            <h1>
-              Every claim.
-              <br />
-              <span>Back to its source.</span>
-            </h1>
-            <p>
-              Review the ad, inspect the evidence and compare revisions. You make the final call.
-            </p>
-          </section>
-        )}
-        {config?.verification_label && <p className="verification">{config.verification_label}</p>}
-        <div className={result && mode === 'screen' ? 'workspace-tools' : ''}>
-          <nav className="tabs" aria-label="Workspace mode">
-            <button
-              aria-pressed={mode === 'screen'}
-              disabled={active}
-              onClick={() => {
-                reset();
-                setMode('screen');
-                setDemo(null);
-              }}
-            >
+      <div className="chrome" ref={chrome}>
+        <header className="bar">
+          <a className="brand" href="/">
+            <svg width="22" height="22" viewBox="0 0 22 22" aria-hidden="true">
+              <rect
+                x="1"
+                y="1"
+                width="20"
+                height="20"
+                rx="3"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.6"
+              />
+              <path d="M6 16V6h10" fill="none" stroke="currentColor" strokeWidth="2.4" />
+            </svg>
+            PreFlight
+          </a>
+          <nav className="modes" aria-label="Workspace mode">
+            <button aria-pressed={mode === 'screen'} disabled={active} onClick={openScreen}>
               Screen an ad
             </button>
-            <button
-              aria-pressed={mode === 'demo'}
-              disabled={active}
-              onClick={() => {
-                reset();
-                setMode('demo');
-              }}
-            >
+            <button aria-pressed={mode === 'demo'} disabled={active} onClick={openDemos}>
               Explore demos
             </button>
           </nav>
-          {mode === 'screen' ? (
-            <section className={`upload panel ${result || active ? 'compact-upload' : ''}`}>
-              <div>
-                <h2>{result ? 'Screen another ad' : 'Start with your ad'}</h2>
-                <details className="upload-details" open={!result}>
-                  <summary>Formats and retention</summary>
-                  <p>PNG, JPEG, WebP, MP4, WebM or QuickTime · up to 100 MiB.</p>
-                  <p className="muted">
-                    Local copies expire after {config ? config.retention_seconds / 3600 : 24} hours;
-                    running jobs may defer deletion. Screening uses configured model credits.
-                  </p>
-                </details>
-              </div>
-              <label className="file-button">
-                {result ? 'Choose another ad' : 'Choose image or video'}
-                <input
-                  aria-label="Upload ad"
-                  type="file"
-                  accept="image/png,image/jpeg,image/webp,video/mp4,video/webm,video/quicktime"
-                  disabled={active || !config}
-                  onChange={(e) => {
-                    const file = e.target.files?.[0];
-                    e.target.value = '';
-                    if (file) void screenFile(file);
-                  }}
-                />
-              </label>
-            </section>
-          ) : (
-            <section className={`panel demo-library ${result ? 'compact-library' : ''}`}>
-              <h2>Demo library</h2>
-              <p>
-                Reconstructions and team-made fixtures only. Outcomes stay hidden until you reveal
-                them.
-              </p>
-              {demos.length === 0 ? (
-                <p>No demo reconstructions are available yet.</p>
-              ) : (
-                <div className="demo-list">
-                  {demos.map((d) => (
-                    <button
-                      key={d.id}
-                      disabled={active}
-                      aria-pressed={demo?.id === d.id}
-                      onClick={() => void chooseDemo(d)}
-                    >
-                      {d.title}
-                      <small>
-                        {d.kind === 'synthetic'
-                          ? 'Synthetic replay'
-                          : `Reconstruction · ${d.ruling_id}`}
-                      </small>
-                    </button>
-                  ))}
-                </div>
-              )}
-            </section>
-          )}
-        </div>
+          <button
+            className="appearance outline"
+            aria-label={appearance === 'dark' ? 'Light appearance' : 'Dark appearance'}
+            aria-pressed={appearance === 'light'}
+            onClick={() => setAppearance(appearance === 'dark' ? 'light' : 'dark')}
+          >
+            {appearance === 'dark' ? 'Light' : 'Dark'}
+            <span className="long"> appearance</span>
+          </button>
+        </header>
+        <aside className="notice" role="note">
+          {config?.notice ?? NOTICE}
+        </aside>
+      </div>
+      <main id="workspace">
+        {config?.verification_label && <p className="replay">{config.verification_label}</p>}
         {error && (
           <div className="error" role="alert">
             {error}
           </div>
         )}
-        <p className="status" role="status" aria-live="polite">
-          <span className={active ? 'dot working' : 'dot'} />
+        <p className="sr-only" role="status" aria-live="polite">
           {status}
         </p>
-        {Object.keys(stages).length > 0 && (
-          <ol className="stages" aria-label="Screening stages">
-            {Object.entries(stages).map(([name, state]) => (
-              <li key={name}>
-                {name.replaceAll('_', ' ')} <strong>{state}</strong>
-              </li>
-            ))}
-          </ol>
+        {mode === 'demo' && !result && (
+          <>
+            <div className="title-row">
+              <div className="what">
+                <h1>Explore demos</h1>
+                <p className="lead">
+                  Reconstructions of ruled ads and fixtures the team made. Outcomes stay hidden
+                  until you reveal them.
+                </p>
+              </div>
+            </div>
+            {demoChoices}
+          </>
+        )}
+        {mode === 'demo' && result && demoChoices}
+        {entry && (
+          <>
+            <div className="title-row">
+              <div className="what">
+                <h1>Screen an ad</h1>
+                <p className="lead">
+                  Upload one ad. Each claim is checked against the GB register, the CAP Code and ASA
+                  rulings, and every flag shows its evidence.
+                </p>
+              </div>
+            </div>
+            <div className="work">
+              <div className="slot">
+                <span>Nothing uploaded yet.</span>
+                <label className="file-button primary">
+                  Choose image or video
+                  <input
+                    aria-label="Upload ad"
+                    type="file"
+                    accept="image/png,image/jpeg,image/webp,video/mp4,video/webm,video/quicktime"
+                    disabled={active || !config}
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      e.target.value = '';
+                      if (file) void screenFile(file);
+                    }}
+                  />
+                </label>
+              </div>
+              <div className="facts">
+                <h2>Formats</h2>
+                <p>PNG, JPEG, WebP, MP4, WebM or QuickTime, up to 100 MiB.</p>
+                <h2>Retention</h2>
+                <p>
+                  Uploads are deleted after {config ? config.retention_seconds / 3600 : 24} hours,
+                  or later if a job is still using them. Screening spends model credits.
+                </p>
+                <h2>Demos</h2>
+                <p>
+                  <button className="link" onClick={openDemos}>
+                    Explore labelled demos
+                  </button>
+                  . Their ASA outcomes stay hidden until you reveal them.
+                </p>
+              </div>
+            </div>
+          </>
+        )}
+        {processing && (
+          <>
+            <div className="title-row">
+              <div className="what">
+                <h1>{chosen ? `Screening ${chosen.name}` : 'Screening your ad'}</h1>
+                <p className="headline" aria-hidden="true">
+                  {status}
+                </p>
+              </div>
+            </div>
+            <div className="work">
+              <section className="stage-col">
+                <div className="stage">
+                  {media ? (
+                    chosen?.video ? (
+                      <video src={media} controls preload="metadata" aria-label="Uploaded ad" />
+                    ) : (
+                      <img src={media} alt="Uploaded ad" />
+                    )
+                  ) : (
+                    <p>{busy ? 'Uploading the ad…' : 'No preview is available for this job.'}</p>
+                  )}
+                </div>
+              </section>
+              <section className="facts">
+                <StageList stages={stages} />
+              </section>
+            </div>
+          </>
         )}
         {result && (
           <>
-            <div className="result-heading">
-              <h2>{demo?.title ?? 'Screening evidence'}</h2>
-              <span className="badge">
-                {complete(result.screening)
-                  ? `${result.screening.flags.length} flag${result.screening.flags.length === 1 ? '' : 's'}`
-                  : 'Incomplete'}
-              </span>
-            </div>
-            <p className="headline">{result.screening.headline}</p>
-            {resultOwner && (
-              <a
-                className="report-link"
-                href={`/screenings/${resultOwner}/report`}
-                target="_blank"
-                rel="noreferrer"
-              >
-                Open full source report ↗
-              </a>
-            )}
-            <nav className="view-tabs" aria-label="Review views">
-              <button aria-pressed={view === 'evidence'} onClick={() => setView('evidence')}>
-                Evidence
-              </button>
-              {mode === 'screen' && source && !fix && complete(result.screening) && (
-                <button aria-pressed={view === 'edit'} onClick={() => setView('edit')}>
-                  Prepare revision
-                </button>
-              )}
-              {fix && (
-                <button aria-pressed={view === 'compare'} onClick={() => setView('compare')}>
-                  Compare rounds
-                </button>
-              )}
-            </nav>
-            <div className="workspace" hidden={view !== 'evidence'}>
-              <section className="panel viewer" aria-label="Ad and claim timeline">
-                {media ? (
-                  (fix ? fix.draft.format === 'video' : result.screening.ad.media === 'video') ? (
-                    <video
-                      ref={player}
-                      onLoadedMetadata={(e) => {
-                        const start = claim?.evidence[0]?.start ?? 0;
-                        e.currentTarget.currentTime = start;
-                        setCurrentTime(start);
-                      }}
-                      onTimeUpdate={(e) => setCurrentTime(e.currentTarget.currentTime)}
-                      controls
-                      preload="metadata"
-                      src={media}
-                      aria-label="Ad video"
-                    />
-                  ) : (
-                    <img className="ad-image" src={media} alt="Ad being screened" />
-                  )
-                ) : (
-                  <p>Preview unavailable after reload. The retained evidence is shown below.</p>
-                )}
-                <h3>Claim timeline</h3>
-                {result.screening.ad.media === 'video' &&
-                  !(fix && fix.draft.format !== 'video') && (
-                    <ClaimTimeline
-                      claims={result.claims}
-                      duration={result.screening.ad.duration ?? 0}
-                      selected={selected}
-                      currentTime={currentTime}
-                      onSelect={select}
-                    />
-                  )}
-                <p className="muted">
-                  Select a claim to inspect its evidence
-                  {result.screening.ad.media === 'video' ? ' and seek the video' : ''}.
-                </p>
-                <div className="timeline">
-                  {result.claims.map((c) => (
-                    <button
-                      key={c.claim_id}
-                      aria-pressed={selected === c.claim_id}
-                      onClick={() => select(c.claim_id, c.evidence[0]?.start ?? 0)}
-                    >
-                      <time>{timestamp(c.evidence[0]?.start ?? 0)}</time>
-                      <span>{c.text}</span>
-                      <small>
-                        {c.flags.length
-                          ? `${c.flags.length} flag${c.flags.length > 1 ? 's' : ''}`
-                          : 'No flag'}
-                      </small>
-                    </button>
-                  ))}
+            <div className="title-row">
+              <div className="what">
+                <div className="title-line">
+                  <h1>{demo?.title ?? 'Screening evidence'}</h1>
+                  <FlagCount screening={result.screening} />
                 </div>
+                <p className="headline">{result.screening.headline}</p>
+                {demo && (
+                  <p className="muted">
+                    {demo.kind === 'synthetic'
+                      ? 'Synthetic replay of a recorded screening.'
+                      : `Recorded screening of a reconstruction of ASA ruling ${demo.ruling_id}.`}{' '}
+                    Nothing is sent to a model.
+                  </p>
+                )}
+              </div>
+              <div className="views">
+                <nav aria-label="Review views">
+                  <button aria-pressed={view === 'evidence'} onClick={() => setView('evidence')}>
+                    Evidence
+                  </button>
+                  {mode === 'screen' && source && !fix && complete(result.screening) && (
+                    <button aria-pressed={view === 'edit'} onClick={() => setView('edit')}>
+                      Prepare revision
+                    </button>
+                  )}
+                  {fix && (
+                    <button aria-pressed={view === 'compare'} onClick={() => setView('compare')}>
+                      Compare rounds
+                    </button>
+                  )}
+                </nav>
+                {resultOwner && (
+                  <a href={`/screenings/${resultOwner}/report`} target="_blank" rel="noreferrer">
+                    Open full source report
+                  </a>
+                )}
+                {demo && !reveal && (
+                  <button className="primary" onClick={() => void revealDemo()}>
+                    Reveal ASA outcome
+                  </button>
+                )}
+              </div>
+            </div>
+            {reveal && (
+              <div className="reveal">
+                <div className="band">
+                  {reveal.kind === 'synthetic' ? (
+                    <strong>{reveal.message}</strong>
+                  ) : (
+                    <strong>
+                      ASA ruling{' '}
+                      <a href={reveal.url} target="_blank" rel="noreferrer">
+                        {reveal.ruling_id}
+                      </a>
+                      , {reveal.date}: {reveal.outcome}. CAP rules: {reveal.rules?.join(', ')}.
+                    </strong>
+                  )}
+                  <p>PreFlight's screening and the ASA's ruling are separate results.</p>
+                </div>
+              </div>
+            )}
+            {active && (
+              <section className="fix-progress">
+                <p className="headline" aria-hidden="true">
+                  {status}
+                </p>
+                <StageList stages={stages} />
+              </section>
+            )}
+            <div className="workspace" hidden={view !== 'evidence'}>
+              <section className="viewer" aria-label="Ad and claim timeline">
+                <div className="stage">
+                  {media ? (
+                    (fix ? fix.draft.format === 'video' : result.screening.ad.media === 'video') ? (
+                      <video
+                        ref={player}
+                        onLoadedMetadata={(e) => {
+                          const start = claim?.evidence[0]?.start ?? 0;
+                          e.currentTarget.currentTime = start;
+                          setCurrentTime(start);
+                        }}
+                        onTimeUpdate={(e) => setCurrentTime(e.currentTarget.currentTime)}
+                        controls
+                        preload="metadata"
+                        src={media}
+                        aria-label="Ad video"
+                      />
+                    ) : (
+                      <img className="ad-image" src={media} alt="Ad being screened" />
+                    )
+                  ) : (
+                    <p>The ad preview is not kept after a reload. Its evidence is below.</p>
+                  )}
+                </div>
+                <ClaimTrack
+                  claims={result.claims}
+                  duration={lanes ? (result.screening.ad.duration ?? 0) : 0}
+                  selected={selected}
+                  currentTime={currentTime}
+                  onSelect={select}
+                />
                 {result.claims.length === 0 && (
                   <p>
                     {complete(result.screening)
                       ? 'No claims were extracted.'
-                      : 'No complete claim result is available.'}
+                      : 'Screening stopped before claims were extracted.'}
                   </p>
                 )}
               </section>
-              <section className="panel evidence" aria-label="Selected claim evidence">
-                <p className="eyebrow">Claim inspector</p>
-                <h3>{claim?.text ?? 'Choose a claim'}</h3>
-                {claim?.evidence.map((e, i) => (
-                  <article className="evidence-item" key={i}>
-                    <h4>
-                      {e.kind} · {timestamp(e.start)}–{timestamp(e.end)}
-                    </h4>
-                    <p>{e.text}</p>
-                    {e.timing === 'turn' && (
-                      <small>
-                        Timing covers the whole transcription turn, not individual words.
-                      </small>
-                    )}
-                    {e.crop_url && (
-                      <div className="crop">
-                        <Preview
-                          src={e.crop_url}
-                          label={`Cited region at ${timestamp(e.start)}: ${e.text}`}
-                        />
-                      </div>
-                    )}
-                  </article>
-                ))}
-                {claim?.flags.map((f) => (
-                  <article className="flag" key={f.flag_id}>
-                    <span className="badge">
-                      {f.kind === 'on_hold' ? 'On hold' : 'Possible breach'}
-                    </span>
-                    <p>{f.reason}</p>
-                    <h4>Source provenance</h4>
-                    {f.source_details.map((s, i) => (
-                      <div className="source" key={i}>
-                        {s.url ? (
-                          <a href={s.url} target="_blank" rel="noreferrer">
-                            {s.label} ↗
-                          </a>
-                        ) : (
-                          <strong>{s.label}</strong>
-                        )}
-                        <p>{s.text}</p>
-                      </div>
-                    ))}
-                    {f.suggested_wording ? (
-                      <blockquote>
-                        <small>Exact register wording · {f.suggested_wording.register_id}</small>
-                        {f.suggested_wording.wording}
-                      </blockquote>
-                    ) : (
-                      <p className="muted">
-                        No register wording suggested. A person must decide what to change.
-                      </p>
-                    )}
-                  </article>
-                ))}
-                {claim && claim.flags.length === 0 && (
-                  <p>
-                    No flag was returned for this claim. This does not predict platform enforcement.
-                  </p>
-                )}
-              </section>
+              <Inspector claim={claim} />
             </div>
-            {demo && (
-              <section className="panel">
-                <h2>Compare with the ruling</h2>
-                {!reveal ? (
-                  <button onClick={() => void revealDemo()}>Reveal ASA outcome</button>
-                ) : reveal.kind === 'synthetic' ? (
-                  <p>{reveal.message}</p>
-                ) : (
-                  <>
-                    <p>
-                      <a href={reveal.url} target="_blank" rel="noreferrer">
-                        ASA {reveal.ruling_id}
-                      </a>{' '}
-                      · {reveal.date}
-                    </p>
-                    <p>
-                      Outcome: {reveal.outcome}. CAP rules: {reveal.rules?.join(', ')}.
-                    </p>
-                    <p>PreFlight's screening and the ASA's ruling are separate results.</p>
-                  </>
-                )}
-              </section>
-            )}
           </>
         )}
         {mode === 'screen' && source && !fix && result && complete(result.screening) && (
-          <section className="panel editor-panel" hidden={view !== 'edit'}>
-            <h2>Make the ad editable</h2>
-            <p>
-              Supply a clean scene still and the actual caption/script. The fix loop re-screens this
-              draft; it does not edit an opaque uploaded video.
-            </p>
-            <form onSubmit={startFix} className="draft-form">
+          <div className="work editor" hidden={view !== 'edit'}>
+            <section className="stage-col">
+              <StillStage file={still} />
+              <FlaggedList claims={result.claims} />
+            </section>
+            <form onSubmit={startFix} className="sheet draft-form">
+              <h2>Editable draft</h2>
+              <p className="muted">
+                Upload the scene as a still image without text, then type the captions the ad shows.
+                Each round is re-screened. Text burned into an uploaded video cannot be edited.
+              </p>
               <label>
                 Draft format
                 <select
@@ -689,7 +688,7 @@ function App() {
                   onChange={(e) => setFormat(e.target.value as 'image' | 'video')}
                 >
                   <option value="image">Image</option>
-                  <option value="video">Video · one scene</option>
+                  <option value="video">Video, one scene</option>
                 </select>
               </label>
               <label>
@@ -703,7 +702,7 @@ function App() {
                 />
               </label>
               <label>
-                On-screen captions · one per line
+                On-screen captions, one per line
                 <textarea
                   rows={4}
                   maxLength={80000}
@@ -722,81 +721,91 @@ function App() {
                     disabled={active}
                     onChange={(e) => setVoiceover(e.target.value)}
                   />
-                  <small>Local rendering dependencies must be installed for voiced video.</small>
+                  <small>Voiced video needs the local rendering tools installed.</small>
                 </label>
               )}
-              <button type="submit" disabled={active || !still}>
+              <button className="primary" type="submit" disabled={active || !still}>
                 Run fix and re-screen
               </button>
             </form>
-          </section>
+          </div>
         )}
         {fix && (
-          <section className="panel comparison-panel" hidden={view !== 'compare'}>
-            <h2>Fix rounds</h2>
-            <p>
-              Each column is a saved, re-screened draft. Remaining flags need a person; the loop
-              never makes the final decision.
+          <section className="comparison" hidden={view !== 'compare'}>
+            <p className="muted">
+              Each column is one saved draft and its screening. A person decides what to do about
+              any flag that remains.
             </p>
             <RoundComparison rounds={rounds} />
-            <p className="muted">
-              The Evidence view shows the final saved screening and its source provenance.
-            </p>
-            {fix.decision ? (
-              <div className="decision">
-                <h3>Human review recorded</h3>
-                <p>
-                  {fix.decision.by} · {new Date(fix.decision.at).toLocaleString()}
-                </p>
-                <p>{fix.decision.note}</p>
-                <p>This records a person's decision, not Meta approval.</p>
+            <div className="review sheet">
+              <div className="summary">
+                <h2>Your review decision</h2>
+                {lastRound && (
+                  <p>
+                    You are recording a decision on round {lastRound.round}, the last saved draft.
+                  </p>
+                )}
+                <p>Its screening: {fix.screening.headline}</p>
+                <p className="muted">Evidence shows the last round's screening and its sources.</p>
               </div>
-            ) : canApprove(fix) ? (
-              <form onSubmit={approve} className="review-form">
-                <h3>Your review decision</h3>
-                <label>
-                  Your name
-                  <input
-                    required
-                    maxLength={100}
-                    value={by}
-                    onChange={(e) => setBy(e.target.value)}
-                  />
-                </label>
-                <label>
-                  Review note
-                  <textarea
-                    maxLength={2000}
-                    value={note}
-                    onChange={(e) => setNote(e.target.value)}
-                  />
-                </label>
-                <label className="checkbox">
-                  <input
-                    type="checkbox"
-                    checked={confirmed}
-                    onChange={(e) => setConfirmed(e.target.checked)}
-                  />
-                  I reviewed the final draft and evidence. This is my decision, not a platform
-                  verdict.
-                </label>
-                <button type="submit" disabled={busy || !by.trim() || !confirmed}>
-                  Record my review decision
-                </button>
-              </form>
-            ) : (
-              <p className="notice">
-                This draft needs a person. Recording a review decision is unavailable while flags
-                remain or screening is incomplete.
-              </p>
-            )}
+              {fix.decision ? (
+                <div className="decision">
+                  <h3>Human review recorded</h3>
+                  <p>
+                    {fix.decision.by}, {new Date(fix.decision.at).toLocaleString()}
+                  </p>
+                  <p>{fix.decision.note}</p>
+                  <p>Recorded by a person in PreFlight. Meta has not reviewed this ad.</p>
+                </div>
+              ) : canApprove(fix) ? (
+                <form onSubmit={approve} className="review-form">
+                  <label>
+                    Your name
+                    <input
+                      required
+                      maxLength={100}
+                      value={by}
+                      onChange={(e) => setBy(e.target.value)}
+                    />
+                  </label>
+                  <label>
+                    Review note
+                    <textarea
+                      maxLength={2000}
+                      value={note}
+                      onChange={(e) => setNote(e.target.value)}
+                    />
+                  </label>
+                  <label className="checkbox">
+                    <input
+                      type="checkbox"
+                      checked={confirmed}
+                      onChange={(e) => setConfirmed(e.target.checked)}
+                    />
+                    I reviewed the final draft and its evidence, and I am making this decision
+                    myself.
+                  </label>
+                  <button
+                    className="primary"
+                    type="submit"
+                    disabled={busy || !by.trim() || !confirmed}
+                  >
+                    Record my review decision
+                  </button>
+                </form>
+              ) : (
+                <p className="needs-person">
+                  Flags remain or screening is incomplete, so no review decision can be recorded for
+                  this draft.
+                </p>
+              )}
+            </div>
           </section>
         )}
         {mode === 'demo' && config && <Metrics board={config.scoreboard} />}
       </main>
       <footer>
-        <span>PreFlight · Evidence before submission</span>
-        <a href="/docs">API documentation ↗</a>
+        <a href="/docs">API documentation</a>
       </footer>
     </>
   );

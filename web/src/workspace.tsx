@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import type { ClaimView, Round } from './api';
-import { complete, timestamp } from './api';
+import { complete } from './api';
+import type { Screening } from './screening';
 
 export function Preview({
   src,
@@ -22,59 +23,86 @@ export function Preview({
   );
 }
 
-export function ClaimTimeline({
-  claims,
-  duration,
-  selected,
-  currentTime,
-  onSelect,
-}: {
-  claims: ClaimView[];
-  duration: number;
-  selected: string | null;
-  currentTime: number;
-  onSelect: (id: string, seconds: number) => void;
-}) {
-  if (!(duration > 0)) return null;
-  const position = (seconds: number) => Math.max(0, Math.min(100, (100 * seconds) / duration));
+export function FlagCount({ screening }: { screening: Screening }) {
+  const n = screening.flags.length;
+  const done = complete(screening);
   return (
-    <div className="time-axis" aria-label="Evidence time axis">
-      <div className="time-ruler" aria-hidden="true">
-        {[0, 0.25, 0.5, 0.75, 1].map((n) => (
-          <span key={n}>{timestamp(duration * n)}</span>
-        ))}
-      </div>
-      <div className="time-lanes">
-        {claims.map((c, i) => (
-          <button
-            key={c.claim_id}
-            className="time-lane"
-            aria-pressed={selected === c.claim_id}
-            aria-label={`Seek to claim ${i + 1}: ${c.text}`}
-            onClick={() => onSelect(c.claim_id, c.evidence[0]?.start ?? 0)}
-          >
-            <span className="lane-number" aria-hidden="true">
-              {String(i + 1).padStart(2, '0')}
-            </span>
-            <span className="lane-track" aria-hidden="true">
-              {c.evidence.map((e, j) => (
-                <span
-                  key={j}
-                  className={`evidence-span ${c.flags.length ? 'flagged' : ''}`}
-                  style={{
-                    left: `${position(e.start)}%`,
-                    width: e.end > e.start ? `${position(e.end) - position(e.start)}%` : '2px',
-                  }}
-                />
-              ))}
-              <span className="playhead" style={{ left: `${position(currentTime)}%` }} />
-            </span>
-          </button>
-        ))}
-      </div>
-      <p className="timeline-key">
-        One row per claim · amber indicates a flag · spans use recorded evidence timing
-      </p>
+    <span className={`count ${done && n ? 'flagged' : ''}`}>
+      {done ? `${n} flag${n === 1 ? '' : 's'}` : 'Incomplete'}
+    </span>
+  );
+}
+
+export function StageList({ stages }: { stages: Record<string, string> }) {
+  const entries = Object.entries(stages);
+  return (
+    <>
+      <h2 id="stages-title">Screening stages</h2>
+      {entries.length === 0 ? (
+        <p className="muted">No stage has reported yet.</p>
+      ) : (
+        <ol className="stages" aria-labelledby="stages-title">
+          {entries.map(([name, state]) => {
+            const label = name.replaceAll('_', ' ');
+            return (
+              <li key={name} className={state}>
+                <span>{label[0].toUpperCase() + label.slice(1)}</span>
+                <span>{state}</span>
+              </li>
+            );
+          })}
+        </ol>
+      )}
+      <p className="muted">Stages update as the server finishes them.</p>
+    </>
+  );
+}
+
+export function StillStage({ file }: { file: File | null }) {
+  const [url, setUrl] = useState('');
+  useEffect(() => {
+    if (!file) {
+      setUrl('');
+      return;
+    }
+    const next = URL.createObjectURL(file);
+    setUrl(next);
+    return () => URL.revokeObjectURL(next);
+  }, [file]);
+  return (
+    <div className="stage">
+      {url ? <img src={url} alt="Chosen scene still" /> : <p>No scene still chosen yet.</p>}
+    </div>
+  );
+}
+
+export function FlaggedList({ claims }: { claims: ClaimView[] }) {
+  const flagged = claims.filter((c) => c.flags.length);
+  return (
+    <div className="refs">
+      <h2>Flagged in this ad</h2>
+      {flagged.length === 0 && <p className="none">No claim was flagged.</p>}
+      {flagged.map((c) => {
+        const wording = c.flags.find((f) => f.suggested_wording)?.suggested_wording;
+        return (
+          <div className="ref" key={c.claim_id}>
+            <p className="said-small">
+              <span className="hl">“{c.text}”</span>
+            </p>
+            {wording ? (
+              <>
+                <p className="pair-label">Register wording, exactly</p>
+                <p className="said-small">“{wording.wording}”</p>
+                <p className="id">GB register {wording.register_id}</p>
+              </>
+            ) : (
+              <p className="none">
+                No register wording matches this claim. A person must decide what to change.
+              </p>
+            )}
+          </div>
+        );
+      })}
     </div>
   );
 }
@@ -85,76 +113,59 @@ export function RoundComparison({ rounds }: { rounds: Round[] }) {
   const first = rounds.find((r) => r.round === earlier) ?? rounds[0];
   const last = rounds.find((r) => r.round === later) ?? rounds[rounds.length - 1];
   if (!first || !last) return <p>Saved round previews are unavailable.</p>;
-  const pair = first.round === last.round ? [first] : [first, last];
+  const sides = [
+    { r: first, other: last, label: 'Left round', pick: setEarlier },
+    { r: last, other: first, label: 'Right round', pick: setLater },
+  ];
   return (
     <>
-      <div className="comparison-selectors">
-        <label>
-          Left round
-          <select value={first.round} onChange={(e) => setEarlier(Number(e.target.value))}>
-            {rounds.map((r) => (
-              <option key={r.round} value={r.round}>
-                Round {r.round}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label>
-          Right round
-          <select value={last.round} onChange={(e) => setLater(Number(e.target.value))}>
-            {rounds.map((r) => (
-              <option key={r.round} value={r.round}>
-                Round {r.round}
-              </option>
-            ))}
-          </select>
-        </label>
-      </div>
-      <p className="muted">
-        Highlighted lines differ between the selected rounds. All saved rounds remain selectable.
-      </p>
+      <p className="muted">Underlined lines changed between the two rounds.</p>
       <div className="rounds">
-        {pair.map((r, side) => {
-          const other = pair[1 - side];
-          return (
-            <article className="round" key={r.round}>
-              <div className="panel-heading">
-                <h3>Round {r.round}</h3>
-                <span className="badge">
-                  {complete(r.screening)
-                    ? `${r.screening.flags.length} flag${r.screening.flags.length === 1 ? '' : 's'}`
-                    : 'Incomplete'}
-                </span>
-              </div>
+        {sides.map(({ r, other, label, pick }) => (
+          <article className="round" key={label}>
+            <div className="round-head">
+              <h3>Round {r.round}</h3>
+              <FlagCount screening={r.screening} />
+              <select
+                aria-label={label}
+                value={r.round}
+                onChange={(e) => pick(Number(e.target.value))}
+              >
+                {rounds.map((o) => (
+                  <option key={o.round} value={o.round}>
+                    Round {o.round}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="stage">
               <Preview
                 src={r.media_url}
                 video={r.format === 'video'}
                 label={`Round ${r.round} rendered draft`}
               />
-              <p className="round-headline">{r.screening.headline}</p>
-              {r.scenes.map((s, i) => (
-                <div key={i} className="round-scene">
-                  <h4>Scene {i + 1}</h4>
-                  {s.on_screen_text.map((t, j) => (
-                    <p key={j}>
-                      {other && other.scenes[i]?.on_screen_text[j] !== t ? <mark>{t}</mark> : t}
-                    </p>
-                  ))}
-                  {s.voiceover && (
-                    <p>
-                      Voiceover:{' '}
-                      {other && other.scenes[i]?.voiceover !== s.voiceover ? (
-                        <mark>{s.voiceover}</mark>
-                      ) : (
-                        s.voiceover
-                      )}
-                    </p>
-                  )}
-                </div>
-              ))}
-            </article>
-          );
-        })}
+            </div>
+            <p className="round-headline">{r.screening.headline}</p>
+            {r.scenes.map((s, i) => (
+              <div key={i} className="round-scene">
+                {r.scenes.length > 1 && <h4>Scene {i + 1}</h4>}
+                {s.on_screen_text.map((t, j) => (
+                  <p key={j}>{other.scenes[i]?.on_screen_text[j] !== t ? <mark>{t}</mark> : t}</p>
+                ))}
+                {s.voiceover && (
+                  <p>
+                    <span className="label">Voiceover</span>{' '}
+                    {other.scenes[i]?.voiceover !== s.voiceover ? (
+                      <mark>{s.voiceover}</mark>
+                    ) : (
+                      s.voiceover
+                    )}
+                  </p>
+                )}
+              </div>
+            ))}
+          </article>
+        ))}
       </div>
     </>
   );

@@ -21,7 +21,7 @@ test('three labelled demo states, honest scoreboard and explicit reveal', async 
   await expect(page.getByRole('heading', { name: 'Source provenance' }).first()).toBeVisible();
   const video = page.getByRole('region', { name: 'Ad and claim timeline' }).locator('video');
   await expect(video).toBeVisible();
-  const buttons = page.locator('.timeline button');
+  const buttons = page.locator('.claim-row');
   await expect(buttons.first()).toBeVisible();
   await buttons.last().click();
   await expect(buttons.last()).toHaveAttribute('aria-pressed', 'true');

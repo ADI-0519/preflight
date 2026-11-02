@@ -9,7 +9,7 @@ from test_evidence import CLIP, ffmpeg, hand_built, models  # noqa: F401
 
 from preflight import cli, pipeline
 from preflight.eval import claim_recall
-from preflight.models import SparkResult
+from preflight.models import CacheMiss, SparkResult
 from preflight.pipeline import SNAPSHOTS, screen
 from preflight.schema import NOTICE, Screening, StageRun, verify_sources
 
@@ -109,9 +109,27 @@ def test_a_failed_check_keeps_the_claims_and_reads_incomplete(models, clip):  # 
     assert out.headline == "Incomplete: check failed. No result is given."
 
 
+class UnrecordedSam:
+    def segment(self, *args, **kwargs):
+        raise CacheMiss("no recorded response")
+
+
+def test_a_replay_miss_fails_the_screening_instead_of_a_stage(monkeypatch, models, clip):  # noqa: F811
+    with pytest.raises(CacheMiss):
+        screen(clip, replace(models, sam=UnrecordedSam()), NoPrecedents(), "t", align=None)
+
+    def unrecorded(*args, **kwargs):
+        raise CacheMiss("no recorded response")
+
+    monkeypatch.setattr(pipeline, "check", unrecorded)
+    with pytest.raises(CacheMiss):
+        screen(clip, models, NoPrecedents(), "t", align=None)
+
+
 def test_failed_stage_log_holds_no_ad_text(models, clip, caplog):  # noqa: F811
+    spark = Router(Router(models.spark, Judge(skip=False), "verdicts"), CitingFirst(), "claims")
     with caplog.at_level(logging.WARNING):
-        screen(clip, replace(models, sam=BrokenSam()), NoPrecedents(), "t", align=None)
+        screen(clip, replace(models, sam=BrokenSam(), spark=spark), NoPrecedents(), "t", align=None)
     assert "stage regions failed: RuntimeError" in caplog.text
     assert SECRET not in caplog.text
 

@@ -18,6 +18,7 @@ from preflight.evidence.transcribe import transcribe
 from preflight.ingest import Ingested, capture, ingest
 from preflight.models import Models, Spark
 from preflight.models.clients import SAM, SPARK, TRANSCRIBE
+from preflight.models.store import CacheMiss
 from preflight.report import render_html
 from preflight.schema import Screening, Snapshots, StageRun
 from preflight.view import build_view
@@ -34,6 +35,9 @@ def default_id(done: Ingested) -> str:
 def attempt[T](stage: str, model: str, prompt: str | None, empty: T, call: Callable[[], tuple[T, StageRun]]):
     try:
         return call()
+    # a replay with a missing recording is a broken replay, not a stage that failed on the ad
+    except CacheMiss:
+        raise
     except Exception as e:
         # rule 6: exception messages can hold ad text, so only the class is logged
         log.warning("stage %s failed: %s", stage, type(e).__name__)
@@ -83,6 +87,8 @@ def screen(
     gathered = gather(done, models, screening_id or default_id(done), on_stage=on_stage, **config)
     try:
         checked = check(gathered, models.spark, precedents, prompt=judge_prompt, effort=judge_effort)
+    except CacheMiss:
+        raise
     except Exception as e:
         log.warning("stage check failed: %s", type(e).__name__)
         failed = StageRun(stage="check", status="failed", model=SPARK, prompt=judge_prompt, effort=judge_effort)

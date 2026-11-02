@@ -156,24 +156,10 @@ class Builder:
         started = time.monotonic()
         shots, usage = self.shotlist(desc)
         (target / "shotlist.json").write_text(shots.model_dump_json(indent=2), encoding="utf-8")
-        with tempfile.TemporaryDirectory() as tmp:
-            work = Path(tmp)
-            clips, fallbacks = [], []
-            for i, scene in enumerate(shots.scenes):
-                still = target / f"scene{i}.png"
-                if self.still(scene.image_prompt, still):
-                    fallbacks.append(i)
-                audio = None
-                if shots.format == "video" and scene.voiceover.strip():
-                    audio = work / f"scene{i}.wav"
-                    self.speak(scene.voiceover, audio)
-                clips.append(render_scene(still, scene, audio, work / f"scene{i}.mp4", shots.format))
-            if shots.format == "video":
-                concat(clips, target / "reconstruction.mp4", work)
-            else:
-                frame(clips[0], target / "reconstruction.png")
-                for i, clip in enumerate(clips[1:], 1):
-                    frame(clip, target / f"reconstruction-{i}.png")
+        fallbacks = [
+            i for i, scene in enumerate(shots.scenes) if self.still(scene.image_prompt, target / f"scene{i}.png")
+        ]
+        self.assemble(shots, target)
         cost = (usage.get("input_tokens", 0) * SPARK_IN + usage.get("output_tokens", 0) * SPARK_OUT) / 1e6
         cost += IMAGE_EACH * (len(shots.scenes) + len(fallbacks))
         meta = {
@@ -190,6 +176,32 @@ class Builder:
             "seconds": round(time.monotonic() - started, 1),
             "built_at": datetime.now(UTC).isoformat(timespec="seconds"),
         }
+        (target / "meta.json").write_text(json.dumps(meta, indent=2), encoding="utf-8")
+        return meta
+
+    def assemble(self, shots: ShotList, target: Path) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            work = Path(tmp)
+            clips = []
+            for i, scene in enumerate(shots.scenes):
+                audio = None
+                if shots.format == "video" and scene.voiceover.strip():
+                    audio = work / f"scene{i}.wav"
+                    self.speak(scene.voiceover, audio)
+                clips.append(render_scene(target / f"scene{i}.png", scene, audio, work / f"scene{i}.mp4", shots.format))
+            if shots.format == "video":
+                concat(clips, target / "reconstruction.mp4", work)
+            else:
+                frame(clips[0], target / "reconstruction.png")
+                for i, clip in enumerate(clips[1:], 1):
+                    frame(clip, target / f"reconstruction-{i}.png")
+
+    def redraw(self, ruling_id: str, out_dir: Path = OUT_DIR) -> dict:
+        # the saved shot list and stills, drawn again: no model call, so the ad's wording and pictures stay the same
+        target = out_dir / ruling_id
+        self.assemble(ShotList.model_validate_json((target / "shotlist.json").read_text(encoding="utf-8")), target)
+        meta = json.loads((target / "meta.json").read_text(encoding="utf-8"))
+        meta["redrawn_at"] = datetime.now(UTC).isoformat(timespec="seconds")
         (target / "meta.json").write_text(json.dumps(meta, indent=2), encoding="utf-8")
         return meta
 
@@ -314,10 +326,18 @@ def main() -> None:
     parser.add_argument("manifest", type=Path)
     parser.add_argument("--only", nargs="*", help="ruling IDs to build (default: all ruling items)")
     parser.add_argument("--rebuild", action="store_true")
+    parser.add_argument(
+        "--redraw", nargs="+", metavar="RULING_ID", help="render again from the saved shot list and stills"
+    )
     args = parser.parse_args()
     if not shutil.which("ffmpeg"):
         raise SystemExit("ffmpeg is not on PATH")
     builder = Builder(voice=ensure_voice())
+    if args.redraw:
+        for ruling_id in args.redraw:
+            builder.redraw(ruling_id)
+            print(f"{ruling_id}: redrawn", flush=True)
+        return
     results = []
     for desc in descriptions_for(args.manifest):
         skip = args.only and desc.ruling_id not in args.only

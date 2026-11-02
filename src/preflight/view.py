@@ -90,7 +90,10 @@ def _split_rules(rules: list[str]) -> tuple[list[str], list[str]]:
 
 
 def _evidence(screening: Screening, e) -> dict:
-    out = {"kind": e.kind, "start": None, "end": None, "frame_time": None, "text": None, "track_id": None, "crop": None}
+    out = {
+        "kind": e.kind, "start": None, "end": None, "frame_time": None, "text": None, "track_id": None, "crop": None,
+        "timing": None,
+    }  # fmt: skip
     if e.kind == "region":
         track = next(t for t in screening.tracks if t.track_id == e.track_id)
         cited = next(r for r in track.regions if r.frame_time == e.frame_time)
@@ -100,7 +103,8 @@ def _evidence(screening: Screening, e) -> dict:
         return out | {"label": label, "frame_time": e.frame_time, "track_id": e.track_id, "crop": crop}
     if e.kind == "transcript":
         s = next(s for s in screening.segments if s.segment_id == e.segment_id)
-        return out | {"label": f"Heard {span(s.start, s.end)}", "start": s.start, "end": s.end, "text": s.text}
+        label = f"Heard {span(s.start, s.end)}"
+        return out | {"label": label, "start": s.start, "end": s.end, "text": s.text, "timing": s.timing}
     t = next(t for t in screening.on_screen if t.text_id == e.text_id)
     if t.end <= t.start:
         label = "On screen (still)" if screening.ad.media == "image" else "On screen, time not read"

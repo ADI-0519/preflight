@@ -150,3 +150,70 @@ def test_untimed_evidence_is_marked_and_quiet_claims_carry_evidence():
     assert view["lines"][0]["evidence"][0]["timed"]
     (quiet,) = view["quiet_claims"]
     assert quiet["evidence"][0]["timed"] is False
+
+
+def tier_of(rules, extra=()) -> str:
+    return build_view(build((claim(0, LINE, SEG0),), (flag(0, rules, extra),)))["lines"][0]["tier"]
+
+
+def test_tier_high_for_section_12():
+    assert tier_of(("12.1",)) == "high"
+    assert tier_of(("3.7", "12.1.2")) == "high"
+
+
+def test_tier_high_for_15_6():
+    assert tier_of(("15.1.1", "15.6.2")) == "high"
+    assert tier_of(("15.6",)) == "high"
+    assert tier_of(("15.60",)) == "medium"
+
+
+def test_tier_medium_for_section_15_and_3():
+    assert tier_of(("15.1",)) == "medium"
+    assert tier_of(("15.1.1",)) == "medium"
+    assert tier_of(("3.7",)) == "medium"
+    # a section that only starts with the same digits is another section
+    assert tier_of(("1.3",)) == "low" and tier_of(("13.1",)) == "low"
+
+
+def test_tier_low_otherwise():
+    assert tier_of(("4.1",)) == "low"
+    held = Flag(
+        flag_id="flag-0", claim_id="claim-0", kind="on_hold", reason="on hold",
+        sources=(OnHoldRef(on_hold_id="4710"),),
+    )  # fmt: skip
+    assert build_view(build((claim(0, LINE, SEG0),), (held,)))["lines"][0]["tier"] == "low"
+
+
+def test_tier_rises_with_folded_phrase():
+    s = build((claim(0, LINE, SEG0), claim(1, "banish tiredness", SEG0)), (flag(0, ("15.1",)), flag(1, ("12.2",))))
+    (line,) = build_view(s)["lines"]
+    assert line["primary_rules"] == ["15.1"] and line["tier"] == "high"
+
+
+def test_lines_sorted_by_tier_then_time():
+    claims = (
+        claim(0, LINE, SEG0), claim(1, "banish tiredness", SEG1), claim(2, "cures colds", TEXT0),
+        claim(3, "other words", SEG1),
+    )  # fmt: skip
+    flags = (flag(0, ("15.1",)), flag(1, ("12.1",)), flag(2, ("12.1",)), flag(3, ("4.1",)))
+    view = build_view(build(claims, flags))
+    assert [(x["claim_id"], x["tier"]) for x in view["lines"]] == [
+        ("claim-1", "high"), ("claim-2", "high"), ("claim-0", "medium"), ("claim-3", "low"),
+    ]  # fmt: skip
+
+
+def test_unchecked_claims_when_check_did_not_finish():
+    s = build((claim(0, LINE, SEG0), claim(1, "unflagged", SEG1)), (flag(0),))
+    assert [q["tier"] for q in build_view(s)["quiet_claims"]] == [None]
+    unfinished = build((claim(0, LINE, SEG0), claim(1, "unflagged", SEG1)), ())
+    unfinished = unfinished.model_copy(update={"stages": (StageRun(stage="check", status="failed"),)})
+    view = build_view(unfinished)
+    assert [q["tier"] for q in view["quiet_claims"]] == ["unchecked", "unchecked"]
+    assert view["tiers"]["unchecked"] == 2 and view["lines"] == []
+
+
+def test_tier_counts():
+    claims = (claim(0, LINE, SEG0), claim(1, "banish tiredness", SEG1), claim(2, "cures colds", TEXT0),
+              claim(3, "quiet", SEG1))  # fmt: skip
+    view = build_view(build(claims, (flag(0, ("15.1",)), flag(1, ("12.1",)), flag(2, ("4.1",)))))
+    assert view["tiers"] == {"high": 1, "medium": 1, "low": 1, "unchecked": 0}

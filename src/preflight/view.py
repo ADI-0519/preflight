@@ -194,6 +194,19 @@ def _may_say(screening: Screening, claims: list[Claim]) -> list[dict]:
     return out
 
 
+TIERS = ("high", "medium", "low", "unchecked")
+
+
+# rule 1: a tier orders the review by the CAP rules cited; it is not a verdict
+def _tier(line: dict) -> str:
+    rules = [r for part in (line, *line["folded"]) for r in part["primary_rules"] + part["other_rules"]]
+    sections = {r.split(".")[0] for r in rules}
+    # CAP 15.6: claims never acceptable for food and supplement ads, with 15.6.2 disease claims
+    if "12" in sections or any(r == "15.6" or r.startswith("15.6.") for r in rules):
+        return "high"
+    return "medium" if sections & {"15", "3"} else "low"
+
+
 def _line_time(line: dict) -> float:
     t = first_time(line["evidence"])
     return float("inf") if t is None else t
@@ -208,19 +221,26 @@ def incomplete_stages(screening: Screening) -> list[str]:
 
 def build_view(screening: Screening) -> dict:
     groups = fold(screening)
-    lines = sorted((_line(screening, c, nested) for c, nested in groups), key=_line_time)
+    lines = [_line(screening, c, nested) for c, nested in groups]
+    for line in lines:
+        line["tier"] = _tier(line)
+    lines.sort(key=lambda line: (TIERS.index(line["tier"]), _line_time(line)))
     flagged = {f.claim_id for f in screening.flags}
     ad = screening.ad
+    checked = any(r.stage == "check" and r.status == "done" for r in screening.stages)
+    quiet = [
+        {"claim_id": c.claim_id, "text": c.text, "evidence": [_evidence(screening, e) for e in c.evidence],
+         "tier": None if checked else "unchecked"}
+        for c in screening.claims if c.claim_id not in flagged
+    ]  # fmt: skip
     return {
         "screening_id": screening.screening_id, "headline": screening.headline, "notice": screening.notice,
         "snapshots": screening.snapshots.model_dump(),
         "ad": {"media": ad.media, "width": ad.width, "height": ad.height, "duration": ad.duration},
         "incomplete_stages": incomplete_stages(screening),
-        "checked": any(r.stage == "check" and r.status == "done" for r in screening.stages),
+        "checked": checked,
         "lines": lines,
-        "quiet_claims": [
-            {"claim_id": c.claim_id, "text": c.text, "evidence": [_evidence(screening, e) for e in c.evidence]}
-            for c in screening.claims if c.claim_id not in flagged
-        ],
+        "quiet_claims": quiet,
+        "tiers": {t: sum(x["tier"] == t for x in lines + quiet) for t in TIERS},
         "may_say": _may_say(screening, [c for c in screening.claims if c.claim_id in flagged]),
     }  # fmt: skip

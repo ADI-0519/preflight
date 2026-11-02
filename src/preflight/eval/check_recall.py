@@ -98,7 +98,6 @@ def scored(judged: dict[str, list[Screening]], truths: dict[str, GroundTruth]) -
 
 
 def rescore(run_id: str, claims_run: str, split: str) -> None:
-    """Score a saved check run again under the current scoring, with no model calls, as a new run."""
     items = {}
     for path in (WORK / claims_run).glob("*.json"):
         if path.name == "details.json":

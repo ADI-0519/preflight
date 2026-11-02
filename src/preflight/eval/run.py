@@ -92,6 +92,7 @@ def joined(screenings: list[Screening], value) -> str:
 def citation_spread(screenings: list[Screening]) -> list[Metric]:
     cited = Counter(s.ruling_id for sc in screenings for f in sc.flags for s in f.sources if s.kind == "ruling")
     total = sum(cited.values())
+    # both counts are over citations, so the rulings count reads as distinct rulings among that many citations
     return [
         Metric("precedent_citations_top6", sum(n for _, n in cited.most_common(6)), total),
         Metric("precedent_rulings_cited", len(cited), total),

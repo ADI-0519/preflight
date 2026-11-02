@@ -90,8 +90,7 @@ def parse(answer: dict, evidence: dict[str, Evidence]) -> list[Claim]:
     for key, text, substance, ids in prepared:
         named = substances[key]
         name = " ".join(substance.casefold().split()) if substance else None
-        # Enrich a missing substance only when all repeats agree. Different
-        # substances, and an ambiguous unnamed claim, retain their own evidence.
+        # a repeat without a substance takes the one its repeats agree on; otherwise each keeps its own evidence
         if name is None and len(named) == 1:
             name = next(iter(named))
         entry = merged.setdefault(

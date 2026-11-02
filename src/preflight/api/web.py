@@ -310,7 +310,7 @@ def install_web(app, service, *, web_root: Path, demo_root: Path, results_root: 
             if record is None:
                 raise APIError(404, "round_not_available")
             suffix = "mp4" if record["draft"]["format"] == "video" else "png"
-            return media_response(inside(directory, f'renders/{record["screening_id"]}/draft.{suffix}'), request)
+            return media_response(inside(directory, f'renders/{record["digest"][:16]}/draft.{suffix}'), request)
 
     @app.get("/ui/demos")
     def demo_items():

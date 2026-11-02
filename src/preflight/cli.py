@@ -5,7 +5,7 @@ from pathlib import Path
 from preflight.agent import approve
 from preflight.agent.fix import fix_draft
 from preflight.check.precedents import load_precedents
-from preflight.models import from_env
+from preflight.models import Store, from_env
 from preflight.pipeline import SNAPSHOTS, screen_target
 
 OUT_DIR = Path("data/work/screenings")
@@ -19,11 +19,13 @@ def main(argv: list[str] | None = None) -> int:
     one.add_argument("target", help="a video or image file, or an http(s) URL of a page")
     one.add_argument("--out", type=Path, default=OUT_DIR)
     one.add_argument("--no-align", action="store_true", help="keep each transcription turn's timing")
+    one.add_argument("--replay", action="store_true", help="answer every model call from the recording or fail")
     fixing = commands.add_parser("fix", help="screen a draft ad and replace flagged lines with register wording")
     fixing.add_argument("draft", type=Path, help="a draft YAML file: format, scenes, stills")
     fixing.add_argument("--rounds", type=int, default=3)
     fixing.add_argument("--out", type=Path, default=FIX_DIR)
     fixing.add_argument("--no-align", action="store_true", help="keep each transcription turn's timing")
+    fixing.add_argument("--replay", action="store_true", help="answer every model call from the recording or fail")
     approval = commands.add_parser("approve", help="record a person's approval of a fix that ended awaiting approval")
     approval.add_argument("log", type=Path)
     approval.add_argument("--by", required=True)
@@ -57,7 +59,9 @@ def main(argv: list[str] | None = None) -> int:
         return run_fix(args, precedents)
     align = None if args.no_align else "mms"
     try:
-        screening, json_path, html_path = screen_target(args.target, from_env(), precedents, args.out, align=align)
+        screening, json_path, html_path = screen_target(
+            args.target, models_for(args), precedents, args.out, align=align
+        )
     except (RuntimeError, ValueError, FileNotFoundError) as e:
         print(e, file=sys.stderr)
         return 2
@@ -68,10 +72,14 @@ def main(argv: list[str] | None = None) -> int:
     return 1 if not checked or any(r.status == "failed" for r in screening.stages) else 0
 
 
+def models_for(args):
+    return from_env(Store(mode="replay")) if args.replay else from_env()
+
+
 def run_fix(args, precedents) -> int:
     try:
         result = fix_draft(
-            args.draft, from_env(), precedents, args.out, rounds=args.rounds,
+            args.draft, models_for(args), precedents, args.out, rounds=args.rounds,
             align=None if args.no_align else "mms",
         )
     except (RuntimeError, ValueError, FileNotFoundError) as e:

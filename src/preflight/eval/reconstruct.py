@@ -270,6 +270,10 @@ def concat(clips: list[Path], out: Path, work: Path) -> None:
     _run("ffmpeg", "-y", "-f", "concat", "-safe", "0", "-i", str(listing), "-c", "copy", str(out))
 
 
+def card(out: Path) -> None:
+    _run("ffmpeg", "-y", "-f", "lavfi", "-i", f"color=c=0x303030:s={WIDTH}x{HEIGHT}", "-frames:v", "1", str(out))
+
+
 def frame(clip: Path, out: Path) -> None:
     _run("ffmpeg", "-y", "-i", str(clip), "-frames:v", "1", str(out))
 

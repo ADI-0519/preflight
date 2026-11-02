@@ -36,6 +36,7 @@ STILL_EDIT_PROMPT = (
 )
 NO_WORDING = "no authorised wording"
 ALREADY_WORDING = "line already carries the register wording"
+NO_PICTURE = "the claim is in the picture, and this draft has none to edit"
 NOT_LOCATED = "could not locate the claim in the draft"
 ROUND_LIMIT = "round limit reached"
 
@@ -53,13 +54,16 @@ class FixResult:
 
 class DraftScreener:
     def __init__(
-        self, models: Models, precedents: PrecedentIndex, work_dir: Path, align: Literal["mms"] | None = "mms"
+        self, models: Models, precedents: PrecedentIndex, work_dir: Path, align: Literal["mms"] | None = "mms",
+        renders: Path | None = None,
     ):
         self.models, self.precedents, self.work_dir, self.align = models, precedents, work_dir, align
+        # rule 6: renders stay inside the work folder unless the caller shares them, so deleting it removes them
+        self.renders = renders or work_dir / "renders"
         self.scene_bounds: tuple[tuple[float, float], ...] | None = None
 
     def __call__(self, draft: Draft, screening_id: str, previous_id: str | None) -> Screening:
-        rendered = render_draft(draft, self.work_dir / "renders" / screening_id)
+        rendered = render_draft(draft, self.renders)
         self.scene_bounds = rendered.scene_bounds
         done = ingest(rendered.media, self.work_dir / "ingest")
         return screen(done, self.models, self.precedents, screening_id, align=self.align)
@@ -167,6 +171,9 @@ def plan_round(
         in_text = bool(scored) and scored[0][0] >= MIN_SCORE
         if wording is None and not in_text and time is not None:
             scene = scene_at(draft, time, bounds or nominal_bounds(draft))
+            if draft.scenes[scene].still is None:
+                done.for_person.append(hand_off(flag, NO_PICTURE, address))
+                continue
             if scene in edited:
                 done.superseded.append(flag.flag_id)
                 continue
@@ -280,7 +287,8 @@ def fix_draft(
 ) -> FixResult:
     draft = load_draft(path)
     work_dir = out / new_fix_id(draft)
-    screener = DraftScreener(models, precedents, work_dir, align=align)
+    # one folder for every fix under out, so a draft any earlier run rendered is not rendered again
+    screener = DraftScreener(models, precedents, work_dir, align=align, renders=out / "renders")
     return fix(
         draft, screen_draft=screener, image=models.image, rounds=rounds, log=work_dir / "audit.jsonl",
         work_dir=work_dir,

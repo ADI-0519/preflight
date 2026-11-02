@@ -1,13 +1,20 @@
+import importlib
 import json
 import logging
+import shutil
+import sys
 from datetime import UTC, datetime
 from pathlib import Path
 
 import pytest
 
-from preflight.agent import Draft, DraftScene, approve, digest, fix, is_clean, load_draft
-from preflight.agent.draft import Address, lines, with_line
+from preflight.agent import Draft, DraftScene, DraftScreener, approve, digest, fix, is_clean, load_draft
+from preflight.agent import draft as draft_module
+from preflight.agent.draft import Address, lines, render_draft, with_line
 from preflight.agent.fix import ALREADY_WORDING
+from preflight.ingest import png_size
+from preflight.models import Store
+from preflight.models.store import CacheMiss
 from preflight.pipeline import SNAPSHOTS
 from preflight.schema import (
     Ad,
@@ -307,3 +314,91 @@ def test_no_ad_text_in_logging(tmp_path, caplog):
     with caplog.at_level(logging.DEBUG), pytest.raises(RuntimeError):
         run(draft_of(tmp_path, voiceover=SECRET), Scripted(broken), tmp_path)
     assert SECRET not in caplog.text
+
+
+# the package exports a function named fix, which hides the module of the same name
+fix_module = importlib.import_module("preflight.agent.fix")
+needs_ffmpeg = pytest.mark.skipif(shutil.which("ffmpeg") is None, reason="needs ffmpeg")
+
+
+def script_only(*captions):
+    return Draft(format="image", scenes=(DraftScene(on_screen_text=captions),))
+
+
+@pytest.fixture
+def renders(monkeypatch):
+    calls = []
+    real = draft_module.render_scene
+
+    def spy(*args, **kwargs):
+        calls.append(args[0])
+        return real(*args, **kwargs)
+
+    monkeypatch.setattr(draft_module, "render_scene", spy)
+    return calls
+
+
+@needs_ffmpeg
+def test_same_draft_renders_once(tmp_path, renders):
+    first = render_draft(script_only("Magnesium tablets"), tmp_path)
+    again = render_draft(script_only("Magnesium tablets"), tmp_path)
+    assert len(renders) == 1
+    assert again == first
+    render_draft(script_only("Magnesium capsules"), tmp_path)
+    assert len(renders) == 2
+
+
+@needs_ffmpeg
+def test_partial_render_is_not_reused(tmp_path, renders):
+    first = render_draft(script_only("Magnesium tablets"), tmp_path)
+    (first.media.parent / "bounds.json").unlink()
+    first.media.write_bytes(b"half")
+    again = render_draft(script_only("Magnesium tablets"), tmp_path)
+    assert len(renders) == 2
+    assert again.media.stat().st_size > 4
+    assert [p.name for p in tmp_path.iterdir()] == [again.media.parent.name]
+
+
+@needs_ffmpeg
+def test_screener_keeps_renders_in_its_work_folder(tmp_path, monkeypatch):
+    # rule 6: the API deletes a job by deleting its folder, so its renders must be inside it
+    monkeypatch.setattr(fix_module, "ingest", lambda media, out: media)
+    monkeypatch.setattr(fix_module, "screen", lambda media, *args, **kwargs: media)
+    job = tmp_path / "job"
+    media = DraftScreener(None, None, job)(script_only("Magnesium tablets"), "s0", None)
+    assert media.is_relative_to(job / "renders")
+    shared = DraftScreener(None, None, job, renders=tmp_path / "renders")(script_only("Magnesium tablets"), "s1", None)
+    assert shared.is_relative_to(tmp_path / "renders")
+
+
+@needs_ffmpeg
+def test_draft_without_a_picture_renders_a_card(tmp_path):
+    (tmp_path / "draft.yaml").write_text(
+        "format: image\nscenes:\n  - on_screen_text: [Magnesium tablets]\n", encoding="utf-8"
+    )
+    draft = load_draft(tmp_path / "draft.yaml")
+    assert draft.scenes[0].still is None
+    assert png_size(render_draft(draft, tmp_path / "out").media) == (1280, 720)
+
+
+def test_picture_only_claim_without_a_picture_goes_to_person(tmp_path):
+    c = claim("c0", "Cures every illness", "on_screen")
+    screener = Scripted(lambda i, p: screening(i, [c], [flag("f0", "c0")]))
+    image = Image()
+    result, _ = run(script_only("Magnesium tablets"), screener, tmp_path, image=image)
+    assert result.state == "needs_person"
+    assert image.calls == []
+
+
+def test_replay_store_raises_on_a_missing_recording(tmp_path):
+    store = Store(tmp_path, mode="replay")
+    with pytest.raises(CacheMiss):
+        store.fetch("some-model", {"text": "x"}, lambda: pytest.fail("a replay calls no model"))
+
+
+def test_demo_accepts_replay():
+    sys.path.insert(0, str(Path(__file__).parent.parent / "scripts"))
+    import agent_demo
+
+    assert agent_demo.parse_args(["draft.yaml", "--replay"]).replay
+    assert not agent_demo.parse_args(["draft.yaml"]).replay

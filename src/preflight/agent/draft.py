@@ -1,6 +1,7 @@
 import hashlib
 import json
 import re
+import shutil
 import tempfile
 import wave
 from pathlib import Path
@@ -9,7 +10,7 @@ from typing import Literal, NamedTuple
 import yaml
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
-from preflight.eval.reconstruct import Scene, concat, ensure_voice, frame, render_scene
+from preflight.eval.reconstruct import Scene, card, concat, ensure_voice, frame, render_scene
 from preflight.ingest import probe
 from preflight.models.store import digest as bytes_digest
 
@@ -20,7 +21,7 @@ SENTENCE_BREAK = re.compile(r"(?<=[.!?])\s+")
 class DraftScene(BaseModel):
     model_config = ConfigDict(frozen=True, extra="forbid")
 
-    still: Path
+    still: Path | None = None
     on_screen_text: tuple[str, ...] = ()
     voiceover: str = ""
     duration_seconds: float = 4.0
@@ -61,14 +62,15 @@ class Rendered(NamedTuple):
 def load_draft(path: Path) -> Draft:
     fields = yaml.safe_load(path.read_text(encoding="utf-8"))
     for scene in fields["scenes"]:
-        scene["still"] = (path.parent / scene["still"]).resolve()
+        if scene.get("still"):
+            scene["still"] = (path.parent / scene["still"]).resolve()
     return Draft.model_validate(fields)
 
 
 def digest(draft: Draft) -> str:
     fields = draft.model_dump(mode="json")
     for scene in fields["scenes"]:
-        scene["still"] = bytes_digest(Path(scene["still"]))
+        scene["still"] = scene["still"] and bytes_digest(Path(scene["still"]))
     return hashlib.sha256(json.dumps(fields, sort_keys=True, ensure_ascii=False).encode()).hexdigest()
 
 
@@ -131,11 +133,20 @@ def speak(line: str, voice: Path, path: Path) -> None:
 
 def render_draft(draft: Draft, out_dir: Path) -> Rendered:
     out_dir.mkdir(parents=True, exist_ok=True)
+    final = out_dir / digest(draft)[:16]
+    media = final / ("draft.mp4" if draft.format == "video" else "draft.png")
+    # the bounds file is written last, so a render without it is partial and is redone
+    marker = final / "bounds.json"
+    if marker.exists():
+        return Rendered(media, tuple(map(tuple, json.loads(marker.read_text(encoding="utf-8")))))
     video = draft.format == "video"
     voice = ensure_voice() if video and any(s.voiceover.strip() for s in draft.scenes) else None
     clips, bounds, start = [], [], 0.0
     with tempfile.TemporaryDirectory(dir=out_dir) as tmp:
         work = Path(tmp)
+        staged = work / "staged"
+        staged.mkdir()
+        blank = None
         for i, scene in enumerate(draft.scenes):
             audio = None
             if voice and scene.voiceover.strip():
@@ -145,14 +156,20 @@ def render_draft(draft: Draft, out_dir: Path) -> Rendered:
                 duration_seconds=scene.duration_seconds, image_prompt="",
                 on_screen_text=list(scene.on_screen_text), voiceover=scene.voiceover,
             )
-            clips.append(render_scene(scene.still, shot, audio, work / f"scene{i}.mp4", draft.format, label=LABEL))
+            if scene.still is None and blank is None:
+                blank = work / "card.png"
+                card(blank)
+            clips.append(render_scene(
+                scene.still or blank, shot, audio, work / f"scene{i}.mp4", draft.format, label=LABEL
+            ))
             length = probe(clips[-1])["duration"]
             bounds.append((start, start + length))
             start += length
         if video:
-            media = out_dir / "draft.mp4"
-            concat(clips, media, work)
+            concat(clips, staged / media.name, work)
         else:
-            media = out_dir / "draft.png"
-            frame(clips[0], media)
+            frame(clips[0], staged / media.name)
+        (staged / marker.name).write_text(json.dumps(bounds), encoding="utf-8")
+        shutil.rmtree(final, ignore_errors=True)
+        staged.replace(final)
     return Rendered(media, tuple(bounds))

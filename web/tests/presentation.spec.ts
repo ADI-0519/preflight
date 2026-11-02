@@ -114,3 +114,19 @@ test('a loaded result remains readable on mobile and at doubled content scale', 
   expect(await noOverflow()).toBe(true);
   await expect(page.getByRole('note')).toBeVisible();
 });
+
+test('leaving the evidence view pauses the ad video', async ({ page }) => {
+  await page.goto('/');
+  await expect(page.getByLabel('Upload ad')).toBeEnabled();
+  await page.getByLabel('Upload ad').setInputFiles(media);
+  const video = page.locator('.viewer video');
+  await expect(video).toBeVisible({ timeout: 30000 });
+  await video.evaluate((v: HTMLVideoElement) => {
+    v.muted = true;
+    v.loop = true;
+    return v.play();
+  });
+  expect(await video.evaluate((v: HTMLVideoElement) => v.paused)).toBe(false);
+  await page.getByRole('button', { name: 'Prepare revision', exact: true }).click();
+  await expect.poll(() => video.evaluate((v: HTMLVideoElement) => v.paused)).toBe(true);
+});

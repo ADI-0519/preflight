@@ -96,6 +96,10 @@ function App() {
     document.documentElement.dataset.appearance = appearance;
   }, [appearance]);
 
+  useEffect(() => {
+    if (view !== 'evidence') player.current?.pause();
+  }, [view]);
+
   function fail(e: unknown) {
     setError(e instanceof Error ? e.message : 'Something went wrong. Please try again.');
   }

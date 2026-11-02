@@ -1,0 +1,17 @@
+# Team-written negative for split v2 test: realistic marketing copy whose only health claims are authorised
+# GB register wording, copied exactly (register 2026-05-19). Written on 2 Nov 2026 by an independent author.
+# fictional product: 200 µg trivalent chromium (as chromium picolinate) per tablet (500% nrv), one tablet a day: at least a source of trivalent chromium
+# fictional product: 120 tablets a pot
+item_id: T34
+format: image
+product: chromium picolinate tablets
+register_ids:
+- gbhc-25f9fde9fec4
+on_screen_text:
+- Chromium picolinate tablets
+- 200 µg chromium per tablet
+- Chromium contributes to normal macronutrient metabolism
+- One tablet a day with a meal
+- '120 tablets: a four-month supply'
+- Food supplements should not be used as a substitute for a varied and balanced diet and a healthy lifestyle.
+voiceover: ''

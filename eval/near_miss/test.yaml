@@ -1,0 +1,62 @@
+# p60 test breach lines, one per test negative t26-t35, written by an independent author who never saw the judge prompt.
+# they are never shown to whoever writes or tunes the judge prompt (docs/product-rules.md, rule 5).
+- item_id: N11
+  base: T26
+  line: Folic acid banishes tiredness and fatigue for good.
+  substance: Folate
+  rules: ["15.1", "15.1.1", "15.7"]
+  written_by: assistant
+- item_id: N12
+  base: T27
+  line: Vitamin K2 helps prevent osteoporosis as you get older.
+  substance: Vitamin K
+  rules: ["12.1", "15.1.1", "15.6", "15.6.2", "15.7"]
+  written_by: assistant
+- item_id: N13
+  base: T28
+  line: Potassium builds stronger muscles in just two weeks.
+  substance: Potassium
+  rules: ["15.1", "15.1.1", "15.7"]
+  written_by: assistant
+- item_id: N14
+  base: T29
+  line: Riboflavin doubles your energy levels, all day long.
+  substance: Riboflavin (Vitamin B2)
+  rules: ["15.1", "15.1.1", "15.7"]
+  written_by: assistant
+- item_id: N15
+  base: T30
+  line: Glucomannan dramatically lowers your cholesterol within a month.
+  substance: Glucomannan (konjac mannan)
+  rules: ["15.1", "15.1.1", "15.7"]
+  written_by: assistant
+- item_id: N16
+  base: T31
+  line: EPA and DHA protect you against heart disease.
+  substance: Eicosapentaenoic acid and docosahexaenoic acid (EPA/DHA)
+  rules: ["12.1", "15.1.1", "15.6", "15.6.2", "15.7"]
+  written_by: assistant
+- item_id: N17
+  base: T32
+  line: Vitamin E stops your cells from ageing.
+  substance: Vitamin E
+  rules: ["15.1", "15.1.1", "15.7"]
+  written_by: assistant
+- item_id: N18
+  base: T33
+  line: Iodine helps prevent thyroid disease.
+  substance: Iodine
+  rules: ["12.1", "15.1.1", "15.6", "15.6.2", "15.7"]
+  written_by: assistant
+- item_id: N19
+  base: T34
+  line: Chromium speeds up your metabolism so you burn fat faster.
+  substance: Chromium
+  rules: ["15.1", "15.1.1", "15.7"]
+  written_by: assistant
+- item_id: N20
+  base: T35
+  line: Oat beta-glucans guarantee healthy cholesterol levels for life.
+  substance: Beta-glucans
+  rules: ["15.1", "15.1.1", "15.7"]
+  written_by: assistant

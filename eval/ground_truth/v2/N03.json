@@ -7,12 +7,15 @@
     {
       "claim": "Magnesium stops muscle cramps for good",
       "rules": [
+        "15.1",
+        "15.1.1",
         "15.6",
-        "15.6.2"
+        "15.6.2",
+        "15.7"
       ],
       "points": []
     }
   ],
   "written_by": "Neesay: breach line in compliant team ad T18",
-  "checked_by": null
+  "checked_by": "checker: checked 2026-11-02, media c5e9d350d358"
 }

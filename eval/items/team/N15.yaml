@@ -1,0 +1,19 @@
+# Near-miss item (P65): team ad T30 with one breaching line put in by scripts/near_miss.py from eval/near_miss/test.yaml.
+item_id: N15
+format: image
+product: glucomannan capsules
+register_ids:
+- gbhc-89b8ff26836f
+on_screen_text:
+- Glucomannan capsules
+- Glucomannan from konjac root
+- Glucomannan contributes to the maintenance of normal blood cholesterol levels
+- The beneficial effect is obtained with a daily intake of 4 g of glucomannan
+- 'Six capsules a day provide 4 g: take two, three times a day'
+- 'Warning: risk of choking for people with swallowing difficulties. Always take each dose with a large glass of water.'
+- Glucomannan dramatically lowers your cholesterol within a month.
+- Food supplements should not be used as a substitute for a varied and balanced diet and a healthy lifestyle.
+voiceover: ''
+base: T30
+inserted: Glucomannan dramatically lowers your cholesterol within a month.
+substance: Glucomannan (konjac mannan)

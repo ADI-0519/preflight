@@ -1,0 +1,16 @@
+# Team-written negative for split v2 test: realistic marketing copy whose only health claims are authorised
+# GB register wording, copied exactly (register 2026-05-19). Written on 2 Nov 2026 by an independent author.
+# fictional product: 150 µg iodine per tablet (100% nrv), one tablet a day: at least a source of iodine
+# fictional product: no animal-derived ingredients; first-month half-price offer
+item_id: T33
+format: video
+product: iodine tablets
+register_ids:
+- gbhc-bc8de1f4efc8
+on_screen_text:
+- Iodine tablets
+- 150 µg iodine per tablet
+- Suitable for vegans
+- Food supplements should not be used as a substitute for a varied and balanced diet and a healthy lifestyle.
+voiceover: One small tablet a day, made for vegans. Iodine contributes to normal cognitive function. Each tablet provides
+  150 micrograms of iodine. Order today and get your first month half price.

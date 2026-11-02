@@ -1,0 +1,18 @@
+# Team-written negative for split v2 test: realistic marketing copy whose only health claims are authorised
+# GB register wording, copied exactly (register 2026-05-19). Written on 2 Nov 2026 by an independent author.
+# fictional product: 3 g beta-glucans from oats per sachet, one sachet a day: at least 1 g per portion and a 3 g daily intake, which the ad states
+# fictional product: vanilla-flavoured powder
+item_id: T35
+format: video
+product: oat beta-glucan sachets
+register_ids:
+- gbhc-1ee3b631df1f
+on_screen_text:
+- Oat beta-glucan sachets
+- 3 g oat beta-glucans per sachet
+- Stir one sachet into water, milk or porridge, once a day
+- Vanilla flavour
+- Food supplements should not be used as a substitute for a varied and balanced diet and a healthy lifestyle.
+voiceover: One sachet a day, stirred into water, milk or porridge. Beta-glucans contribute to the maintenance of normal blood
+  cholesterol levels. The beneficial effect is obtained with a daily intake of 3 g of beta-glucans from oats. Each sachet
+  provides 3 g.

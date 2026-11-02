@@ -1,0 +1,19 @@
+{
+  "item_id": "N11",
+  "kind": "team",
+  "label": "positive",
+  "outcome": null,
+  "claims": [
+    {
+      "claim": "Folic acid banishes tiredness and fatigue for good.",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.7"
+      ],
+      "points": []
+    }
+  ],
+  "written_by": "assistant: breach line in compliant team ad T26",
+  "checked_by": "checker: checked 2026-11-02, media 002be9f48eab"
+}

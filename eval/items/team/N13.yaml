@@ -1,0 +1,19 @@
+# Near-miss item (P65): team ad T28 with one breaching line put in by scripts/near_miss.py from eval/near_miss/test.yaml.
+item_id: N13
+format: image
+product: potassium tablets
+register_ids:
+- gbhc-032472367e8f
+on_screen_text:
+- Potassium tablets
+- 400 mg potassium per tablet
+- Potassium contributes to normal muscle function
+- Take one tablet a day with food
+- Suitable for vegans
+- Save 20% when you buy two
+- Potassium builds stronger muscles in just two weeks.
+- Food supplements should not be used as a substitute for a varied and balanced diet and a healthy lifestyle.
+voiceover: ''
+base: T28
+inserted: Potassium builds stronger muscles in just two weeks.
+substance: Potassium

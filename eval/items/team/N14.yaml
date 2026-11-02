@@ -1,0 +1,18 @@
+# Near-miss item (P65): team ad T29 with one breaching line put in by scripts/near_miss.py from eval/near_miss/test.yaml.
+item_id: N14
+format: video
+product: vitamin B complex tablets
+register_ids:
+- gbhc-7f3997f095fd
+- gbhc-2457010ade07
+on_screen_text:
+- Vitamin B complex
+- All eight B vitamins
+- One tablet a day
+- Food supplements should not be used as a substitute for a varied and balanced diet and a healthy lifestyle.
+voiceover: Eight B vitamins in one small tablet. Riboflavin contributes to normal energy-yielding metabolism. Pantothenic
+  acid contributes to normal mental performance. Take one a day with breakfast. Riboflavin doubles your energy levels, all
+  day long.
+base: T29
+inserted: Riboflavin doubles your energy levels, all day long.
+substance: Riboflavin (Vitamin B2)

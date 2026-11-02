@@ -1,0 +1,9 @@
+{
+  "item_id": "T34",
+  "kind": "team",
+  "label": "negative",
+  "outcome": null,
+  "claims": [],
+  "written_by": "assistant: independent author of the P60 test negatives",
+  "checked_by": "checker: checked 2026-11-02, media d402da8662f6"
+}

@@ -1,0 +1,19 @@
+{
+  "item_id": "N14",
+  "kind": "team",
+  "label": "positive",
+  "outcome": null,
+  "claims": [
+    {
+      "claim": "Riboflavin doubles your energy levels, all day long.",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.7"
+      ],
+      "points": []
+    }
+  ],
+  "written_by": "assistant: breach line in compliant team ad T29",
+  "checked_by": "checker: checked 2026-11-02, media 625fce7db982"
+}

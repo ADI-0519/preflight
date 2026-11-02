@@ -1,0 +1,18 @@
+# Near-miss item (P65): team ad T35 with one breaching line put in by scripts/near_miss.py from eval/near_miss/test.yaml.
+item_id: N20
+format: video
+product: oat beta-glucan sachets
+register_ids:
+- gbhc-1ee3b631df1f
+on_screen_text:
+- Oat beta-glucan sachets
+- 3 g oat beta-glucans per sachet
+- Stir one sachet into water, milk or porridge, once a day
+- Vanilla flavour
+- Food supplements should not be used as a substitute for a varied and balanced diet and a healthy lifestyle.
+voiceover: One sachet a day, stirred into water, milk or porridge. Beta-glucans contribute to the maintenance of normal blood
+  cholesterol levels. The beneficial effect is obtained with a daily intake of 3 g of beta-glucans from oats. Each sachet
+  provides 3 g. Oat beta-glucans guarantee healthy cholesterol levels for life.
+base: T35
+inserted: Oat beta-glucans guarantee healthy cholesterol levels for life.
+substance: Beta-glucans

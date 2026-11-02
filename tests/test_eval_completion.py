@@ -4,9 +4,23 @@ from types import SimpleNamespace
 import pytest
 from test_eval import screening, truth
 
-from preflight.eval import run
+from preflight.eval import baseline, run
 from preflight.eval.score import score_item
 from preflight.schema import StageRun
+
+
+@pytest.mark.parametrize("module", [run, baseline])
+def test_a_test_run_refuses_an_open_split_before_reading_items(monkeypatch, module):
+    monkeypatch.setattr(sys, "argv", ["test", "--split", "v2", "--part", "test"])
+    monkeypatch.setattr(module, "load_split", lambda version: SimpleNamespace(frozen=False, test=["T26"]))
+
+    def unexpected(*args):
+        pytest.fail("an open split must be refused before the tree, labels or models are touched")
+
+    for name in ("revision", "load_ground_truth"):
+        monkeypatch.setattr(module, name, unexpected)
+    with pytest.raises(SystemExit, match="not frozen"):
+        module.main()
 
 
 @pytest.mark.parametrize("status", ["skipped", "failed", None, "done"])

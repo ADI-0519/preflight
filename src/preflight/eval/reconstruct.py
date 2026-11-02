@@ -198,7 +198,7 @@ class Builder:
 
 
 def _escape(line: str) -> str:
-    return line.replace("\\", "\\\\").replace("'", "\u2019").replace(":", "\\:").replace("%", "\\%")
+    return line.replace("\\", "\\\\").replace("'", "\u2019").replace(":", "\\:")
 
 
 def _wrap(line: str, width: int = 48) -> list[str]:
@@ -235,11 +235,12 @@ def overlay_filter(on_screen_text: list[str], label: str = LABEL) -> str:
     top = max(HEIGHT - 50 - step * len(rows), 60)
     for i, row in enumerate(rows):
         filters.append(
-            f"drawtext={font}text='{_escape(row)}':fontsize={size}:fontcolor=white:"
+            # expansion=none: drawtext otherwise reads % as the start of an expansion and drops the line
+            f"drawtext={font}expansion=none:text='{_escape(row)}':fontsize={size}:fontcolor=white:"
             f"box=1:boxcolor=black@0.6:boxborderw={size // 4}:x=(w-text_w)/2:y={top + step * i}"
         )
     filters.append(
-        f"drawtext={font}text='{_escape(label)}':fontsize=22:fontcolor=yellow:"
+        f"drawtext={font}expansion=none:text='{_escape(label)}':fontsize=22:fontcolor=yellow:"
         "box=1:boxcolor=black@0.7:boxborderw=6:x=20:y=20"
     )
     return ",".join(filters)

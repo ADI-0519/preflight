@@ -18,7 +18,7 @@
   base: T18
   line: Magnesium stops muscle cramps for good
   substance: Magnesium
-  rules: ["15.6", "15.6.2"]
+  rules: ["15.1", "15.1.1", "15.6", "15.6.2", "15.7"]
   written_by: Neesay
 - item_id: N04
   base: T19

@@ -1,0 +1,18 @@
+# Near-miss item (P65): team ad T34 with one breaching line put in by scripts/near_miss.py from eval/near_miss/test.yaml.
+item_id: N19
+format: image
+product: chromium picolinate tablets
+register_ids:
+- gbhc-25f9fde9fec4
+on_screen_text:
+- Chromium picolinate tablets
+- 200 µg chromium per tablet
+- Chromium contributes to normal macronutrient metabolism
+- One tablet a day with a meal
+- '120 tablets: a four-month supply'
+- Chromium speeds up your metabolism so you burn fat faster.
+- Food supplements should not be used as a substitute for a varied and balanced diet and a healthy lifestyle.
+voiceover: ''
+base: T34
+inserted: Chromium speeds up your metabolism so you burn fat faster.
+substance: Chromium

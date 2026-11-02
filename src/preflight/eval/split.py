@@ -12,6 +12,10 @@ ROOT = Path(__file__).resolve().parents[3]
 EVAL_DIR = ROOT / "eval"
 
 RULING_ID = re.compile(r"^[AG]\d{2}-\d{6,8}$")
+# the food supplement statement every team ad carries on screen
+DISCLAIMER = (
+    "Food supplements should not be used as a substitute for a varied and balanced diet and a healthy lifestyle."
+)
 
 
 class Split(BaseModel):

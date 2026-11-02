@@ -3,9 +3,9 @@
 uv run python scripts/near_miss.py eval/near_miss/dev.yaml --split v2
 
 Each entry names the item to write, the compliant team ad it is built on, the breaching line, the line's substance
-and CAP rules, and its author. An image ad gets the line on screen, before the closing line (the food supplement
-statement); a video ad gets it at the end of the voiceover. The script writes eval/items/team/<item_id>.yaml and the
-item's ground truth, with checked_by empty for a founder other than the author to fill in. It does not add the items
+and CAP rules, and its author. An image ad gets the line on screen, just before the food supplement statement; a
+video ad gets it at the end of the voiceover. The script writes eval/items/team/<item_id>.yaml and the item's
+ground truth, with checked_by empty for a founder other than the author to fill in. It does not add the items
 to the split.
 """
 
@@ -15,7 +15,15 @@ from pathlib import Path
 import yaml
 from pydantic import BaseModel, ConfigDict
 
-from preflight.eval.split import EVAL_DIR, BreachingClaim, GroundTruth, TeamAd, load_team_ad, write_ground_truth
+from preflight.eval.split import (
+    DISCLAIMER,
+    EVAL_DIR,
+    BreachingClaim,
+    GroundTruth,
+    TeamAd,
+    load_team_ad,
+    write_ground_truth,
+)
 
 
 class Breach(BaseModel):
@@ -34,7 +42,8 @@ def build(breach: Breach) -> tuple[TeamAd, GroundTruth]:
     if ad.inserted:
         raise ValueError(f"{breach.base} is already a near-miss item")
     if ad.format == "image":
-        screen = [*ad.on_screen_text[:-1], breach.line, ad.on_screen_text[-1]]
+        at = ad.on_screen_text.index(DISCLAIMER)
+        screen = [*ad.on_screen_text[:at], breach.line, *ad.on_screen_text[at:]]
         voice = ad.voiceover
     else:
         screen = ad.on_screen_text

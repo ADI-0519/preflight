@@ -6,7 +6,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from preflight.eval import check_recall, registry, run
+from preflight.eval import check_recall, registry, run, score
 from preflight.eval.reconstruct import LABEL, overlay_filter
 from preflight.eval.registry import Metric, register, revision
 from preflight.eval.run import MeteredSam, MeteredTranscribe, citation_spread
@@ -90,6 +90,27 @@ def test_extra_rules_count_for_with_rule_but_not_exact_rules():
     assert (item.caught, item.caught_exact_rules) == (2, 1)
     # 15.6 and 15.1.1 relate to their claims' rules; 3.7 and 15.7 do not
     assert (item.rules_related, item.rules_cited) == (2, 4)
+
+
+def test_extra_rules_dilute_the_weighted_catch():
+    item = score_item(
+        truth("A3", [("cures anxiety fast", ["15.6.2"]), ("sleep deeper", ["15.1"])]),
+        [screening("s5", ["Cures anxiety fast", "Sleep deeper"], {0: ["15.6", "3.7", "15.7"], 1: ["15.1.1"]})],
+    )
+    # one right rule of three, then one of one
+    assert item.weighted_carried == pytest.approx(1 / 3 + 1, abs=0.001)
+
+
+def test_citing_every_rule_catches_by_chance():
+    pack = score._screenable(SNAPSHOTS.cap_rules)
+    one, every = (
+        score_item(truth("A6", [("cures anxiety fast", ["15.6.2"])]), [screening("s", ["Cures anxiety fast"], {0: r})])
+        for r in (["3.7"], list(pack))
+    )
+    fitting = sum(score.fits(r, ["15.6.2"]) for r in pack)
+    assert one.chance_carried == pytest.approx(fitting / len(pack), abs=0.001)
+    assert every.chance_carried == 1.0 and every.caught_carried == 1
+    assert every.weighted_carried == pytest.approx(fitting / len(pack), abs=0.001)
 
 
 def test_former_rule_numbers_are_read_in_current_numbering():

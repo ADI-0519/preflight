@@ -3,12 +3,14 @@ import random
 import statistics
 from collections.abc import Callable
 from dataclasses import dataclass
+from functools import cache
 from typing import NamedTuple
 
 from preflight.eval.check_reconstructions import carried, words
 from preflight.eval.registry import Metric
 from preflight.eval.split import BreachingClaim, GroundTruth
 from preflight.schema import Screening
+from preflight.sources.cap import load_cap_rules
 from preflight.view import fold
 
 # a quote longer than this many times a ground-truth claim, plus slack words, covers more than that claim
@@ -57,6 +59,19 @@ class Caught(NamedTuple):
     rules_related: int  # ... of which related to the rules of the claims that flag matches
     rules_wanted: int  # CAP rules of the ground-truth claims some flag matches
     rules_found: int  # ... of which cited on a flag matching that claim
+    by_chance: list[float]  # chance that the flags matching the claim would cite one of its rules if picked at random
+    weighted: list[float]  # best share of a matching flag's rules that belong to the claims it carries
+
+
+@cache
+def _screenable(version: str) -> tuple[str, ...]:
+    return tuple(r.rule for r in load_cap_rules(version).rules.values() if r.screenable)
+
+
+def _chance(k: int, claim_rules: list[str], pack: tuple[str, ...]) -> float:
+    # k rules drawn without replacement from the rules the judge may cite
+    fitting = sum(fits(r, claim_rules) for r in pack)
+    return 1 - math.comb(len(pack) - fitting, k) / math.comb(len(pack), k) if k <= len(pack) else 1.0
 
 
 def caught(truth: list[BreachingClaim], screenings: list[Screening], item_id: str = "") -> Caught:
@@ -79,6 +94,18 @@ def caught(truth: list[BreachingClaim], screenings: list[Screening], item_id: st
     def found(g: str, h: list[int]) -> bool:
         return any(related(g, r) for k in h for r in flagged[k][1])
 
+    pack = _screenable(screenings[0].snapshots.cap_rules) if screenings else ()
+
+    def by_chance(h: list[int], w: list[str]) -> float:
+        missed = math.prod(1 - _chance(len(flagged[k][1]), w, pack) for k in h)
+        return 1 - missed if h else 0.0
+
+    def weighted(h: list[int], w: list[str]) -> float:
+        # a flag that cites one right rule among five earns a fifth of a catch
+        shares = [sum(fits(r, union[k]) for r in flagged[k][1]) / len(flagged[k][1])
+                  for k in h if any(fits(r, w) for r in flagged[k][1])]  # fmt: skip
+        return max(shares, default=0.0)
+
     return Caught(
         any_rule=[bool(h) for h in hits],
         with_rule=[any(fits(r, w) for k in h for r in flagged[k][1]) for h, w in zip(hits, wanted, strict=True)],
@@ -94,6 +121,8 @@ def caught(truth: list[BreachingClaim], screenings: list[Screening], item_id: st
         rules_related=sum(fits(r, union[k]) for k, m in enumerate(matched) if m for r in flagged[k][1]),
         rules_wanted=sum(len(w) for h, w in zip(hits, wanted, strict=True) if h),
         rules_found=sum(found(g, h) for h, w in zip(hits, wanted, strict=True) if h for g in w),
+        by_chance=[by_chance(h, w) for h, w in zip(hits, wanted, strict=True)],
+        weighted=[weighted(h, w) for h, w in zip(hits, wanted, strict=True)],
     )
 
 
@@ -115,6 +144,8 @@ class ItemScore:
     rules_found: int = 0
     lines: int = 0
     unmatched_lines: int = 0
+    chance_carried: float = 0.0
+    weighted_carried: float = 0.0
 
 
 def line_counts(truth: list[BreachingClaim], screenings: list[Screening], item_id: str = "") -> tuple[int, int]:
@@ -156,6 +187,8 @@ def score_item(truth: GroundTruth, screenings: list[Screening], kept: list[bool]
         rules_found=c.rules_found,
         lines=lines,
         unmatched_lines=unmatched,
+        chance_carried=round(sum(p for p, k in zip(c.by_chance, kept, strict=True) if k), 3),
+        weighted_carried=round(sum(w for w, k in zip(c.weighted, kept, strict=True) if k), 3),
     )
 
 
@@ -198,7 +231,7 @@ def exact(hits: int, n: int) -> tuple[float, float]:
 
 def metric(name: str, items: list[ItemScore], hit: Callable, out_of: Callable = lambda i: 1) -> Metric:
     # claims, lines and rules cluster within an ad, so the interval resamples ads
-    return Metric(name, sum(map(hit, items)), sum(map(out_of, items)), *interval(items, hit, out_of))
+    return Metric(name, round(sum(map(hit, items)), 3), sum(map(out_of, items)), *interval(items, hit, out_of))
 
 
 def per_ad(name: str, items: list[ItemScore], hit: Callable[[ItemScore], bool]) -> Metric:
@@ -216,6 +249,9 @@ def metrics(items: list[ItemScore]) -> list[Metric]:
             per_ad("ad_recall", positives, lambda i: i.caught > 0),
             metric("claim_recall", positives, lambda i: i.caught, lambda i: i.claims),
             metric("claim_recall_carried", positives, lambda i: i.caught_carried, lambda i: i.carried),
+            # what the same flags would score citing as many rules picked at random: the floor the headline sits on
+            metric("claim_recall_carried_by_chance", positives, lambda i: i.chance_carried, lambda i: i.carried),
+            metric("claim_recall_carried_weighted", positives, lambda i: i.weighted_carried, lambda i: i.carried),
             metric("claim_recall_any_rule", positives, lambda i: i.caught_any_rule, lambda i: i.claims),
             metric("claim_recall_exact_rules", positives, lambda i: i.caught_exact_rules, lambda i: i.claims),
             metric("claim_recall_all_rules", positives, lambda i: i.caught_all_rules, lambda i: i.claims),

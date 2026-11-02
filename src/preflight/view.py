@@ -92,7 +92,7 @@ def _split_rules(rules: list[str]) -> tuple[list[str], list[str]]:
 def _evidence(screening: Screening, e) -> dict:
     out = {
         "kind": e.kind, "start": None, "end": None, "frame_time": None, "text": None, "track_id": None, "crop": None,
-        "timing": None,
+        "timing": None, "timed": True,
     }  # fmt: skip
     if e.kind == "region":
         track = next(t for t in screening.tracks if t.track_id == e.track_id)
@@ -100,22 +100,25 @@ def _evidence(screening: Screening, e) -> dict:
         # rule 3: the crop shown is the cited frame's own
         crop = cited.crop
         label = f"Region “{track.prompt}” at {clock(e.frame_time)}"
-        return out | {"label": label, "frame_time": e.frame_time, "track_id": e.track_id, "crop": crop}
+        return out | {
+            "label": label, "frame_time": e.frame_time, "track_id": e.track_id, "crop": crop, "text": track.prompt,
+        }  # fmt: skip
     if e.kind == "transcript":
         s = next(s for s in screening.segments if s.segment_id == e.segment_id)
         label = f"Heard {span(s.start, s.end)}"
         return out | {"label": label, "start": s.start, "end": s.end, "text": s.text, "timing": s.timing}
     t = next(t for t in screening.on_screen if t.text_id == e.text_id)
-    if t.end <= t.start:
-        label = "On screen (still)" if screening.ad.media == "image" else "On screen, time not read"
-    else:
+    timed = t.end > t.start
+    if timed:
         label = f"On screen {span(t.start, t.end)}"
-    return out | {"label": label, "start": t.start, "end": t.end, "text": t.text}
+    else:
+        label = "On screen (still)" if screening.ad.media == "image" else "On screen, time not read"
+    return out | {"label": label, "start": t.start, "end": t.end, "text": t.text, "timed": timed}
 
 
-def _first_time(item: dict) -> float:
-    t = item["start"] if item["frame_time"] is None else item["frame_time"]
-    return float("inf") if t is None or (item["kind"] == "on_screen" and item["end"] <= item["start"]) else t
+def first_time(evidence: list[dict]) -> float | None:
+    times = [e["start"] if e["frame_time"] is None else e["frame_time"] for e in evidence if e["timed"]]
+    return min(times, default=None)
 
 
 def _wordings(flags: list[Flag]) -> list[dict]:
@@ -191,8 +194,9 @@ def _may_say(screening: Screening, claims: list[Claim]) -> list[dict]:
     return out
 
 
-def _first_line_time(line: dict) -> float:
-    return min((_first_time(e) for e in line["evidence"]), default=float("inf"))
+def _line_time(line: dict) -> float:
+    t = first_time(line["evidence"])
+    return float("inf") if t is None else t
 
 
 def incomplete_stages(screening: Screening) -> list[str]:
@@ -204,7 +208,7 @@ def incomplete_stages(screening: Screening) -> list[str]:
 
 def build_view(screening: Screening) -> dict:
     groups = fold(screening)
-    lines = sorted((_line(screening, c, nested) for c, nested in groups), key=_first_line_time)
+    lines = sorted((_line(screening, c, nested) for c, nested in groups), key=_line_time)
     flagged = {f.claim_id for f in screening.flags}
     ad = screening.ad
     return {
@@ -214,7 +218,9 @@ def build_view(screening: Screening) -> dict:
         "incomplete_stages": incomplete_stages(screening),
         "checked": any(r.stage == "check" and r.status == "done" for r in screening.stages),
         "lines": lines,
-        "quiet_claims": [{"claim_id": c.claim_id, "text": c.text} for c in screening.claims
-                         if c.claim_id not in flagged],
+        "quiet_claims": [
+            {"claim_id": c.claim_id, "text": c.text, "evidence": [_evidence(screening, e) for e in c.evidence]}
+            for c in screening.claims if c.claim_id not in flagged
+        ],
         "may_say": _may_say(screening, [c for c in screening.claims if c.claim_id in flagged]),
     }  # fmt: skip

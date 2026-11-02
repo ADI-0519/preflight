@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import type { ClaimView, Round } from './api';
-import { complete } from './api';
+import type { ClaimView, MaySay, Round } from './api';
+import { allFlags, complete } from './api';
 import type { Screening } from './screening';
 
 export function Preview({
@@ -76,14 +76,43 @@ export function StillStage({ file }: { file: File | null }) {
   );
 }
 
-export function FlaggedList({ claims }: { claims: ClaimView[] }) {
-  const flagged = claims.filter((c) => c.flags.length);
+export const MAY_SAY =
+  'Authorised GB register wording for this substance, with its conditions of use. It is context for the person deciding, separate from the wording suggested above.';
+
+// rule 2: the register's authorised entries, quoted exactly, apart from any line's suggested wording
+export function MaySayList({ items }: { items: MaySay[] }) {
+  return (
+    <>
+      {items.map((m) => (
+        <div className="may-say" key={m.substance}>
+          <p className="pair-label">Authorised for {m.substance}</p>
+          {m.entries.length === 0 ? (
+            <p className="none">No authorised register entry matches.</p>
+          ) : (
+            <ul>
+              {m.entries.map((e) => (
+                <li key={e.register_id}>
+                  <p className="said-small">“{e.wording}”</p>
+                  <p className="id">GB register {e.register_id}</p>
+                  {e.conditions && <p className="conditions">Conditions: {e.conditions}</p>}
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      ))}
+    </>
+  );
+}
+
+export function FlaggedList({ claims, maySay }: { claims: ClaimView[]; maySay: MaySay[] }) {
+  const flagged = claims.filter((c) => allFlags(c).length);
   return (
     <div className="refs">
       <h2>Flagged in this ad</h2>
       {flagged.length === 0 && <p className="none">No claim was flagged.</p>}
       {flagged.map((c) => {
-        const wording = c.flags.find((f) => f.suggested_wording)?.suggested_wording;
+        const wording = allFlags(c).find((f) => f.suggested_wording)?.suggested_wording;
         return (
           <div className="ref" key={c.claim_id}>
             <p className="said-small">
@@ -103,6 +132,16 @@ export function FlaggedList({ claims }: { claims: ClaimView[] }) {
           </div>
         );
       })}
+      {maySay.length > 0 && (
+        <>
+          <h2>What you may say</h2>
+          <p className="muted">
+            Authorised GB register wording for the substances flagged above, with conditions of use.
+            It is context for the person deciding, separate from the wording suggested for a line.
+          </p>
+          <MaySayList items={maySay} />
+        </>
+      )}
     </div>
   );
 }

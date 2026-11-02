@@ -20,6 +20,7 @@ from preflight.schema import NOTICE, Screening, register_entries, verify_sources
 from preflight.sources.cap import CapRule, load_cap_rules
 from preflight.sources.on_hold import OnHoldClaim, load_on_hold
 from preflight.sources.rulings import RulingMeta, load_ruling_index
+from preflight.view import build_view, first_time
 
 ROOT = Path(__file__).resolve().parents[3]
 
@@ -91,28 +92,43 @@ def presentation(screening: Screening, crop_base: str) -> dict:
         ruling = rulings[ref.ruling_id]
         return {"label": f"ASA {ref.ruling_id} · {ruling.date}", "text": ruling.advertiser, "url": ruling.url}
 
-    claims = []
-    for claim in screening.claims:
-        evidence = []
-        for ref in claim.evidence:
-            if ref.kind == "transcript":
-                segment = next(s for s in screening.segments if s.segment_id == ref.segment_id)
-                evidence.append({"kind": "Spoken", "start": segment.start, "end": segment.end,
-                                 "text": segment.text, "timing": segment.timing, "crop_url": None})
-            elif ref.kind == "on_screen":
-                text = next(t for t in screening.on_screen if t.text_id == ref.text_id)
-                evidence.append({"kind": "On screen", "start": text.start, "end": text.end,
-                                 "text": text.text, "timing": None, "crop_url": None})
-            else:
-                ti, track = next((i, t) for i, t in enumerate(screening.tracks) if t.track_id == ref.track_id)
-                ri, region = next((i, r) for i, r in enumerate(track.regions) if r.frame_time == ref.frame_time)
-                evidence.append({"kind": "Image region", "start": region.frame_time, "end": region.frame_time,
-                                 "text": track.prompt, "timing": None,
-                                 "crop_url": f"{crop_base}/{ti}/{ri}" if region.crop else None})
-        flags = [f.model_dump(mode="json") | {"source_details": [source(s) for s in f.sources]}
-                 for f in screening.flags if f.claim_id == claim.claim_id]
-        claims.append({"claim_id": claim.claim_id, "text": claim.text, "evidence": evidence, "flags": flags})
-    return {"screening": screening.model_dump(mode="json"), "claims": claims}
+    kinds = {"transcript": "Spoken", "on_screen": "On screen", "region": "Image region"}
+
+    def evidence(item: dict) -> dict:
+        crop_url = None
+        if item["kind"] == "region" and item["crop"]:
+            ti, track = next((i, t) for i, t in enumerate(screening.tracks) if t.track_id == item["track_id"])
+            ri = next(i for i, r in enumerate(track.regions) if r.frame_time == item["frame_time"])
+            crop_url = f"{crop_base}/{ti}/{ri}"
+        start = item["start"] if item["frame_time"] is None else item["frame_time"]
+        end = item["end"] if item["frame_time"] is None else item["frame_time"]
+        return {"kind": kinds[item["kind"]], "start": start, "end": end, "text": item["text"],
+                "timing": item["timing"], "timed": item["timed"], "crop_url": crop_url}
+
+    flags = {f.flag_id: f for f in screening.flags}
+
+    def flag(flag_id: str) -> dict:
+        f = flags[flag_id]
+        return f.model_dump(mode="json") | {"source_details": [source(s) for s in f.sources]}
+
+    def row(claim_id: str, text: str, shown: list[dict], line: dict | None) -> dict:
+        return {
+            "claim_id": claim_id, "text": text, "start": first_time(shown),
+            "substance": line["substance"] if line else None,
+            "evidence": [evidence(e) for e in shown],
+            "flags": [flag(i) for i in line["flags"]["flag_ids"]] if line else [],
+            "rules": {"primary": line["primary_rules"], "other": line["other_rules"]} if line else None,
+            "folded": [{"claim_id": n["claim_id"], "text": n["text"], "flags": [flag(i) for i in n["flag_ids"]]}
+                       for n in line["folded"]] if line else [],
+        }
+
+    view = build_view(screening)
+    # one row per flagged line, with its nested phrases folded in, and one per unflagged claim
+    rows = [row(line["claim_id"], line["text"], line["evidence"], line) for line in view["lines"]]
+    rows += [row(c["claim_id"], c["text"], c["evidence"], None) for c in view["quiet_claims"]]
+    rows.sort(key=lambda r: (r["start"] is None, r["start"] or 0))
+    return {"screening": screening.model_dump(mode="json"), "claims": rows, "may_say": view["may_say"],
+            "incomplete_stages": view["incomplete_stages"]}
 
 
 def crop_path(screening: Screening, root: Path, track: int, region: int) -> Path:

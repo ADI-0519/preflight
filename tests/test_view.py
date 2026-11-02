@@ -142,3 +142,11 @@ def test_a_folded_phrase_keeps_every_source_its_flag_cites():
     (folded,) = build_view(s)["lines"][0]["folded"]
     assert folded["flag_ids"] == ["flag-1"] and folded["on_hold_refs"] == ["4710"]
     assert folded["primary_rules"] == []
+
+
+def test_untimed_evidence_is_marked_and_quiet_claims_carry_evidence():
+    s = build((claim(0, LINE, SEG0), claim(1, "Banish tiredness", TEXT0)), (flag(0),))
+    view = build_view(s)
+    assert view["lines"][0]["evidence"][0]["timed"]
+    (quiet,) = view["quiet_claims"]
+    assert quiet["evidence"][0]["timed"] is False

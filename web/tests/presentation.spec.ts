@@ -77,7 +77,7 @@ test('each claim row is keyboard selectable and seeks to recorded evidence', asy
   await page.goto('/');
   await expect(page.getByLabel('Upload ad')).toBeEnabled();
   await page.getByLabel('Upload ad').setInputFiles(media);
-  const lane = page.locator('.claim-row').last();
+  const lane = page.locator('.claim-row:has(time)').last();
   await expect(lane).toBeVisible({ timeout: 30000 });
   await lane.focus();
   await page.keyboard.press('Enter');

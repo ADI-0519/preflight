@@ -6,19 +6,31 @@ export interface Evidence {
   end: number;
   text: string;
   timing: string | null;
+  timed: boolean;
   crop_url: string | null;
 }
+export type FlagView = Screening['flags'][number] & {
+  source_details: { label: string; text: string; url: string | null }[];
+};
 export interface ClaimView {
   claim_id: string;
   text: string;
+  start: number | null;
+  substance: string | null;
   evidence: Evidence[];
-  flags: (Screening['flags'][number] & {
-    source_details: { label: string; text: string; url: string | null }[];
-  })[];
+  flags: FlagView[];
+  rules: { primary: string[]; other: string[] } | null;
+  folded: { claim_id: string; text: string; flags: FlagView[] }[];
+}
+export interface MaySay {
+  substance: string;
+  entries: { register_id: string; wording: string; conditions: string | null }[];
 }
 export interface Result {
   screening: Screening;
   claims: ClaimView[];
+  may_say: MaySay[];
+  incomplete_stages: string[];
   media_url?: string;
   title?: string;
   kind?: string;
@@ -169,3 +181,8 @@ export function timestamp(seconds: number): string {
   const rounded = Math.round(seconds * 10) / 10;
   return `${Math.floor(rounded / 60)}:${(rounded % 60).toFixed(1).padStart(4, '0')}`;
 }
+
+export const allFlags = (claim: ClaimView) => [
+  ...claim.flags,
+  ...claim.folded.flatMap((n) => n.flags),
+];

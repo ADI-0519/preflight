@@ -21,7 +21,14 @@ test('three labelled demo states, honest scoreboard and explicit reveal', async 
   await expect(page.getByRole('heading', { name: 'Source provenance' }).first()).toBeVisible();
   const video = page.getByRole('region', { name: 'Ad and claim timeline' }).locator('video');
   await expect(video).toBeVisible();
-  const buttons = page.locator('.claim-row');
+  // six flags fold into three lines, beside the one unflagged claim
+  await expect(page.locator('.claim-row')).toHaveCount(4);
+  const evidence = page.getByRole('region', { name: 'Selected claim evidence' });
+  await expect(
+    evidence.getByRole('heading', { name: 'Flagged phrases inside this line' }),
+  ).toBeVisible();
+  await expect(page.locator('.claim-row .untimed').first()).toHaveText('Time not read');
+  const buttons = page.locator('.claim-row:has(time)');
   await expect(buttons.first()).toBeVisible();
   await buttons.last().click();
   await expect(buttons.last()).toHaveAttribute('aria-pressed', 'true');

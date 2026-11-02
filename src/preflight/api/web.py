@@ -253,11 +253,11 @@ def install_web(app, service, *, web_root: Path, demo_root: Path, results_root: 
 
     @app.get("/ui/config")
     def configuration():
-        public = service.public
+        public, retention = service.public, storage.settings.retention_seconds
         return {"notice": NOTICE, "max_upload_bytes": public.max_upload_bytes(),
                 "max_seconds": public.max_seconds(MAX_SECONDS), "public_mode": public.mode,
-                "upload_notice": UPLOAD_NOTICE, "uploads_closed": public.closed(),
-                "retention_seconds": storage.settings.retention_seconds, "scoreboard": scoreboard(results_root),
+                "upload_notice": UPLOAD_NOTICE.format(hours=retention / 3600), "uploads_closed": public.closed(),
+                "retention_seconds": retention, "scoreboard": scoreboard(results_root),
                 "verification_label": getattr(app.state, "verification_label", None)}
 
     @app.get("/uploads/{upload_id}/media")

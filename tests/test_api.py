@@ -591,7 +591,7 @@ def test_replay_switch_turns_uploads_off_without_public_settings(tmp_path, monke
         assert response.status_code == 503 and response.json()["error"] == "uploads_paused"
         config = client.get("/ui/config").json()
         assert (config["public_mode"], config["uploads_closed"]) == ("replay", "uploads_paused")
-        assert "Do not upload confidential ads" in config["upload_notice"]
+        assert "deleted after 24 hours. Do not upload confidential ads" in config["upload_notice"]
         assert client.get("/ui/demos").status_code == 200
     monkeypatch.setenv("PREFLIGHT_PUBLIC_MODE", "off")
     with TestClient(app) as client:

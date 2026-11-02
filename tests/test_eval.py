@@ -276,6 +276,19 @@ def test_rescore_refuses_a_test_run(tmp_path, monkeypatch):
         run.rescore("screen-1")
 
 
+def test_rescore_refuses_a_void_run(tmp_path, monkeypatch):
+    saved_run(tmp_path, monkeypatch)
+    (tmp_path / "void.csv").write_text("run_id,reason\nscreen-1,leak\n", encoding="utf-8")
+    with pytest.raises(SystemExit, match=r"void \(leak\)"):
+        run.rescore("screen-1")
+
+
+def test_void_runs_are_registered_runs():
+    with registry.RUNS.open(newline="", encoding="utf-8") as f:
+        registered = {r["run_id"] for r in csv.DictReader(f)}
+    assert run.void_runs() and run.void_runs().keys() <= registered
+
+
 @pytest.mark.parametrize(("status", "part", "expected"), [("", "test", "abc"), (" M x.py", "dev", "abc-dirty")])
 def test_revision(monkeypatch, status, part, expected):
     monkeypatch.setattr(registry, "git", lambda *a: "abc\n" if a[0] == "rev-parse" else status)

@@ -106,6 +106,8 @@ def rescore(run_id: str) -> None:
     if row["part"] == "test":
         # rule 5: the test part is scored once, by the run that screened it
         raise SystemExit("a test run is not rescored")
+    if reason := void_runs().get(run_id):
+        raise SystemExit(f"{run_id} is void ({reason}) and is not rescored")
     scored = RESULTS / "runs" / f"{run_id}.csv"
     if "-rescored-" in run_id or not scored.exists():
         raise SystemExit(f"{run_id} has no saved screenings; rescore the run that screened the ads")
@@ -132,6 +134,15 @@ def rescore(run_id: str) -> None:
     register(row | {"run_id": new_id, "created_at": created.isoformat(timespec="seconds"),
                     "git_sha": revision(row["part"])}, run_metrics)  # fmt: skip
     show(new_id, run_metrics)
+
+
+def void_runs() -> dict[str, str]:
+    # registered runs that must not be quoted, with the reason; rows in runs.csv are never edited
+    path = RESULTS / "void.csv"
+    if not path.exists():
+        return {}
+    with path.open(newline="", encoding="utf-8") as f:
+        return {r["run_id"]: r["reason"] for r in csv.DictReader(f)}
 
 
 def show(run_id: str, run_metrics: list[Metric]) -> None:

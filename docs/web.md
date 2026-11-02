@@ -31,10 +31,19 @@ While a job runs, the uploaded ad stays on screen beside the stages the server h
 reported. Loaded results open in a media-first workspace. **Evidence** shows the ad
 above a claim track: one keyboard-selectable row per claim, with its start time, its
 words and, for video, its evidence spans on the ad's time axis (overlapping claims keep
-their own rows). Beside it, the inspector opens on the ad's words and the register's
-exact wording with its register ID, or says that no register wording matches; each
-flag's reason, sources and evidence follow. **Prepare revision** shows the chosen scene
-still beside the editable-scene form, with each flagged claim's register wording.
+their own rows). The rows come from the same view as the HTML report and the agent
+tools (`preflight.view`): a flagged phrase inside a longer flagged claim on the same
+evidence folds into that claim's row, so a row is a line of the ad, and an on-screen
+line with no time read shows "Time not read" (a still, "Still") rather than 0:00.0.
+Beside it, the inspector opens on the ad's words and the register's exact wording with
+its register ID, or says that no register wording matches; the line's CAP rules follow,
+section 15 first, then each flag's reason, sources and evidence. Phrases folded into the
+line are listed under it with their own flags; a source the line already shows in full
+is named only. "What you may say" opens the register's authorised entries for
+the line's substance, quoted exactly with ID and conditions, separate from the
+suggested wording. Stages that did not finish are named under the headline. **Prepare revision** shows the chosen scene
+still beside the editable-scene form, with each flagged line's register wording and the
+register's authorised entries for every flagged substance.
 Completed fixes open **Compare rounds**, where a selector on each column exposes every
 saved round and changed caption/voiceover lines are underlined. The Evidence view
 continues to show the final saved screening. The full source report is available from

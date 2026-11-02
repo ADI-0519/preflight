@@ -8,6 +8,7 @@ from preflight.eval.check_reconstructions import carried, words
 from preflight.eval.registry import Metric
 from preflight.eval.split import BreachingClaim, GroundTruth
 from preflight.schema import Screening
+from preflight.view import fold
 
 # a quote longer than this many times a ground-truth claim, plus slack words, covers more than that claim
 LONGER = 2
@@ -82,12 +83,32 @@ class ItemScore:
     caught_exact_rules: int = 0
     rules_cited: int = 0
     rules_related: int = 0
+    lines: int = 0
+    unmatched_lines: int = 0
+
+
+def line_counts(truth: list[BreachingClaim], screenings: list[Screening], item_id: str = "") -> tuple[int, int]:
+    wanted = [current(t.rules, item_id) for t in truth]
+    total = unmatched = 0
+    for s in screenings:
+        cited = {f.claim_id: [] for f in s.flags}
+        for f in s.flags:
+            cited[f.claim_id].extend(r.rule for r in f.sources if r.kind == "cap_rule")
+        for top, nested in fold(s):
+            total += 1
+            unmatched += not any(
+                matches(t.claim, words(c.text), tight=True)
+                and any(related(r, g) for r in cited[c.claim_id] for g in w)
+                for c in [top, *nested] for t, w in zip(truth, wanted, strict=True)
+            )  # fmt: skip
+    return total, unmatched
 
 
 def score_item(truth: GroundTruth, screenings: list[Screening], kept: list[bool] | None = None) -> ItemScore:
     # kept marks the ground-truth claims the reconstruction carried; a team ad carries all of its own wording
     kept = kept if kept is not None else [True] * len(truth.claims)
     c = caught(truth.claims, screenings, truth.item_id)
+    lines, unmatched = line_counts(truth.claims, screenings, truth.item_id)
     return ItemScore(
         item_id=truth.item_id,
         label=truth.label,
@@ -100,6 +121,8 @@ def score_item(truth: GroundTruth, screenings: list[Screening], kept: list[bool]
         caught_exact_rules=sum(c.exact_rules),
         rules_cited=c.rules_cited,
         rules_related=c.rules_related,
+        lines=lines,
+        unmatched_lines=unmatched,
     )
 
 
@@ -139,6 +162,8 @@ def metrics(items: list[ItemScore]) -> list[Metric]:
             metric("claim_recall_exact_rules", positives, lambda i: i.caught_exact_rules, lambda i: i.claims),
             Metric("rule_precision", sum(i.rules_related for i in positives), sum(i.rules_cited for i in positives)),
             Metric("flags_per_positive_ad", sum(i.flags for i in positives), len(positives)),
+            Metric("flagged_lines_per_positive_ad", sum(i.lines for i in positives), len(positives)),
+            Metric("unmatched_lines_per_positive_ad", sum(i.unmatched_lines for i in positives), len(positives)),
         ]
     if negatives:
         # every flag on a negative ad is a false alarm

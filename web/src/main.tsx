@@ -350,8 +350,9 @@ function App() {
   }
 
   const claim = result?.claims.find((c) => c.claim_id === selected);
-  function select(id: string, seconds: number) {
+  function select(id: string, seconds: number | null) {
     setSelected(id);
+    if (seconds === null) return;
     setCurrentTime(seconds);
     if (player.current) player.current.currentTime = seconds;
   }
@@ -561,6 +562,12 @@ function App() {
                   <FlagCount screening={result.screening} />
                 </div>
                 <p className="headline">{result.screening.headline}</p>
+                {result.incomplete_stages.length > 0 && (
+                  <p className="unfinished">
+                    Stages that did not finish:{' '}
+                    {result.incomplete_stages.map((s) => s.replaceAll('_', ' ')).join(', ')}.
+                  </p>
+                )}
                 {demo && (
                   <p className="muted">
                     {demo.kind === 'synthetic'
@@ -632,7 +639,7 @@ function App() {
                       <video
                         ref={player}
                         onLoadedMetadata={(e) => {
-                          const start = claim?.evidence[0]?.start ?? 0;
+                          const start = claim?.start ?? 0;
                           e.currentTarget.currentTime = start;
                           setCurrentTime(start);
                         }}
@@ -652,6 +659,7 @@ function App() {
                 <ClaimTrack
                   claims={result.claims}
                   duration={lanes ? (result.screening.ad.duration ?? 0) : 0}
+                  still={result.screening.ad.media === 'image'}
                   selected={selected}
                   currentTime={currentTime}
                   onSelect={select}
@@ -664,7 +672,11 @@ function App() {
                   </p>
                 )}
               </section>
-              <Inspector claim={claim} />
+              <Inspector
+                claim={claim}
+                still={result.screening.ad.media === 'image'}
+                maySay={result.may_say}
+              />
             </div>
           </>
         )}
@@ -672,7 +684,7 @@ function App() {
           <div className="work editor" hidden={view !== 'edit'}>
             <section className="stage-col">
               <StillStage file={still} />
-              <FlaggedList claims={result.claims} />
+              <FlaggedList claims={result.claims} maySay={result.may_say} />
             </section>
             <form onSubmit={startFix} className="sheet draft-form">
               <h2>Editable draft</h2>

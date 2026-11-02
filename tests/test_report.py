@@ -111,7 +111,7 @@ def test_no_clearance_wording(screening):
 
 def test_flags_on_one_claim_are_grouped():
     page = render_html(build(flags=(breach(), breach("flag-1", ("3.7",)))))
-    assert page.count("<h3>") == 1
+    assert page.count('class="claim"') == 1
     claim_part = page.split("Boosts energy all day”</h3>")[1].split("Claims with no flag raised")[0]
     assert claim_part.count('class="flag"') == 2
     assert "15.1.1" in claim_part and "3.7" in claim_part
@@ -214,3 +214,61 @@ def test_crop_at_another_time_is_not_shown_as_the_cited_frame(tmp_path):
         Region(frame_time=2.0, box=(0, 0, 10, 10), crop="c.png"),
     )})
     assert "crop not available" in render_html(s.model_copy(update={"tracks": (track,)}), tmp_path)
+
+
+def test_a_phrase_inside_a_flagged_line_folds_under_it():
+    claims = (
+        Claim(claim_id="claim-0", text="Boosts energy all day", kind="explicit",
+              evidence=(TranscriptEvidence(segment_id="segment-0"),)),
+        Claim(claim_id="claim-1", text="energy", kind="explicit",
+              evidence=(TranscriptEvidence(segment_id="segment-0"),)),
+    )  # fmt: skip
+    nested = breach("flag-1", ("15.1.1", "3.7")).model_copy(update={"claim_id": "claim-1"})
+    page = render_html(build(claims=claims, flags=(breach(), nested)))
+    assert page.count('class="claim"') == 1
+    assert "Flagged phrases inside this line" in page and "“energy”" in page
+    assert page.count('class="flag"') == 2
+    # the nested flag's own rule is quoted in full, the line's rule is named only
+    nested_part = page.split("Flagged phrases inside this line")[1]
+    assert "As above: <a" in nested_part and ">CAP 15.1.1</a>" in nested_part
+    assert ">3.7</a>:" in nested_part and ">15.1.1</a>:" not in nested_part
+
+
+def test_section_15_rules_lead_the_line():
+    page = render_html(build(flags=(breach("flag-0", ("3.7", "15.1.1")),)))
+    assert page.index(">CAP 15.1.1</a>") < page.index(">CAP 3.7</a>")
+
+
+def test_may_say_quotes_register_entries_with_id_and_conditions():
+    claim = Claim(
+        claim_id="claim-0", text="Magnesium fights tiredness", kind="explicit", substance="magnesium",
+        evidence=(TranscriptEvidence(segment_id="segment-0"),),
+    )
+    page = render_html(build(claims=(claim,), flags=(breach(),)))
+    may_say = page.split("<h2>What you may say</h2>")[1].split("<h2>")[0]
+    entries = [e for e in REGISTER.values() if e.register_id in may_say]
+    assert entries and all(e.status == "authorised" for e in entries)
+    for e in entries:
+        assert f"{e.register_id}: “{escape(e.wording)}”" in may_say
+        assert e.conditions is None or escape(e.conditions) in may_say
+
+
+def test_may_say_says_when_no_entry_matches():
+    page = render_html(build(flags=(breach(),)))
+    assert "No authorised register entry matches." in page.split("<h2>What you may say</h2>")[1]
+
+
+def test_a_still_reads_as_on_screen_without_times():
+    s = build(flags=(breach(),))
+    still = s.model_copy(update={
+        "ad": s.ad.model_copy(update={"media": "image", "duration": None, "fps": None}),
+        "on_screen": (OnScreenText(text_id="text-0", text="Natural focus", start=0, end=0),),
+    })
+    page = render_html(still)
+    assert "On screen (still)" in page and "0:00.0–0:00.0" not in page
+
+
+def test_unfinished_stages_are_named():
+    page = render_html(variants()[2])
+    assert "Stages that did not finish: check." in page
+    assert "Stages that did not finish" not in render_html(build())

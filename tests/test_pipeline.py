@@ -1,3 +1,4 @@
+import json
 import logging
 from dataclasses import replace
 from datetime import UTC, datetime
@@ -70,7 +71,7 @@ def test_cli_screens_the_fixture_clip_end_to_end(tmp_path, monkeypatch, models, 
     monkeypatch.setattr(cli, "from_env", lambda: models)
     monkeypatch.setattr(cli, "load_precedents", lambda version: NoPrecedents())
     assert cli.main(["screen", str(CLIP), "--out", str(tmp_path / "out"), "--no-align"]) == 0
-    (saved,) = (tmp_path / "out").glob("*.json")
+    (saved,) = [p for p in (tmp_path / "out").glob("*.json") if not p.name.endswith(".view.json")]
     screening = Screening.model_validate_json(saved.read_text(encoding="utf-8"))
     verify_sources(screening)
     assert [(r.stage, r.status) for r in screening.stages] == [
@@ -83,6 +84,11 @@ def test_cli_screens_the_fixture_clip_end_to_end(tmp_path, monkeypatch, models, 
     claims = {c.claim_id: c for c in screening.claims}
     for flag in screening.flags:
         assert escape(claims[flag.claim_id].text) in page and escape(flag.reason) in page
+    view = json.loads(saved.with_suffix(".view.json").read_text(encoding="utf-8"))
+    shown = {i for line in view["lines"] for i in line["flags"]["flag_ids"]}
+    shown |= {f.flag_id for line in view["lines"] for n in line["folded"] for f in screening.flags
+              if f.claim_id == n["claim_id"]}
+    assert shown == {f.flag_id for f in screening.flags}
 
 
 def test_a_failed_stage_is_recorded_and_the_rest_runs(models, clip):  # noqa: F811

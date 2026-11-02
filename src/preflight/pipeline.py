@@ -1,3 +1,4 @@
+import json
 import logging
 from collections.abc import Callable
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -19,6 +20,7 @@ from preflight.models import Models, Spark
 from preflight.models.clients import SAM, SPARK, TRANSCRIBE
 from preflight.report import render_html
 from preflight.schema import Screening, Snapshots, StageRun
+from preflight.view import build_view
 
 log = logging.getLogger(__name__)
 
@@ -100,4 +102,5 @@ def screen_target(
     stem.with_suffix(".json").write_text(screening.model_dump_json(indent=1), encoding="utf-8")
     crops = done.frames[0].path.parent.parent
     stem.with_suffix(".html").write_text(render_html(screening, crops), encoding="utf-8")
+    stem.with_suffix(".view.json").write_text(json.dumps(build_view(screening), indent=1), encoding="utf-8")
     return screening, stem.with_suffix(".json"), stem.with_suffix(".html")

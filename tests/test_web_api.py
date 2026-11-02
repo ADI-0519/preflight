@@ -20,8 +20,8 @@ from test_api import (  # noqa: F401
 )
 
 from preflight.api import Settings, create_app
-from preflight.api.web import scoreboard
-from preflight.schema import NOTICE
+from preflight.api.web import presentation, scoreboard
+from preflight.schema import NOTICE, Screening
 from preflight.sources.rulings import load_ruling_index
 
 
@@ -233,3 +233,18 @@ def test_invalid_demo_configuration_returns_a_controlled_error(tmp_path, manifes
         response = client.get("/ui/demos")
         assert response.status_code == 409
         assert response.json()["error"] == "invalid_demo_manifest"
+
+
+def test_presentation_folds_nested_flags_and_shows_each_flag_once():
+    screening = Screening.model_validate_json((AGENT / "round0.json").read_text(encoding="utf-8"))
+    result = presentation(screening, "/crops")
+    rows = result["claims"]
+    # rule 3: every flag appears once, on its line or on a phrase folded under it, with its sources
+    shown = [f for r in rows for f in (*r["flags"], *(f for n in r["folded"] for f in n["flags"]))]
+    assert sorted(f["flag_id"] for f in shown) == sorted(f.flag_id for f in screening.flags)
+    assert all(f["source_details"] for f in shown)
+    assert len(rows) < len(screening.claims) and any(r["folded"] for r in rows)
+    starts = [r["start"] for r in rows]
+    assert starts == sorted(starts, key=lambda t: (t is None, t or 0))
+    assert all(r["start"] is None for r in rows if not any(e["timed"] for e in r["evidence"]))
+    assert result["may_say"] and result["incomplete_stages"] == []

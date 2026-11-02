@@ -81,12 +81,15 @@ def gather(
 
 def screen(
     done: Ingested, models: Models, precedents: PrecedentIndex, screening_id: str | None = None, *,
-    judge_prompt: str = judge.PROMPT_VERSION, judge_effort: str = judge.EFFORT,
-    on_stage: Callable[[StageRun], None] | None = None, **config,
+    judge_prompt: str = judge.PROMPT_VERSION, judge_effort: str = judge.EFFORT, judge_samples: int = judge.SAMPLES,
+    first_sample: int = 0, on_stage: Callable[[StageRun], None] | None = None, **config,
 ) -> Screening:
     gathered = gather(done, models, screening_id or default_id(done), on_stage=on_stage, **config)
     try:
-        checked = check(gathered, models.spark, precedents, prompt=judge_prompt, effort=judge_effort)
+        checked = check(
+            gathered, models.spark, precedents, prompt=judge_prompt, effort=judge_effort, samples=judge_samples,
+            first_sample=first_sample,
+        )
     except CacheMiss:
         raise
     except Exception as e:

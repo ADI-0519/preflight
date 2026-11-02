@@ -444,8 +444,8 @@ def test_a_candidate_judge_prompt_reaches_the_screen(tmp_path, monkeypatch):
     monkeypatch.setattr(run, "ingest", lambda path: None)
     monkeypatch.setattr(run, "screen", fake_screen)
     monkeypatch.setattr(run, "metered", lambda models: (models, lambda: 0.0))
-    run.screen_item(truth("T16", []), None, None, "screen-1", None, "judge_v7")
-    assert asked["judge_prompt"] == "judge_v7"
+    run.screen_item(truth("T16", []), None, None, "screen-1", None, "judge_v7", 3, 3)
+    assert (asked["judge_prompt"], asked["judge_samples"], asked["first_sample"]) == ("judge_v7", 3, 3)
 
 
 def voted(s: Screening, votes: dict[int, int]) -> Screening:
@@ -471,3 +471,6 @@ def test_a_flag_every_answering_sample_gave_is_unanimous():
     item = score_item(truth("A1", [("cures anxiety fast", ["15.6.2"])]), [s])
     assert (item.unanimous_flags, item.split_flags) == (1, 0)
 
+
+def test_vote_tag_names_a_voting_run():
+    assert (run.vote_tag(1, 0), run.vote_tag(3, 0), run.vote_tag(3, 3)) == ("", "+vote3", "+vote3-from3")

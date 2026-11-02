@@ -5,7 +5,7 @@
  * and run json-schema-to-typescript to regenerate this file.
  */
 
-export type SchemaVersion = "1";
+export type SchemaVersion = "1" | "2";
 export type ScreeningId = string;
 export type PreviousId = string | null;
 export type ContentHash = string;
@@ -27,6 +27,7 @@ export type Status = "done" | "failed" | "skipped";
 export type Model = string | null;
 export type Prompt = string | null;
 export type Effort = string | null;
+export type Samples = number | null;
 export type ScreenedAt = string;
 export type Start = number;
 export type End = number;
@@ -96,6 +97,7 @@ export type RulingId = string;
 export type Date = string;
 export type RegisterId1 = string;
 export type Wording = string;
+export type Votes = number | null;
 export type Flags = Flag[];
 export type Notice =
   "PreFlight screens ads against the dated sources named in this report. It is not legal advice, and it does not decide whether an ad may run: a person makes that call.";
@@ -137,6 +139,7 @@ export interface StageRun {
   model: Model;
   prompt: Prompt;
   effort: Effort;
+  samples: Samples;
 }
 export interface Segment {
   start: Start;
@@ -190,6 +193,7 @@ export interface Flag {
   reason: Reason;
   sources: Sources;
   suggested_wording: SuggestedWording | null;
+  votes: Votes;
 }
 export interface RegisterRef {
   kind: Kind5;

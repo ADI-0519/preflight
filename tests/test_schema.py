@@ -1,5 +1,6 @@
 import json
 import re
+from pathlib import Path
 
 import pytest
 from pydantic import ValidationError
@@ -274,3 +275,11 @@ def test_web_schema_is_current():
     assert WEB_SCHEMA.read_text(encoding="utf-8") == json_schema(), "run: uv run python -m preflight.schema"
     schema = json.loads(WEB_SCHEMA.read_text(encoding="utf-8"))
     assert "kind" in schema["$defs"]["TranscriptEvidence"]["required"]
+
+
+def test_a_v1_screening_still_reads():
+    saved = json.loads((Path(__file__).parent / "fixtures" / "agent" / "magnesium" / "round0.json").read_text("utf-8"))
+    assert saved["schema_version"] == "1"
+    assert Screening.model_validate(saved).schema_version == "1"
+    with pytest.raises(ValidationError):
+        Screening.model_validate(saved | {"schema_version": "3"})

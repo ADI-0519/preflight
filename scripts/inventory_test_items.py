@@ -11,6 +11,8 @@ TEAM_ID = re.compile(r"[TN]\d{2,}")
 FOUNDERS = {"NEESAY", "neesay", "adi-0519"}
 # an item written by an assistant may be checked by any founder
 AUTHORS = FOUNDERS | {"assistant"}
+# a check may also be signed by an independent checker, one that wrote none of the items (P60 decision, 2 Nov)
+CHECKERS = FOUNDERS | {"checker"}
 
 
 def sha256(path: Path) -> str | None:
@@ -44,8 +46,8 @@ def problems(root: Path, item_id: str, negatives: set[str]) -> list[str]:
     author, reviewer = handle(truth.get("written_by")), handle(truth.get("checked_by"))
     if author not in AUTHORS:
         found.append("unknown_author")
-    if reviewer not in FOUNDERS or reviewer == author:
-        found.append("needs_a_founder_check_by_someone_other_than_the_author")
+    if reviewer not in CHECKERS or reviewer == author:
+        found.append("needs_a_check_by_someone_other_than_the_author")
     media = root / "data" / "raw" / "team" / item_id
     if sum((media / n).is_file() for n in ("ad.png", "ad.mp4")) != 1 or not (media / "meta.json").is_file():
         found.append("needs_one_render_and_its_metadata")

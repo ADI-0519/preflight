@@ -42,8 +42,9 @@ def problems(result: dict) -> dict[str, list[str]]:
     return {r["item_id"]: r["problems"] for r in result["items"]}
 
 
-def test_signed_items_pass_with_their_hashes_and_nothing_changes(tmp_path):
-    write(tmp_path)
+@pytest.mark.parametrize("checked_by", ["Neesay: checked 3 Nov", "checker: checked 2026-11-02, media 0123456789ab"])
+def test_signed_items_pass_with_their_hashes_and_nothing_changes(tmp_path, checked_by):
+    write(tmp_path, checked_by=checked_by)
     before = {p: p.read_bytes() for p in tmp_path.rglob("*") if p.is_file()}
     code, result = inventory(tmp_path)
     assert code == 0 and result["new_test_items"] == 2
@@ -59,14 +60,16 @@ def test_signed_items_pass_with_their_hashes_and_nothing_changes(tmp_path):
         ("Neesay: breach line", "neesay: checked"),
         ("assistant: drafted", "assistant: self-check"),
         ("team: generic", "Neesay"),
+        ("checker: drafted", "checker: checked 2026-11-02"),
+        ("assistant: drafted", "someone: checked"),
     ],
 )
-def test_each_item_needs_a_founder_check_by_someone_other_than_its_author(tmp_path, written_by, checked_by):
+def test_each_item_needs_a_check_by_someone_other_than_its_author(tmp_path, written_by, checked_by):
     write(tmp_path, written_by, checked_by)
     code, result = inventory(tmp_path)
     assert code == 1
     assert all(
-        {"unknown_author", "needs_a_founder_check_by_someone_other_than_the_author"} & set(p)
+        {"unknown_author", "needs_a_check_by_someone_other_than_the_author"} & set(p)
         for p in problems(result).values()
     )
 

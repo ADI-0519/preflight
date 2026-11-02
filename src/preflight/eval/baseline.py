@@ -1,8 +1,8 @@
 """A screen with no model calls (P32), scored by the same harness, so the figures say what the models add.
 
 It reads each item's text as written, not as heard or seen: a reconstruction's shot list, or a team ad's own lines.
-A sentence is flagged when it names a register substance without the wording of an authorised entry for it (15.1,
-15.1.1), or when it names a term from a fixed list of diseases, conditions and cure words (15.6, 15.6.2).
+A sentence is flagged when it claims a benefit for a register substance without the wording of an authorised entry for
+it (15.1, 15.1.1), or when it names a term from a fixed list of diseases, conditions and cure words (15.6, 15.6.2).
 """
 
 import argparse
@@ -23,9 +23,17 @@ from preflight.pipeline import SNAPSHOTS
 from preflight.schema import Ad, CapRuleRef, Claim, Flag, OnScreenEvidence, OnScreenText, Screening, StageRun
 from preflight.sources.register import RegisterEntry, load_register
 
-VERSION = "keyword-baseline-v1"
+VERSION = "keyword-baseline-v2"
 HEALTH_RULES = ("15.1", "15.1.1")
 DISEASE_RULES = ("15.6", "15.6.2")
+# general benefit verbs and body functions; a sentence naming a substance with none of them is a product name or usage
+CLAIM_TERMS = (
+    "boost", "boosts", "brain", "bones", "contribute", "contributes", "defence", "digestion", "energy", "enhances",
+    "eyes", "eyesight", "fatigue", "fights", "focus", "gut", "hair", "heart", "help", "helps", "immune", "immunity",
+    "improve", "improves", "joints", "maintain", "maintains", "memory", "metabolism", "mood", "muscle", "muscles",
+    "nails", "prevent", "prevents", "promotes", "protect", "protects", "reduce", "reduces", "relieves", "repairs",
+    "restores", "skin", "sleep", "strengthens", "stress", "support", "supports", "teeth", "tiredness", "vision",
+)
 # general medical vocabulary, fixed before any run: conditions, symptoms and the words that claim to cure them
 DISEASE_TERMS = (
     "acne", "addiction", "adhd", "allergy", "allergies", "alzheimer's", "alzheimers", "anaemia", "anemia", "anxiety",
@@ -51,6 +59,10 @@ def sentences(item_id: str) -> list[str]:
     return [s for line in text for s in _SENTENCE.split(line.strip()) if s]
 
 
+def _found(terms: tuple[str, ...], said: str) -> list[str]:
+    return [t for t in terms if re.search(rf"(?<![a-z']){re.escape(t)}(?![a-z'])", said)]
+
+
 @cache
 def _register(version: str) -> tuple[RegisterEntry, ...]:
     return tuple(load_register(version))
@@ -67,10 +79,10 @@ def judge(sentence: str, register: tuple[RegisterEntry, ...]) -> tuple[list[str]
     for w in worded:
         rest = rest.replace(w, " ")
     rules, why = [], []
-    if named and not worded:
+    if named and not worded and _found(CLAIM_TERMS, said):
         rules += HEALTH_RULES
-        why.append("names a register substance without an authorised entry's wording")
-    found = [t for t in DISEASE_TERMS if re.search(rf"(?<![a-z']){re.escape(t)}(?![a-z'])", rest)]
+        why.append("claims a benefit for a register substance without an authorised entry's wording")
+    found = _found(DISEASE_TERMS, rest)
     if found:
         rules += DISEASE_RULES
         why.append(f"names {', '.join(found)}")

@@ -11,6 +11,13 @@ def test_authorised_wording_passes_and_other_wording_is_flagged():
     assert judge("Zesty orange flavour", register) is None
 
 
+def test_a_substance_named_without_a_benefit_is_not_flagged():
+    register = _register(REGISTER)
+    for line in ("Vitamin C effervescent tablets", "One capsule a day with water.", "Raspberry flavour"):
+        assert judge(line, register) is None
+    assert judge("Biotin makes your hair grow thicker", register)[0] == ["15.1", "15.1.1"]
+
+
 def test_disease_terms_are_flagged_as_whole_words():
     register = _register(REGISTER)
     assert judge("Relieves anxiety fast", register)[0] == ["15.6", "15.6.2"]

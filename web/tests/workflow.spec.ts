@@ -89,6 +89,13 @@ test('fresh upload uses SSE, compares fix rounds, records an explicit synthetic 
   await expect
     .poll(() => preview.evaluate((image) => (image as HTMLImageElement).naturalWidth))
     .toBeGreaterThan(0);
+  const roundSrc = await preview.getAttribute('src');
+  const review = page.getByRole('navigation', { name: 'Review views' });
+  await review.getByRole('button', { name: 'Evidence', exact: true }).click();
+  const finalImage = page.getByRole('img', { name: 'Ad being screened', exact: true });
+  await expect(finalImage).toBeVisible();
+  await expect(finalImage).toHaveAttribute('src', roundSrc!);
+  await review.getByRole('button', { name: 'Compare rounds', exact: true }).click();
   const approve = page.getByRole('button', { name: 'Record my review decision' });
   await expect(approve).toBeDisabled();
   await page.getByLabel('Your name').fill('Synthetic browser reviewer');

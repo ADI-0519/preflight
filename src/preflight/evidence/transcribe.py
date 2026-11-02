@@ -1,4 +1,5 @@
 import io
+import logging
 import re
 import wave
 from typing import Literal
@@ -18,6 +19,8 @@ TAIL = 0.15
 # see docs/notes/word-timing-check.md
 MIN_SCORE = 0.35
 SENTENCE_END = re.compile(r"[.!?][\"')\]]*$")
+
+log = logging.getLogger(__name__)
 
 
 def phrases(words: list[str], spans: list[Span] | None) -> list[range]:
@@ -59,8 +62,9 @@ def align_turn(
     lo, hi = max(start - PAD, 0.0), min(end + PAD, duration)
     try:
         spans, score = aligner(pcm[round(lo * rate) * 2:round(hi * rate) * 2], rate, words)
-    except Exception:
-        # an alignment that cannot run costs word timing, not the transcript
+    except RuntimeError as e:
+        # forced alignment fails on a slice too short for its letters; the turn keeps its own timing
+        log.warning("word alignment failed on the turn at %d ms: %s", turn.start_ms, type(e).__name__)
         return None
     if score < MIN_SCORE:
         return None

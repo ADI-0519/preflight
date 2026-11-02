@@ -775,13 +775,13 @@ function App() {
                   verdict.
                 </label>
                 <button type="submit" disabled={busy || !by.trim() || !confirmed}>
-                  Approve · record my review
+                  Record my review decision
                 </button>
               </form>
             ) : (
               <p className="notice">
-                This draft needs a person. Approval is unavailable while flags remain or screening
-                is incomplete.
+                This draft needs a person. Recording a review decision is unavailable while flags
+                remain or screening is incomplete.
               </p>
             )}
           </section>

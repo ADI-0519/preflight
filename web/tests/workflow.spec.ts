@@ -38,7 +38,7 @@ test('three labelled demo states, honest scoreboard and explicit reveal', async 
   await expect(page.getByRole('button', { name: 'Reveal ASA outcome' })).toBeVisible();
   await page.getByRole('button', { name: 'Synthetic replay · incomplete', exact: false }).click();
   await expect(page.locator('.headline')).toContainText('Incomplete');
-  await expect(page.getByRole('button', { name: 'Approve · record my review' })).toHaveCount(0);
+  await expect(page.getByRole('button', { name: 'Record my review decision' })).toHaveCount(0);
   expect(exceptions).toEqual([]);
 });
 
@@ -89,7 +89,7 @@ test('fresh upload uses SSE, compares fix rounds, records an explicit synthetic 
   await expect
     .poll(() => preview.evaluate((image) => (image as HTMLImageElement).naturalWidth))
     .toBeGreaterThan(0);
-  const approve = page.getByRole('button', { name: 'Approve · record my review' });
+  const approve = page.getByRole('button', { name: 'Record my review decision' });
   await expect(approve).toBeDisabled();
   await page.getByLabel('Your name').fill('Synthetic browser reviewer');
   await expect(approve).toBeDisabled();

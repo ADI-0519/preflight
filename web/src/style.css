@@ -1,5 +1,30 @@
+@font-face {
+  font-family: 'Atkinson Next';
+  font-weight: 400;
+  font-display: swap;
+  src: url('./fonts/atkinson-hyperlegible-next-latin-400-normal.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Atkinson Next';
+  font-weight: 500;
+  font-display: swap;
+  src: url('./fonts/atkinson-hyperlegible-next-latin-500-normal.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Atkinson Next';
+  font-weight: 700;
+  font-display: swap;
+  src: url('./fonts/atkinson-hyperlegible-next-latin-700-normal.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Source Serif';
+  font-weight: 400;
+  font-display: swap;
+  src: url('./fonts/source-serif-4-latin-400-normal.woff2') format('woff2');
+}
+
 :root {
-  font-family: 'Segoe UI', ui-sans-serif, system-ui, sans-serif;
+  font-family: 'Atkinson Next', 'Segoe UI', system-ui, sans-serif;
   color-scheme: dark;
   --bg: #101317;
   --panel: #191d23;

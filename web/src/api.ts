@@ -121,15 +121,13 @@ export async function request<T>(url: string, init?: RequestInit): Promise<T> {
       throw new Error(
         'This item is unavailable or its retention period has ended. Upload it again.',
       );
-    if (code === 413) throw new Error('The file or request is too large.');
+    if (code === 413) throw new Error('The file is too large to upload.');
     if (code === 415)
       throw new Error('The file could not be decoded as a supported image or video.');
-    if (code === 429) throw new Error('All job slots are busy. Please try again shortly.');
+    if (code === 429) throw new Error('Every job slot is busy. Try again in a minute.');
     if (code === 409)
-      throw new Error(
-        'This result is not available for that action. Refresh its status before retrying.',
-      );
-    throw new Error(`Request failed (${code}). Please check the input and try again.`);
+      throw new Error('This result cannot do that yet. Reload the page to get its current state.');
+    throw new Error(`The server refused the request (HTTP ${code}). Check the file and try again.`);
   }
   return response.json() as Promise<T>;
 }

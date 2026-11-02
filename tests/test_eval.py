@@ -229,6 +229,7 @@ def test_chance_never_exceeds_the_rules_that_fit():
 def test_judge_only_false_alarms_get_an_exact_interval():
     negatives = {f"T{n}": [screening(f"s{n}", ["Iron contributes"], {})] for n in range(10)}
     _, found = check_recall.scored(negatives, {i: truth(i, []) for i in negatives})
+    assert not any(m[0].startswith(("ad_recall", "claim_recall", "rule_")) for m in found)
     assert next(m for m in found if m[0] == "negative_ads_flagged_judge_only") == (
         "negative_ads_flagged_judge_only", 0, 10, 0.0, 0.309,
     )

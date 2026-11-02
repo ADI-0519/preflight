@@ -22,10 +22,15 @@ def matches(truth: str, said: list[str], tight: bool) -> bool:
     return carried(truth, said) != "missing" and (not tight or len(said) <= max(LONGER * n, n + SLACK))
 
 
-# CAP renumbered rules 3.39 to 3.43 after these ads ran, so their rulings cite the earlier numbers, as the rule
-# titles in their assessments show ("3.40 (Price Comparisons)", "3.42 (Imitation and Denigration)")
-FORMER_NUMBERS = {"3.40": "3.39", "3.42": "3.41"}
-CITES_FORMER_NUMBERS = frozenset({"A23-1216841", "A23-1224570", "A24-1251814"})
+# CAP renumbered section 3 in April 2025, after these ads ran, so their rulings cite the earlier numbers, as the
+# rule titles and wording in their assessments show ("3.40 (Price Comparisons)", "3.42 (Imitation and Denigration)",
+# and 3.50 for a claimed approval by a public body, now 3.52)
+FORMER_NUMBERS = {
+    "A23-1216841": {"3.40": "3.39"},
+    "A23-1224570": {"3.42": "3.41"},
+    "A24-1251814": {"3.42": "3.41"},
+    "A24-1241017": {"3.50": "3.52"},
+}
 
 
 def related(a: str, b: str) -> bool:
@@ -34,15 +39,23 @@ def related(a: str, b: str) -> bool:
 
 def current(rules: list[str], item_id: str) -> list[str]:
     """A ruling's rule numbers in the numbering of the rule pack the judge cites from."""
-    return [FORMER_NUMBERS.get(r, r) for r in rules] if item_id in CITES_FORMER_NUMBERS else list(rules)
+    former = FORMER_NUMBERS.get(item_id, {})
+    return [former.get(r, r) for r in rules]
+
+
+def fits(rule: str, claim_rules: list[str]) -> bool:
+    return any(related(rule, g) for g in claim_rules)
 
 
 class Caught(NamedTuple):
     any_rule: list[bool]  # a flag matches the claim
     with_rule: list[bool]  # ... and cites one of its rules, or a rule above or below one
-    exact_rules: list[bool]  # ... and cites nothing but its rules, or rules above or below them
+    exact_rules: list[bool]  # ... and cites nothing unrelated to the ground-truth claims the flag matches
+    all_rules: list[bool]  # ... and also cites every one of the claim's rules
     rules_cited: int  # CAP rules cited on flags that match a ground-truth claim
-    rules_related: int  # ... of which related to that claim's rules
+    rules_related: int  # ... of which related to the rules of the claims that flag matches
+    rules_wanted: int  # CAP rules of the ground-truth claims some flag matches
+    rules_found: int  # ... of which cited on a flag matching that claim
 
 
 def caught(truth: list[BreachingClaim], screenings: list[Screening], item_id: str = "") -> Caught:
@@ -52,21 +65,34 @@ def caught(truth: list[BreachingClaim], screenings: list[Screening], item_id: st
             rules.setdefault((s.screening_id, f.claim_id), []).extend(r.rule for r in f.sources if r.kind == "cap_rule")
     flagged = [(words(c.text), rules[s.screening_id, c.claim_id]) for s in screenings for c in s.claims
                if (s.screening_id, c.claim_id) in rules]  # fmt: skip
-    found = [[cited for said, cited in flagged if matches(t.claim, said, tight=True)] for t in truth]
     wanted = [current(t.rules, item_id) for t in truth]
+    # the ground-truth claims each flag matches: one extracted phrase can carry two claims with different rules
+    matched = [[i for i, t in enumerate(truth) if matches(t.claim, said, tight=True)] for said, _ in flagged]
+    # a flag's rules are judged against the rules of every claim it carries, so citing both claims' rules is right
+    union = [[r for i in m for r in wanted[i]] for m in matched]
+    hits = [[k for k, m in enumerate(matched) if i in m] for i in range(len(truth))]
 
-    def fits(rule: str, claim_rules: list[str]) -> bool:
-        return any(related(rule, g) for g in claim_rules)
+    def exact(k: int) -> bool:
+        return bool(flagged[k][1]) and all(fits(r, union[k]) for r in flagged[k][1])
 
-    pairs = [(cited, w) for hits, w in zip(found, wanted, strict=True) for cited in hits]
+    def found(g: str, h: list[int]) -> bool:
+        return any(related(g, r) for k in h for r in flagged[k][1])
+
     return Caught(
-        any_rule=[bool(h) for h in found],
-        with_rule=[any(fits(r, w) for cited in h for r in cited) for h, w in zip(found, wanted, strict=True)],
+        any_rule=[bool(h) for h in hits],
+        with_rule=[any(fits(r, w) for k in h for r in flagged[k][1]) for h, w in zip(hits, wanted, strict=True)],
         exact_rules=[
-            any(cited and all(fits(r, w) for r in cited) for cited in h) for h, w in zip(found, wanted, strict=True)
-        ],  # fmt: skip
-        rules_cited=sum(len(cited) for cited, _ in pairs),
-        rules_related=sum(fits(r, w) for cited, w in pairs for r in cited),
+            any(exact(k) and any(fits(r, w) for r in flagged[k][1]) for k in h)
+            for h, w in zip(hits, wanted, strict=True)
+        ],
+        all_rules=[
+            any(exact(k) and all(any(related(g, r) for r in flagged[k][1]) for g in w) for k in h)
+            for h, w in zip(hits, wanted, strict=True)
+        ],
+        rules_cited=sum(len(flagged[k][1]) for k, m in enumerate(matched) if m),
+        rules_related=sum(fits(r, union[k]) for k, m in enumerate(matched) if m for r in flagged[k][1]),
+        rules_wanted=sum(len(w) for h, w in zip(hits, wanted, strict=True) if h),
+        rules_found=sum(found(g, h) for h, w in zip(hits, wanted, strict=True) if h for g in w),
     )
 
 
@@ -81,8 +107,11 @@ class ItemScore:
     caught_any_rule: int
     flags: int
     caught_exact_rules: int = 0
+    caught_all_rules: int = 0
     rules_cited: int = 0
     rules_related: int = 0
+    rules_wanted: int = 0
+    rules_found: int = 0
     lines: int = 0
     unmatched_lines: int = 0
 
@@ -119,8 +148,11 @@ def score_item(truth: GroundTruth, screenings: list[Screening], kept: list[bool]
         caught_any_rule=sum(c.any_rule),
         flags=sum(len(s.flags) for s in screenings),
         caught_exact_rules=sum(c.exact_rules),
+        caught_all_rules=sum(c.all_rules),
         rules_cited=c.rules_cited,
         rules_related=c.rules_related,
+        rules_wanted=c.rules_wanted,
+        rules_found=c.rules_found,
         lines=lines,
         unmatched_lines=unmatched,
     )
@@ -160,7 +192,9 @@ def metrics(items: list[ItemScore]) -> list[Metric]:
             metric("claim_recall_carried", positives, lambda i: i.caught_carried, lambda i: i.carried),
             metric("claim_recall_any_rule", positives, lambda i: i.caught_any_rule, lambda i: i.claims),
             metric("claim_recall_exact_rules", positives, lambda i: i.caught_exact_rules, lambda i: i.claims),
+            metric("claim_recall_all_rules", positives, lambda i: i.caught_all_rules, lambda i: i.claims),
             Metric("rule_precision", sum(i.rules_related for i in positives), sum(i.rules_cited for i in positives)),
+            Metric("rule_recall", sum(i.rules_found for i in positives), sum(i.rules_wanted for i in positives)),
             Metric("flags_per_positive_ad", sum(i.flags for i in positives), len(positives)),
             Metric("flagged_lines_per_positive_ad", sum(i.lines for i in positives), len(positives)),
             Metric("unmatched_lines_per_positive_ad", sum(i.unmatched_lines for i in positives), len(positives)),

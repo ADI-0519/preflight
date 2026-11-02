@@ -1,0 +1,209 @@
+# summaries are our own paraphrases, never the Code's text: asa.org.uk states no reuse terms (docs/source-terms.md)
+# read from the section pages below on 31 Oct 2026; they carry no edition date
+# latest amendment any page mentions: rule 15.18 renumbered to 15.20 on 5 Jan 2026
+# 2026-11-01: section 3 re-read on 1 Nov 2026; adds 3.39 (price comparisons) and 3.41 (denigration), which split v1
+# cites. Rulings on ads from before CAP renumbered 3.39 to 3.43 cite them as 3.40 and 3.42 (see preflight.eval.score)
+# 2026-11-02: section 3 re-read on 1 Nov 2026; adds 3.52 (claimed approval or trust marks), which split v1 cites
+# as 3.50, its number before the April 2025 renumbering
+version: "2026-11-02"
+code: CAP Code (UK Code of Non-broadcast Advertising and Direct & Promotional Marketing)
+latest_amendment_seen: "2026-01-05"
+sections:
+  "1": https://www.asa.org.uk/type/non_broadcast/code_section/01.html
+  "2": https://www.asa.org.uk/type/non_broadcast/code_section/02.html
+  "3": https://www.asa.org.uk/type/non_broadcast/code_section/03.html
+  "4": https://www.asa.org.uk/type/non_broadcast/code_section/04.html
+  "12": https://www.asa.org.uk/type/non_broadcast/code_section/12.html
+  "13": https://www.asa.org.uk/type/non_broadcast/code_section/13.html
+  "15": https://www.asa.org.uk/type/non_broadcast/code_section/15.html
+
+rules:
+  # Section 15: food, food supplements and health or nutrition claims
+  - rule: "15.1"
+    summary: Any nutrition or health claim needs evidence that the product meets that claim's register conditions of use, and must be stated clearly and without overstatement.
+    breach_evidence: A register-worded claim for a product that may not meet the conditions of use (for example, not a source of the nutrient), or an authorised claim stretched or amplified beyond its wording.
+    screenable: true
+  - rule: "15.1.1"
+    summary: Only nutrition claims on the register, and only health claims authorised on the register or ones a consumer would read as meaning the same, may be used.
+    breach_evidence: A health claim, spoken, written or implied by imagery, that matches no authorised register entry for the substance, or matches a non-authorised one. A claim matching an entry on DHSC's on-hold list and no non-authorised register entry is not a breach of this rule.
+    screenable: true
+  - rule: "15.2"
+    summary: A general claim that a nutrient or food is good for overall health or well-being is allowed only when a specific authorised health claim sits alongside it.
+    breach_evidence: Wording like "supports wellness", "feel your best" or "boosts vitality" with no specific authorised health claim nearby in the same ad.
+    screenable: true
+  - rule: "15.3"
+    summary: A comparative nutrition claim must measure the difference against a range of foods in the same category that could not themselves carry a nutrition claim.
+    breach_evidence: Nutrient comparisons against foods from another category ("more vitamin C than an orange"), against an unspecified comparator, or against a single product that is not typical of its category.
+    screenable: true
+  - rule: "15.3.1"
+    summary: A single product may be the only point of comparison only if it is typical of its category.
+    breach_evidence: A nutrient comparison against one product that is plainly atypical of its category, such as a budget or low-strength product chosen as the benchmark. Representativeness that cannot be judged from the ad is not flagged.
+    screenable: true
+  - rule: "15.3.2"
+    summary: A comparative nutrition claim must state the size of the difference in the nutrient or energy, measured on the same quantity of food.
+    breach_evidence: A comparison with another product or an earlier formula ("more than", "now with extra", "higher than leading brands") that gives no figure for the difference, or compares across different serving or pack sizes.
+    screenable: true
+  - rule: "15.6"
+    summary: Lead-in to a list of claim types that are never acceptable for food or supplement ads (15.6.1 to 15.6.6); the ASA often cites it together with a sub-rule.
+    breach_evidence: Any of the sub-rule breaches below.
+    screenable: true
+  - rule: "15.6.1"
+    summary: The ad must not say or suggest that not consuming the food could harm health.
+    breach_evidence: Claims that skipping the product puts health at risk, e.g. "without it your body can't cope".
+    screenable: true
+  - rule: "15.6.2"
+    summary: The ad must not say or suggest that a food prevents, treats or cures a human disease; only disease-risk-reduction claims authorised on the register are allowed.
+    breach_evidence: Naming a disease or medical condition (ADHD, depression, diabetes, arthritis, menopause symptoms framed as a condition) as something the product treats, relieves, prevents or cures, including through testimonials and before-and-after imagery.
+    screenable: true
+  - rule: "15.6.3"
+    summary: A health claim must not rest on an individual health professional's recommendation; association endorsements count only from health charities or national medical, nutrition or dietetic bodies.
+    breach_evidence: A doctor, nutritionist, pharmacist or other professional, named or shown in a white coat, recommending the product alongside a health claim.
+    screenable: true
+  - rule: "15.6.4"
+    summary: The ad must not reference changes in bodily function in a way that could create or exploit fear.
+    breach_evidence: Alarming descriptions of the body failing or deteriorating used to sell the product.
+    screenable: true
+  - rule: "15.6.5"
+    summary: A nutrition or health benefit must not be claimed in a way that casts doubt on the safety or nutritional adequacy of other products.
+    breach_evidence: Claims that ordinary foods or rival products are unsafe or nutritionally inadequate.
+    screenable: true
+  - rule: "15.6.6"
+    summary: A health claim must not mention a rate or amount of weight loss.
+    breach_evidence: Figures or timeframes for weight loss, e.g. "lose 5kg in a month", in text, voiceover or testimonials.
+    screenable: true
+  - rule: "15.7"
+    summary: Supplement claims must be authorised or permitted as under 15.1.1, and the ad needs evidence the product meets each claim's conditions of use.
+    breach_evidence: Same as 15.1.1 and 15.1, for a product sold as a food supplement.
+    screenable: true
+  - rule: "15.8"
+    summary: The ad must not suggest a balanced diet cannot supply enough nutrients, encourage replacing a healthy diet with supplements, or claim a widespread deficiency without solid proof.
+    breach_evidence: Claims that "modern food" lacks nutrients, that the supplement replaces meals or vegetables, or that most people are deficient.
+    screenable: true
+  - rule: "15.9"
+    summary: A food ad must not claim to treat a clinical vitamin or mineral deficiency.
+    breach_evidence: Claims to fix or treat a diagnosed deficiency such as anaemia or vitamin D deficiency.
+    screenable: true
+  - rule: "15.17"
+    summary: Claims about children's development and health are acceptable only if authorised on the register.
+    breach_evidence: A claim about children's growth, development, immunity or concentration that matches no authorised register entry for children.
+    screenable: true
+
+  # Section 12: medicines, medical devices and health-related products
+  - rule: "12.1"
+    summary: Objective health claims need evidence, normally human trials; medicinal claims (diagnosing, treating or preventing disease) are reserved for licensed medicines and marked medical devices.
+    breach_evidence: A supplement presented as treating or preventing a disease, or an efficacy claim ("clinically proven", "works in 7 days") for a product that is not a licensed medicine.
+    screenable: true
+  - rule: "12.2"
+    summary: The ad must not discourage essential treatment for conditions needing medical supervision, or offer diagnosis or treatment advice for them outside qualified supervision.
+    breach_evidence: Suggesting the product replaces prescribed medication or a doctor's care for a serious condition, or advising on treating such a condition.
+    screenable: true
+  - rule: "12.11"
+    summary: A medicine must be licensed before it is advertised, and the ad must keep to its licence; the ASA cites this when an unlicensed product is advertised as a medicine.
+    breach_evidence: An unlicensed supplement described in terms that make it a medicine (treating or curing a named condition, or compared with a prescription drug).
+    screenable: true
+  - rule: "12.18"
+    summary: Health professionals and celebrities must not be used to endorse medicines.
+    breach_evidence: A doctor, other health professional or celebrity endorsing a product that the ad presents as a medicine.
+    screenable: true
+
+  # Section 13: weight control and slimming
+  - rule: "13.7"
+    summary: Diets below 800 kcal a day, including very low calorie diets, may be promoted only for short-term use and must urge users to get medical advice before starting.
+    breach_evidence: A meal-replacement or fasting plan whose stated or clearly implied daily intake is below 800 kcal, promoted for ongoing use or with no prompt to get medical advice.
+    screenable: true
+  - rule: "13.9"
+    summary: The ad must not claim people can lose a precise amount of weight in a stated time, or lose weight or fat from a particular body part.
+    breach_evidence: Figures with timeframes presented as what users can achieve, e.g. "drop 10lbs in 2 weeks", or claims of losing fat from a named body part such as "melts belly fat", in text, voiceover or captions; before-and-after images that single out one body area as proof of spot reduction.
+    screenable: true
+  - rule: "13.10.1"
+    summary: Food and supplement health claims may not refer to how much or how fast weight is lost.
+    breach_evidence: Weight-loss figures or rates tied to the product, including in customer testimonials, e.g. "I lost a stone in a month".
+    screenable: true
+
+  # Section 3: misleading advertising
+  - rule: "3.1"
+    summary: The ad must not materially mislead, or be likely to.
+    breach_evidence: Any overall impression a consumer would take from the ad that the evidence does not support, including implied health effects.
+    screenable: true
+  - rule: "3.3"
+    summary: The ad must not leave out, obscure, or give unclearly or too late information the average consumer needs to decide, or information the law requires, allowing for the room the medium has and whether the details are given elsewhere.
+    breach_evidence: Material offer terms (subscription, auto-renewal, minimum term, total cost) or legally required details missing, buried in small print or shown too briefly to read, and not supplied by a clear link or other means.
+    screenable: true
+  - rule: "3.7"
+    summary: The marketer must hold evidence for objective claims before the ad runs; without it the ASA may treat the claims as misleading.
+    breach_evidence: Objective, checkable claims (results, percentages, "clinically proven", survey figures) with no evidence shown or referenced.
+    screenable: true
+  - rule: "3.9"
+    summary: The ad must not mislead by leaving out significant limitations, and qualifications must not contradict the claims they qualify.
+    breach_evidence: Small print or asterisks that contradict the headline, or missing conditions that change what the claim means.
+    screenable: true
+  - rule: "3.11"
+    summary: The ad must not mislead by exaggerating what the product can do.
+    breach_evidence: Overstated effects, speed or certainty of results.
+    screenable: true
+  - rule: "3.17"
+    summary: Any price, or statement of how a price is worked out, must not mislead by leaving things out, overplaying some terms or misrepresenting them, and must apply to the product shown.
+    breach_evidence: A headline price or discount that hides a subscription, a minimum order or extra charges; a price that belongs to a different pack or product; or a per-day or per-serving price reached only by buying a larger bundle or subscription.
+    screenable: true
+  - rule: "3.39"
+    summary: A price comparison must not claim a price advantage that is not real; a comparison with a recommended retail price misleads when that price is not one the product is generally sold at.
+    breach_evidence: A saving, percentage off or "half price" measured against an RRP, a "was" price or another seller's price, where the reference price may not be one the product is generally sold at.
+    screenable: true
+  - rule: "3.40"
+    summary: The ad must not give a false impression of who made the product; a breach whatever its effect on a purchase decision.
+    breach_evidence: Packaging, logos or wording suggesting the product is made by a named or recognisable third party (another brand, a pharmacy chain, an institution) other than the advertiser the ad identifies. The advertiser's own manufacturing claims cannot be checked from the ad and are not flagged.
+    screenable: true
+  - rule: "3.41"
+    summary: An ad comparing the product with an identifiable competitor must not discredit or denigrate another product, marketer, trade mark or trade name.
+    breach_evidence: Wording or imagery that mocks, attacks or disparages a named or identifiable competitor, its products or its motives.
+    screenable: true
+  - rule: "3.42"
+    summary: The ad must not exploit the standing of a rival's brand name, logo or other identifying mark, or of a competing product's protected origin name.
+    breach_evidence: A competing brand's name, logo or packaging style used to borrow its reputation, such as a supplement sold as a cheaper or natural alternative to a named branded product in the same market.
+    screenable: true
+  - rule: "3.43"
+    summary: The ad must not pass the product off as a copy or replica of a product protected by a trade mark or trade name.
+    breach_evidence: A supplement presented as a copy, dupe or natural version of a named branded product, such as a branded weight-loss drug.
+    screenable: true
+  - rule: "3.47"
+    summary: Unless obviously made up, every testimonial or endorsement needs records showing it is real and how to reach the person or organisation behind it.
+    breach_evidence: Testimonials or endorsements that look invented or unverifiable, such as reviews from people who cannot be identified, stock-photo customers, or quotes attributed to a public figure in a fabricated format. Whether records exist cannot be seen in the ad, so a person confirms the flag.
+    screenable: true
+  - rule: "3.50"
+    summary: A testimonial needs the giver's permission; accurate material from published sources, and references to tests, trials, professional endorsements, research bodies or journals, are usually acceptable without it.
+    breach_evidence: A public figure quoted or shown endorsing the product inside a fabricated news or interview format, or in altered or deepfaked footage. A celebrity endorsement alone is no sign of a breach, since permission cannot be seen in the ad.
+    screenable: true
+  - rule: "3.52"
+    summary: The ad must not show a trust or quality mark without authorisation, or claim that the marketer or the product has been approved, endorsed or authorised by a public or private body when it has not, or beyond the terms of that approval.
+    breach_evidence: A claim of approval, endorsement or certification by a named regulator, agency or official body, such as a food safety authority, or a quality or trust mark shown on the product, where the ad gives no basis for it.
+    screenable: true
+
+  # Section 2: recognition of marketing communications
+  - rule: "2.1"
+    summary: Anyone seeing the content must be able to tell at once that it is advertising.
+    breach_evidence: The ad as a whole dressed as editorial, a news report, an independent review or an ordinary user's post, with no clear label such as "ad".
+    screenable: true
+  - rule: "2.3"
+    summary: The ad must not pose as coming from an ordinary consumer or from someone acting outside their business, and must disclose that it is selling unless that is already obvious; a breach whatever its effect on a purchase decision.
+    breach_evidence: A brand or paid creator posing as an independent customer, reviewer or journalist, or a promotional post whose commercial purpose is neither disclosed nor obvious from where it appears, such as a creator's feed rather than the brand's own channel.
+    screenable: true
+  - rule: "2.4"
+    summary: Marketers and publishers must label advertorials so readers know at once they are advertising; a breach whatever its effect on a purchase decision.
+    breach_evidence: Paid content styled as an article, interview or feature in a publication or on a website, with no label marking it as advertising.
+    screenable: true
+
+  # Section 4: harm and offence
+  - rule: "4.4"
+    summary: The ad must not contain anything likely to excuse or promote violence or anti-social behaviour.
+    breach_evidence: Imagery, scenarios or wording that excuse, glamorise or urge violence against people or property, or anti-social acts such as vandalism or intimidation. Intense or aggressive training imagery alone is not a breach.
+    screenable: true
+
+  # Section 1: compliance
+  - rule: "1.3"
+    summary: Ads must be prepared responsibly towards consumers and society.
+    breach_evidence: Irresponsible content, such as encouraging people to stop eating normally or take unsafe amounts, or targeting vulnerable people with health fears.
+    screenable: true
+  - rule: "1.7"
+    summary: Unreasonably slow responses to the ASA's enquiries normally count as a breach.
+    breach_evidence: None in the ad itself; this concerns the advertiser's conduct after a complaint.
+    screenable: false

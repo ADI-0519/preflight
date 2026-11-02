@@ -22,7 +22,7 @@ from preflight.schema import Screening, Snapshots, StageRun
 
 log = logging.getLogger(__name__)
 
-SNAPSHOTS = Snapshots(gb_register="2026-05-19", on_hold="2021-01-12", cap_rules="2026-11-01", rulings="2026-11-01")
+SNAPSHOTS = Snapshots(gb_register="2026-05-19", on_hold="2021-01-12", cap_rules="2026-11-02", rulings="2026-11-01")
 
 
 def default_id(done: Ingested) -> str:

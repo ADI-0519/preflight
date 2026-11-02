@@ -1,3 +1,4 @@
+import math
 import random
 import statistics
 from collections.abc import Callable
@@ -177,8 +178,33 @@ def interval(
     return round(cuts[0], 3), round(cuts[-1], 3)
 
 
+def at_most(k: int, n: int, p: float) -> float:
+    return sum(math.comb(n, i) * p**i * (1 - p) ** (n - i) for i in range(k + 1))
+
+
+def exact(hits: int, n: int) -> tuple[float, float]:
+    # Clopper-Pearson: the proportions whose binomial tail beyond the count holds 2.5% on each side
+    def solve(k: int, target: float) -> float:
+        lo, hi = 0.0, 1.0
+        for _ in range(50):
+            mid = (lo + hi) / 2
+            lo, hi = (mid, hi) if at_most(k, n, mid) > target else (lo, mid)
+        return lo
+
+    low = 0.0 if hits == 0 else solve(hits - 1, 0.975)
+    high = 1.0 if hits == n else solve(hits, 0.025)
+    return round(low, 3), round(high, 3)
+
+
 def metric(name: str, items: list[ItemScore], hit: Callable, out_of: Callable = lambda i: 1) -> Metric:
+    # claims, lines and rules cluster within an ad, so the interval resamples ads
     return Metric(name, sum(map(hit, items)), sum(map(out_of, items)), *interval(items, hit, out_of))
+
+
+def per_ad(name: str, items: list[ItemScore], hit: Callable[[ItemScore], bool]) -> Metric:
+    # one yes or no per ad is a plain binomial count, and a bootstrap of 0 of n gives the false certainty [0, 0]
+    hits = sum(map(hit, items))
+    return Metric(name, hits, len(items), *exact(hits, len(items)))
 
 
 def metrics(items: list[ItemScore]) -> list[Metric]:
@@ -187,14 +213,14 @@ def metrics(items: list[ItemScore]) -> list[Metric]:
     out = []
     if positives:
         out += [
-            metric("ad_recall", positives, lambda i: i.caught > 0),
+            per_ad("ad_recall", positives, lambda i: i.caught > 0),
             metric("claim_recall", positives, lambda i: i.caught, lambda i: i.claims),
             metric("claim_recall_carried", positives, lambda i: i.caught_carried, lambda i: i.carried),
             metric("claim_recall_any_rule", positives, lambda i: i.caught_any_rule, lambda i: i.claims),
             metric("claim_recall_exact_rules", positives, lambda i: i.caught_exact_rules, lambda i: i.claims),
             metric("claim_recall_all_rules", positives, lambda i: i.caught_all_rules, lambda i: i.claims),
-            Metric("rule_precision", sum(i.rules_related for i in positives), sum(i.rules_cited for i in positives)),
-            Metric("rule_recall", sum(i.rules_found for i in positives), sum(i.rules_wanted for i in positives)),
+            metric("rule_precision", positives, lambda i: i.rules_related, lambda i: i.rules_cited),
+            metric("rule_recall", positives, lambda i: i.rules_found, lambda i: i.rules_wanted),
             Metric("flags_per_positive_ad", sum(i.flags for i in positives), len(positives)),
             Metric("flagged_lines_per_positive_ad", sum(i.lines for i in positives), len(positives)),
             Metric("unmatched_lines_per_positive_ad", sum(i.unmatched_lines for i in positives), len(positives)),
@@ -202,7 +228,7 @@ def metrics(items: list[ItemScore]) -> list[Metric]:
     if negatives:
         # every flag on a negative ad is a false alarm
         out += [
-            metric("negative_ads_flagged", negatives, lambda i: i.flags > 0),
+            per_ad("negative_ads_flagged", negatives, lambda i: i.flags > 0),
             metric("flags_per_negative_ad", negatives, lambda i: i.flags),
         ]
     return out

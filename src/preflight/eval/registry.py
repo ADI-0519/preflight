@@ -1,5 +1,6 @@
 import csv
 import subprocess
+from pathlib import Path
 from typing import NamedTuple
 
 from preflight.eval.split import ROOT
@@ -17,7 +18,7 @@ class Metric(NamedTuple):
     name: str
     hits: float
     total: float
-    # 95% bootstrap interval of hits / total, resampled over items
+    # 95% interval of hits / total: exact for a count of ads, else a bootstrap over ads
     low: float | None = None
     high: float | None = None
 
@@ -40,6 +41,14 @@ def revision(part: str) -> str:
 
 def snapshot_text(s: Snapshots) -> str:
     return " ".join(f"{k}={v}" for k, v in s.model_dump(mode="json").items())
+
+
+def write_rows(path: Path, rows: list[dict]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("w", newline="", encoding="utf-8") as f:
+        writer = csv.DictWriter(f, fieldnames=list(rows[0]))
+        writer.writeheader()
+        writer.writerows(rows)
 
 
 def register(common: dict, metrics: list[Metric | tuple]) -> None:

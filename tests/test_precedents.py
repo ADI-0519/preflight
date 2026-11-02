@@ -3,8 +3,8 @@ from datetime import date
 import pytest
 
 from preflight.check.precedents import PrecedentIndex, eligible
-from preflight.eval.split import Split
-from preflight.sources.rulings import Ruling
+from preflight.eval.split import Split, advertiser_key, load_split
+from preflight.sources.rulings import Ruling, load_ruling_index
 
 SPLIT = Split(version="v1", frozen=True, created="2026-10-31", dev=["A26-000001"], test=["G26-000002", "team-01"])
 SPLIT_ADVERTISERS = {"A26-000001": "Acme Ltd", "G26-000002": "Borealis plc t/a Calm"}
@@ -70,3 +70,19 @@ def test_top_ranks_the_matching_ruling_first_and_drops_zero_scores():
     index = PrecedentIndex(rulings, SPLIT, "2026-11-01", SPLIT_ADVERTISERS)
     assert [r.ruling_id for r in index.top("melatonin sleep gummy", k=3)] == ["A22-000001"]
     assert index.top("zzzz") == []
+
+
+# measured on rulings-2026-11-02
+ELIGIBLE_ON_2026_11_02_V2 = 34
+
+
+def test_rulings_2026_11_02_keep_split_v2_out():
+    index = load_ruling_index("2026-11-02")
+    split = load_split("v2")
+    held_back = split.excluded_ruling_ids()
+    assert held_back <= {m.ruling_id for m in index}
+    kept = eligible(index, split)
+    assert len(kept) == ELIGIBLE_ON_2026_11_02_V2
+    advertisers = {advertiser_key(m.advertiser) for m in index if m.ruling_id in held_back}
+    assert not {m.ruling_id for m in kept} & held_back
+    assert not {advertiser_key(m.advertiser) for m in kept} & advertisers

@@ -24,14 +24,19 @@ export function TierChip({ tier }: { tier: Tier }) {
   return <span className={`tier ${tier}`}>{TIER_LABEL[tier]}</span>;
 }
 
+// the header counts flags, the tiers count lines; say why they differ
+export const grouped = (lines: number, flags: number) =>
+  `${lines} ${lines === 1 ? 'line holds' : 'lines hold'} the ${flags} flags; a flagged phrase inside a longer line is grouped under it.`;
+
 // rule 1: an order for review, not a verdict
-export function TierSummary({ tiers }: { tiers: TierCounts }) {
+export function TierSummary({ tiers, flags }: { tiers: TierCounts; flags: number }) {
   const flagged = tiers.high + tiers.medium + tiers.low;
   if (flagged + tiers.unchecked === 0) return null;
   const order = `Review order: ${tiers.high} high · ${tiers.medium} medium · ${tiers.low} low`;
   const unchecked = `Couldn't check: ${tiers.unchecked}`;
   return (
     <div className="tier-summary">
+      {flags !== flagged && flagged > 0 && <p>{grouped(flagged, flags)}</p>}
       <p>
         {flagged > 0 && order}
         {flagged > 0 && tiers.unchecked > 0 && ' · '}

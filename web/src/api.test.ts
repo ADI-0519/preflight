@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { canApprove, progressMessage, timestamp } from './api';
 import type { Fix } from './api';
+import { grouped } from './evidence';
 
 // Minimal contract fixture for the review guard, with no model responses or evaluation labels.
 const fixed = {
@@ -49,3 +50,12 @@ it.each(['null', '42', '{"status":"unknown"}', '{"status":"running","stage":42}'
     expect(() => progressMessage(value)).toThrow();
   },
 );
+
+describe('tier summary', () => {
+  it('says why the line count differs from the flag count', () => {
+    expect(grouped(13, 30)).toBe(
+      '13 lines hold the 30 flags; a flagged phrase inside a longer line is grouped under it.',
+    );
+    expect(grouped(1, 2)).toMatch(/^1 line holds the 2 flags/);
+  });
+});

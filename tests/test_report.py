@@ -4,7 +4,7 @@ from html import escape
 
 import pytest
 
-from preflight.report import render_html
+from preflight.report import render_html, tier_summary
 from preflight.schema import (
     NOTICE,
     Ad,
@@ -284,3 +284,9 @@ def test_lines_show_a_tier_chip_and_the_review_order():
 def test_claims_the_check_did_not_run_on_read_couldnt_check():
     page = render_html(variants()[2])
     assert "Couldn’t check" in page.split("Claims not checked")[1] and "Review order" not in page
+
+
+def test_review_order_says_why_lines_and_flags_differ():
+    tiers = {"high": 1, "medium": 1, "low": 0, "unchecked": 0}
+    assert "2 lines hold the 5 flags; a flagged phrase inside a longer line" in tier_summary(tiers, 5)
+    assert "hold" not in tier_summary(tiers, 2)

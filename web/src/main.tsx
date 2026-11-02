@@ -656,7 +656,7 @@ function App() {
                     <p>The ad preview is not kept after a reload. Its evidence is below.</p>
                   )}
                 </div>
-                <TierSummary tiers={result.tiers} />
+                <TierSummary tiers={result.tiers} flags={result.screening.flags.length} />
                 <ClaimTrack
                   claims={result.claims}
                   duration={lanes ? (result.screening.ad.duration ?? 0) : 0}

@@ -139,10 +139,17 @@ def tier_chip(tier: str) -> str:
 
 
 # rule 1: an order for review, not a verdict
-def tier_summary(tiers: dict) -> str:
+def tier_summary(tiers: dict, flags: int) -> str:
+    lines = tiers["high"] + tiers["medium"] + tiers["low"]
+    # the headline counts flags, the tiers count lines; say why they differ
+    held = "line holds" if lines == 1 else "lines hold"
+    grouped = (
+        f"<p>{lines} {held} the {flags} flags; a flagged phrase inside a longer line is grouped under it.</p>"
+        if flags != lines else ""
+    )  # fmt: skip
     order = f"Review order: {tiers['high']} high \u00b7 {tiers['medium']} medium \u00b7 {tiers['low']} low"
     unchecked = f" \u00b7 {TIER_LABEL['unchecked']}: {tiers['unchecked']}" if tiers["unchecked"] else ""
-    return f"<p>{order}{unchecked}</p><p>{TIER_CAPTION}</p>"
+    return f"{grouped}<p>{order}{unchecked}</p><p>{TIER_CAPTION}</p>"
 
 
 def rule_links(screening: Screening, rules: list[str]) -> str:
@@ -233,7 +240,7 @@ def render_html(screening: Screening, crops: Path | None = None) -> str:
         f"<li>{tier_chip(c['tier']) + ' ' if c['tier'] else ''}\u201c{escape(c['text'])}\u201d</li>"
         for c in view["quiet_claims"]
     )
-    summary = tier_summary(view["tiers"]) if view["lines"] else ""
+    summary = tier_summary(view["tiers"], len(screening.flags)) if view["lines"] else ""
     notice = f'<p class="notice">{escape(screening.notice)}</p>'
     return f"""<!DOCTYPE html>
 <html lang="en"><head><meta charset="utf-8"><title>PreFlight screening {escape(screening.screening_id)}</title>

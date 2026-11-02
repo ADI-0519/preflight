@@ -167,6 +167,28 @@ def test_near_miss_scores_the_inserted_line_and_the_clean_ones():
     assert (missed.caught, missed.wording) == (False, False)
 
 
+@pytest.mark.parametrize(
+    ("register_id", "fits"),
+    [("gbhc-c41b26b64b9c", True), ("gbhc-99fee7203c79", True), ("gbhc-6e9ced5f8edb", True),
+     ("gbhc-070dd4b125bd", False)],
+)  # fmt: skip
+def test_near_miss_takes_the_wording_of_any_substance_the_line_names(register_id, fits):
+    # the joint calcium and vitamin D entry, vitamin D's and calcium's fit a line naming both; biotin's does not
+    line = "Calcium and vitamin D prevent osteoporosis"
+    ad = TeamAd(
+        item_id="N99", format="image", product="calcium and vitamin D tablets", register_ids=[],
+        on_screen_text=["Lemon flavour", line], voiceover="", base="T99", inserted=line, substance="Calcium",
+    )
+    truth = GroundTruth(
+        item_id="N99", kind="team", label="positive", outcome=None, written_by="w", checked_by="c",
+        claims=[BreachingClaim(claim=line, rules=["15.6", "15.6.2"], points=[])],
+    )
+    s = screening("s11", ad.lines, {1: ["15.6.2"]})
+    wording = SuggestedWording(register_id=register_id, wording="w")
+    s = s.model_copy(update={"flags": (s.flags[0].model_copy(update={"suggested_wording": wording}),)})
+    assert near_miss(ad, truth, [s]).wording is fits
+
+
 def test_toy_split_scores():
     m = by_name()
     assert (m["ad_recall"].hits, m["ad_recall"].total) == (1, 2)

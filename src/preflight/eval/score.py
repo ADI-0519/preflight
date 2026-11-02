@@ -161,13 +161,16 @@ def near_miss(ad: TeamAd, truth: GroundTruth, screenings: list[Screening]) -> Ne
     others = [text for text, f in flagged if not on_line(ad.inserted, text)]
     authorised = _authorised(screenings[0].snapshots.gb_register) if screenings else {}
     substance = (ad.substance or "").lower()
+    said = f" {' '.join(words(ad.inserted))} "
+    # a line naming two substances ("calcium and vitamin D") may take either's wording or their joint entry
+    fits = {i for i, s in authorised.items() if s == substance or f" {' '.join(words(s))} " in said}
     suggested = [f.suggested_wording.register_id for f in inserted if f.suggested_wording]
     return NearMiss(
         caught=caught(truth.claims, screenings, truth.item_id).with_rule[0],
         clean_lines=len(clean),
         clean_lines_flagged=sum(any(on_line(line, text) for text in others) for line in clean),
-        eligible=substance in authorised.values(),
-        wording=any(authorised.get(i) == substance for i in suggested),
+        eligible=bool(fits),
+        wording=any(i in fits for i in suggested),
     )
 
 

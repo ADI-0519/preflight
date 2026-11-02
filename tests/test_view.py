@@ -6,6 +6,7 @@ from preflight.schema import (
     CapRuleRef,
     Claim,
     Flag,
+    OnHoldRef,
     OnScreenEvidence,
     OnScreenText,
     RulingRef,
@@ -130,3 +131,14 @@ def test_may_say_groups_a_substance_whatever_its_case():
 def test_an_unfinished_check_is_incomplete():
     s = nested().model_copy(update={"stages": (StageRun(stage="claims", status="done"),)})
     assert build_view(s)["incomplete_stages"] == ["check"]
+
+
+def test_a_folded_phrase_keeps_every_source_its_flag_cites():
+    held = Flag(
+        flag_id="flag-1", claim_id="claim-1", kind="on_hold", reason="on hold",
+        sources=(OnHoldRef(on_hold_id="4710"),),
+    )  # fmt: skip
+    s = build((claim(0, LINE, SEG0), claim(1, "banish tiredness", SEG0)), (flag(0), held))
+    (folded,) = build_view(s)["lines"][0]["folded"]
+    assert folded["flag_ids"] == ["flag-1"] and folded["on_hold_refs"] == ["4710"]
+    assert folded["primary_rules"] == []

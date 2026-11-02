@@ -123,8 +123,12 @@ def _wordings(flags: list[Flag]) -> list[dict]:
     return list(seen.values())
 
 
-def _line(screening: Screening, claim: Claim, nested: list[Claim]) -> dict:
-    flags = [f for f in screening.flags if f.claim_id == claim.claim_id]
+def _flags_on(screening: Screening, claim: Claim) -> list[Flag]:
+    return [f for f in screening.flags if f.claim_id == claim.claim_id]
+
+
+# rule 3: a line or folded phrase keeps every source its flags cite
+def _sources(screening: Screening, flags: list[Flag]) -> dict:
     cited = _rules(flags)
     primary, other = _split_rules(cited)
     index = _rulings(screening.snapshots.rulings)
@@ -138,24 +142,29 @@ def _line(screening: Screening, claim: Claim, nested: list[Claim]) -> dict:
                     "ruling_id": r.ruling_id, "date": r.date.isoformat(), "url": meta.url if meta else None,
                     "relevant": relevant,
                 }  # fmt: skip
-    folded = []
-    for n in nested:
-        n_flags = [f for f in screening.flags if f.claim_id == n.claim_id]
-        n_primary, _ = _split_rules(_rules(n_flags))
-        folded.append({
-            "claim_id": n.claim_id, "text": n.text, "primary_rules": n_primary, "reasons": [f.reason for f in n_flags]
-        })  # fmt: skip
+    return {
+        "flag_ids": [f.flag_id for f in flags], "reasons": [f.reason for f in flags],
+        "primary_rules": primary, "other_rules": other,
+        "register_refs": sorted({r.register_id for f in flags for r in f.sources if r.kind == "register"}),
+        "on_hold_refs": sorted({r.on_hold_id for f in flags for r in f.sources if r.kind == "on_hold"}),
+        "rulings": list(rulings.values()),
+    }  # fmt: skip
+
+
+def _line(screening: Screening, claim: Claim, nested: list[Claim]) -> dict:
+    flags = _flags_on(screening, claim)
+    sources = _sources(screening, flags)
+    folded = [{"claim_id": n.claim_id, "text": n.text} | _sources(screening, _flags_on(screening, n)) for n in nested]
     return {
         "claim_id": claim.claim_id, "text": claim.text, "kind": claim.kind, "substance": claim.substance,
         "evidence": [_evidence(screening, e) for e in claim.evidence],
         "flags": {
-            "flag_ids": [f.flag_id for f in flags], "kinds": [f.kind for f in flags],
-            "reasons": [f.reason for f in flags],
+            "flag_ids": sources["flag_ids"], "kinds": [f.kind for f in flags], "reasons": sources["reasons"],
         },
-        "primary_rules": primary, "other_rules": other, "suggested_wording": _wordings(flags),
-        "register_refs": sorted({r.register_id for f in flags for r in f.sources if r.kind == "register"}),
-        "on_hold_refs": sorted({r.on_hold_id for f in flags for r in f.sources if r.kind == "on_hold"}),
-        "rulings": list(rulings.values()), "folded": folded,
+        "primary_rules": sources["primary_rules"], "other_rules": sources["other_rules"],
+        "suggested_wording": _wordings(flags),
+        "register_refs": sources["register_refs"], "on_hold_refs": sources["on_hold_refs"],
+        "rulings": sources["rulings"], "folded": folded,
     }  # fmt: skip
 
 

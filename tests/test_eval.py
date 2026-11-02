@@ -173,6 +173,25 @@ def test_line_metrics_count_top_level_claims():
     assert m["unmatched_lines_per_positive_ad"].hits == 1
 
 
+@pytest.mark.parametrize(
+    ("line", "rules", "unmatched"),
+    [
+        ("Relieves stiffness", ["15.6.2"], 0),  # a piece of the claim
+        ("Relieves soreness, stiffness, and discomfort in days, as thousands of customers say", ["15.6"], 0),
+        ("Stiffness", ["15.6.2"], 1),  # one shared word is no quote
+        ("Relieves stiffness", ["3.7"], 1),  # the right words under an unrelated rule
+    ],
+)
+def test_a_line_carrying_part_or_all_of_a_claim_is_not_noise(line, rules, unmatched):
+    item = score_item(
+        truth("A8", [("Relieves soreness, stiffness, and discomfort", ["15.6", "15.6.2"])]),
+        [screening("s", [line], {0: rules})],
+    )
+    assert item.unmatched_lines == unmatched
+    # claim recall keeps the tight match: a piece or an over-long quote is not a catch
+    assert item.caught == 0
+
+
 def test_existing_metrics_keep_their_values():
     found = {x.name: (x.hits, x.total) for x in metrics(TOY)}
     assert {n: found[n] for n in ("ad_recall", "claim_recall", "claim_recall_carried", "claim_recall_any_rule",

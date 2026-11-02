@@ -25,6 +25,11 @@ def matches(truth: str, said: list[str], tight: bool) -> bool:
     return carried(truth, said) != "missing" and (not tight or len(said) <= max(LONGER * n, n + SLACK))
 
 
+def holds(truth: str, said: list[str]) -> bool:
+    # a flagged line is not noise if it quotes an objected claim at any length or is mostly a piece of one
+    return matches(truth, said, tight=False) or (len(said) >= 2 and carried(" ".join(said), words(truth)) != "missing")
+
+
 # CAP renumbered section 3 in April 2025, after these ads ran, so their rulings cite the earlier numbers, as the
 # rule titles and wording in their assessments show ("3.40 (Price Comparisons)", "3.42 (Imitation and Denigration)",
 # and 3.50 for a claimed approval by a public body, now 3.52)
@@ -160,7 +165,7 @@ def line_counts(truth: list[BreachingClaim], screenings: list[Screening], item_i
         for top, nested in fold(s):
             total += 1
             unmatched += not any(
-                matches(t.claim, words(c.text), tight=True)
+                holds(t.claim, words(c.text))
                 and any(related(r, g) for r in cited[c.claim_id] for g in w)
                 for c in [top, *nested] for t, w in zip(truth, wanted, strict=True)
             )  # fmt: skip

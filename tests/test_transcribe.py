@@ -102,8 +102,8 @@ def test_unalignable_words_take_neighbour_span(tmp_path):
     voice = Stub([Turn(1000, 5000, "1000 Daily 1000 users 100%", "A")])
     spans = [None, (0.5, 0.9), None, (1.2, 1.5), None]
     segments, _ = transcribe(ingested(silent(tmp_path / "a.wav", 10)), voice, align=fake(spans))
-    # the whole turn is one phrase; its edges are the turn edges where the neighbours are missing
-    assert [(s.start, s.end) for s in segments] == [(1.0, 5.15)]
+    # the whole turn is one phrase; its edges are the turn edges where the neighbours are missing, with no tail
+    assert [(s.start, s.end) for s in segments] == [(1.0, 5.0)]
 
 
 def test_unalignable_word_between_phrases(tmp_path):
@@ -166,3 +166,14 @@ def test_mms_aligner_on_fixture():
     assert 0.1 <= spans[0][0] and spans[-1][1] <= 2.8
     other = mms_aligner()(pcm, 16000, "the quick brown fox jumps over a lazy dog near the river".split())
     assert other[1] < score
+
+
+def test_audio_other_than_mono_16_bit_is_refused(tmp_path):
+    path = tmp_path / "stereo.wav"
+    with wave.open(str(path), "wb") as f:
+        f.setnchannels(2)
+        f.setsampwidth(2)
+        f.setframerate(16000)
+        f.writeframes(bytes(16000 * 4))
+    with pytest.raises(ValueError, match="mono 16-bit"):
+        transcribe(ingested(path), Stub([]), align=None)

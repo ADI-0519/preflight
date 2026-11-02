@@ -14,7 +14,7 @@ Settings: prompt version, reasoning effort, and an optional second pass that sho
 
 `uv run --extra align python -m preflight.eval.claim_recall [--prompt claims_v3] [--effort high] [--second-pass]` screens each dev reconstruction (dev only; rule 5) and matches the extracted claims to the ground truth.
 
-A ground-truth claim counts as found when at least 80% of its words appear, in order, in one extracted claim, and that claim is at most twice as long as the ground-truth claim plus five words. The length limit matters. Without it, a prompt that quotes whole sentences scores well because one long quote covers several claims: prompt v2 found 227 of 250 claims that way but only 143 under the limit. Each run reports both figures (`claim_recall` and `claim_recall_loose`).
+A ground-truth claim counts as found when at least 80% of its words appear, in order, in one extracted claim, and that claim is at most twice as long as the ground-truth claim, or five words longer when that allows more. The length limit matters. Without it, a prompt that quotes whole sentences scores well because one long quote covers several claims: prompt v2 found 227 of 250 claims that way but only 143 under the limit. Each run reports both figures (`claim_recall` and `claim_recall_loose`).
 
 Two ceilings sit below 250. The reconstructions genericise brand and product names, which drops 12 claims (`claim_recall_carried` counts against the 238 that remain). Another 6 never reach the transcript or the on-screen text (`lost_upstream`). No prompt can find these 18, so 232 is the most any configuration can reach on these ads.
 
@@ -44,7 +44,7 @@ Prompts are written from the CAP rule pack and the labelling rule in `docs/plan.
 - **v2** adds those kinds and asks for lists to be kept whole. It finds the sentences but loses the short claims inside them.
 - **v3** keeps v2's kinds and asks for both: the whole phrase and each claim inside it.
 
-Tuning stopped at v3. Of its 41 misses at high effort, 13 are product and range names or contain one. Eight are short energy and focus claims in two ads that repeat such claims many times, where the model gives some forms and not others. The rest are single cases that a general instruction would not reach without fitting individual dev ads.
+Tuning stopped at v3. Of its 41 misses at high effort (`claims-20261101T023641`, listed in that run's `details.json`), 13 are product and range names or contain one. Eight are short energy and focus claims in two ads that repeat such claims many times, where the model gives some forms and not others. The rest are single cases that a general instruction would not reach without fitting individual dev ads.
 
 ## Parser integration review (1 November)
 

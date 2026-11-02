@@ -29,7 +29,7 @@ USER_AGENT = "PreFlight research crawler (+https://github.com/ADI-0519/preflight
 DELAY_SECONDS = 10  # docs/source-terms.md: at least 10 s between requests
 
 FOOD_TOPIC = "3706465E-E1B2-4E6A-ABCB7AB8E256827E"  # "Food, drink and supplements"
-# The searches whose union makes the candidate list: the topic filter, P02's two phrases, then P71's wider terms.
+# the searches whose union makes the candidate list: the topic filter, P02's two phrases, then P71's wider terms
 SEARCHES = [
     {"topic": FOOD_TOPIC},
     {"q": "food supplement"},

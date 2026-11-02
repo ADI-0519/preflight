@@ -1,4 +1,5 @@
 import io
+import logging
 import re
 import wave
 from typing import Literal
@@ -18,6 +19,8 @@ TAIL = 0.15
 # see docs/notes/word-timing-check.md
 MIN_SCORE = 0.35
 SENTENCE_END = re.compile(r"[.!?][\"')\]]*$")
+
+log = logging.getLogger(__name__)
 
 
 def phrases(words: list[str], spans: list[Span] | None) -> list[range]:
@@ -54,18 +57,19 @@ def bounds(turn: Turn, duration: float) -> Span:
 
 def align_turn(
     aligner: Aligner, pcm: bytes, rate: int, duration: float, turn: Turn, words: list[str]
-) -> list[Span] | None:
+) -> list[Span | None] | None:
     start, end = bounds(turn, duration)
     lo, hi = max(start - PAD, 0.0), min(end + PAD, duration)
     try:
+        # 2 bytes per mono s16 sample
         spans, score = aligner(pcm[round(lo * rate) * 2:round(hi * rate) * 2], rate, words)
-    except Exception:
-        # an alignment that cannot run costs word timing, not the transcript
+    except RuntimeError as e:
+        # forced alignment fails on a slice too short for its letters; the turn keeps its own timing
+        log.warning("word alignment failed on the turn at %d ms: %s", turn.start_ms, type(e).__name__)
         return None
     if score < MIN_SCORE:
         return None
-    spans = [None if s is None else (clip(s[0] + lo, duration), clip(s[1] + lo, duration)) for s in spans]
-    return fill(spans, start, end)
+    return [None if s is None else (clip(s[0] + lo, duration), clip(s[1] + lo, duration)) for s in spans]
 
 
 def transcribe(
@@ -76,6 +80,8 @@ def transcribe(
     run = StageRun(stage="transcribe", status="done", model=TRANSCRIBE)
     wav = done.audio.read_bytes()
     with wave.open(io.BytesIO(wav)) as f:
+        if (f.getnchannels(), f.getsampwidth()) != (1, 2):
+            raise ValueError("transcription expects the mono 16-bit audio ingest writes")
         rate, frames = f.getframerate(), f.getnframes()
         pcm = f.readframes(frames)
     if frames == 0:
@@ -84,26 +90,28 @@ def transcribe(
     turns = voice.transcribe(wav)
     if align == "mms" and turns:
         align = mms_aligner()
-    found: list[tuple[int, str, float, float, str]] = []
+    found: list[tuple[int, str, float, float, str, float]] = []
     for n, turn in enumerate(turns):
         words = turn.text.split()
         if not words:
             continue
-        spans = align_turn(align, pcm, rate, duration, turn, words) if align else None
+        aligned = align_turn(align, pcm, rate, duration, turn, words) if align else None
+        spans = fill(aligned, *bounds(turn, duration)) if aligned else None
         for part in phrases(words, spans):
             text = " ".join(words[i] for i in part)
             if spans is None:
-                found.append((n, text, *bounds(turn, duration), "turn"))
+                found.append((n, text, *bounds(turn, duration), "turn", 0.0))
             else:
                 start = spans[part[0]][0]
-                found.append((n, text, start, max(spans[part[-1]][1], start), "word"))
+                # only an aligned last word ends early; a filled one already ends where its neighbour or turn does
+                tail = TAIL if aligned[part[-1]] is not None else 0.0
+                found.append((n, text, start, max(spans[part[-1]][1], start), "word", tail))
     found.sort(key=lambda f: (f[2], f[0]))
-    for i, (n, text, start, end, timing) in enumerate(found):
-        if timing == "word":
-            stop = found[i + 1][2] if i + 1 < len(found) else duration
-            found[i] = (n, text, start, max(min(end + TAIL, stop), end), timing)
+    for i, (n, text, start, end, timing, tail) in enumerate(found):
+        stop = found[i + 1][2] if i + 1 < len(found) else duration
+        found[i] = (n, text, start, max(min(end + tail, stop), end), timing, tail)
     segments = [
         Segment(segment_id=f"segment-{i}", turn=n, text=text, start=start, end=end, timing=timing)
-        for i, (n, text, start, end, timing) in enumerate(found)
+        for i, (n, text, start, end, timing, _) in enumerate(found)
     ]
     return segments, run

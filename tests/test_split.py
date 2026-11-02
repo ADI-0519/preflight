@@ -4,13 +4,9 @@ from collections import Counter
 import pytest
 import yaml
 
-from preflight.eval.split import EVAL_DIR, advertiser_key, load_ground_truth, load_split, load_team_ad
+from preflight.eval.split import DISCLAIMER, EVAL_DIR, advertiser_key, load_ground_truth, load_split, load_team_ad
 from preflight.sources.register import load_register
 from preflight.sources.rulings import load_ruling_index
-
-DISCLAIMER = (
-    "Food supplements should not be used as a substitute for a varied and balanced diet and a healthy lifestyle."
-)
 
 
 @pytest.fixture(scope="module", params=["v1", "v2"])

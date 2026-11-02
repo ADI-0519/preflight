@@ -2,6 +2,7 @@ import csv
 import io
 import wave
 from datetime import UTC, datetime
+from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
@@ -166,6 +167,28 @@ def test_near_miss_scores_the_inserted_line_and_the_clean_ones():
     assert (missed.caught, missed.wording) == (False, False)
 
 
+@pytest.mark.parametrize(
+    ("register_id", "fits"),
+    [("gbhc-c41b26b64b9c", True), ("gbhc-99fee7203c79", True), ("gbhc-6e9ced5f8edb", True),
+     ("gbhc-070dd4b125bd", False)],
+)  # fmt: skip
+def test_near_miss_takes_the_wording_of_any_substance_the_line_names(register_id, fits):
+    # the joint calcium and vitamin D entry, vitamin D's and calcium's fit a line naming both; biotin's does not
+    line = "Calcium and vitamin D prevent osteoporosis"
+    ad = TeamAd(
+        item_id="N99", format="image", product="calcium and vitamin D tablets", register_ids=[],
+        on_screen_text=["Lemon flavour", line], voiceover="", base="T99", inserted=line, substance="Calcium",
+    )
+    truth = GroundTruth(
+        item_id="N99", kind="team", label="positive", outcome=None, written_by="w", checked_by="c",
+        claims=[BreachingClaim(claim=line, rules=["15.6", "15.6.2"], points=[])],
+    )
+    s = screening("s11", ad.lines, {1: ["15.6.2"]})
+    wording = SuggestedWording(register_id=register_id, wording="w")
+    s = s.model_copy(update={"flags": (s.flags[0].model_copy(update={"suggested_wording": wording}),)})
+    assert near_miss(ad, truth, [s]).wording is fits
+
+
 def test_toy_split_scores():
     m = by_name()
     assert (m["ad_recall"].hits, m["ad_recall"].total) == (1, 2)
@@ -195,6 +218,25 @@ def test_line_metrics_count_top_level_claims():
     assert m["unmatched_lines_per_positive_ad"].hits == 1
 
 
+@pytest.mark.parametrize(
+    ("line", "rules", "unmatched"),
+    [
+        ("Relieves stiffness", ["15.6.2"], 0),  # a piece of the claim
+        ("Relieves soreness, stiffness, and discomfort in days, as thousands of customers say", ["15.6"], 0),
+        ("Stiffness", ["15.6.2"], 1),  # one shared word is no quote
+        ("Relieves stiffness", ["3.7"], 1),  # the right words under an unrelated rule
+    ],
+)
+def test_a_line_carrying_part_or_all_of_a_claim_is_not_noise(line, rules, unmatched):
+    item = score_item(
+        truth("A8", [("Relieves soreness, stiffness, and discomfort", ["15.6", "15.6.2"])]),
+        [screening("s", [line], {0: rules})],
+    )
+    assert item.unmatched_lines == unmatched
+    # claim recall keeps the tight match: a piece or an over-long quote is not a catch
+    assert item.caught == 0
+
+
 def test_existing_metrics_keep_their_values():
     found = {x.name: (x.hits, x.total) for x in metrics(TOY)}
     assert {n: found[n] for n in ("ad_recall", "claim_recall", "claim_recall_carried", "claim_recall_any_rule",
@@ -213,10 +255,10 @@ def test_intervals_hold_the_point_estimate_and_repeat():
 
 
 def test_exact_upper_bounds_for_no_false_alarms():
-    assert exact(0, 10) == (0.0, 0.308)
-    assert exact(0, 15) == (0.0, 0.218)
+    assert exact(0, 10) == (0.0, 0.309)
+    assert exact(0, 15) == (0.0, 0.219)
     assert exact(5, 10) == (0.187, 0.813)
-    assert exact(25, 25) == (0.863, 1.0)
+    assert exact(25, 25) == (0.862, 1.0)
 
 
 def test_ad_counts_get_exact_intervals():
@@ -227,14 +269,33 @@ def test_ad_counts_get_exact_intervals():
 
 def test_rule_precision_and_recall_get_intervals():
     m = by_name()
-    assert m["rule_precision"].low is not None and m["rule_recall"].low is not None
+    positives = [i for i in TOY if i.label == "positive"]
+    rules = interval(positives, lambda i: i.rules_related, lambda i: i.rules_cited)
+    assert (m["rule_precision"].low, m["rule_precision"].high) == rules
+    assert (m["rule_recall"].low, m["rule_recall"].high) == interval(
+        positives, lambda i: i.rules_found, lambda i: i.rules_wanted
+    )
+    assert rules != interval(positives, lambda i: i.rules_cited, lambda i: i.rules_related)
+
+
+def test_no_denominator_gives_no_interval():
+    unflagged = score_item(truth("A7", [("boosts immunity", ["15.1.1"])]), [screening("s", ["Boosts immunity"], {})])
+    m = {x.name: x for x in metrics([unflagged])}
+    assert (m["rule_precision"].hits, m["rule_precision"].total, m["rule_precision"].low) == (0, 0, None)
+
+
+def test_chance_never_exceeds_the_rules_that_fit():
+    pack = score._screenable(SNAPSHOTS.cap_rules)
+    assert score._chance(len(pack) + 3, ["99.9"], pack) == 0.0
+    assert score._chance(len(pack) + 3, ["15.6.2"], pack) == 1.0
 
 
 def test_judge_only_false_alarms_get_an_exact_interval():
     negatives = {f"T{n}": [screening(f"s{n}", ["Iron contributes"], {})] for n in range(10)}
     _, found = check_recall.scored(negatives, {i: truth(i, []) for i in negatives})
+    assert not any(m[0].startswith(("ad_recall", "claim_recall", "rule_")) for m in found)
     assert next(m for m in found if m[0] == "negative_ads_flagged_judge_only") == (
-        "negative_ads_flagged_judge_only", 0, 10, 0.0, 0.308,
+        "negative_ads_flagged_judge_only", 0, 10, 0.0, 0.309,
     )
 
 
@@ -255,7 +316,7 @@ def test_register_adds_new_columns_to_old_rows(tmp_path, monkeypatch):
     ]
 
 
-def test_rescore_registers_a_saved_run_again(tmp_path, monkeypatch):
+def saved_run(tmp_path, monkeypatch, part="dev"):
     runs, work = tmp_path / "runs.csv", tmp_path / "work"
     monkeypatch.setattr(registry, "RUNS", runs)
     monkeypatch.setattr(run, "RUNS", runs)
@@ -266,17 +327,49 @@ def test_rescore_registers_a_saved_run_again(tmp_path, monkeypatch):
     truths = {"A24-1": truth("A24-1", [("cures anxiety fast", ["15.6.2"])]), "T16": truth("T16", [])}
     monkeypatch.setattr(run, "load_ground_truth", lambda split, i: truths[i])
     monkeypatch.setattr(run, "load_split", lambda split: SimpleNamespace(dev=["T16", "A24-1"]))
-    register({"run_id": "screen-1", "split": "v2", "part": "dev", "prompt": "judge_v5"}, [("ad_recall", 0, 1)])
+    register({"run_id": "screen-1", "split": "v2", "part": part, "prompt": "judge_v5"}, [("ad_recall", 0, 1)])
+    registry.write_rows(tmp_path / "runs" / "screen-1.csv", [{"item_id": i, "media": 1} for i in ("T16", "A24-1")])
     (work / "screen-1").mkdir(parents=True)
     for name, s in [("screen-1-A24-1-reconstruction", screening("a", ["Cures anxiety fast"], {0: ["15.6"]})),
                     ("screen-1-T16-ad", screening("b", ["Tasty"], {}))]:  # fmt: skip
         (work / "screen-1" / f"{name}.json").write_text(s.model_dump_json(), encoding="utf-8")
+    return runs, work
+
+
+def test_rescore_registers_a_saved_run_again(tmp_path, monkeypatch):
+    runs, _ = saved_run(tmp_path, monkeypatch)
     run.rescore("screen-1")
     with runs.open(newline="", encoding="utf-8") as f:
         rows = {r["metric"]: r for r in csv.DictReader(f) if r["run_id"].startswith("screen-1-rescored-")}
     ad = rows["ad_recall"]
     assert (ad["hits"], ad["high"], ad["prompt"]) == ("1", "1.0", "judge_v5")
     assert (rows["negative_ads_flagged"]["total"], rows["negative_ads_flagged"]["high"]) == ("1", "0.975")
+
+
+def test_rescore_refuses_a_run_missing_a_saved_screening(tmp_path, monkeypatch):
+    _, work = saved_run(tmp_path, monkeypatch)
+    (work / "screen-1" / "screen-1-T16-ad.json").unlink()
+    with pytest.raises(SystemExit, match="missing for T16"):
+        run.rescore("screen-1")
+
+
+def test_rescore_refuses_a_test_run(tmp_path, monkeypatch):
+    saved_run(tmp_path, monkeypatch, part="test")
+    with pytest.raises(SystemExit, match="test run"):
+        run.rescore("screen-1")
+
+
+def test_rescore_refuses_a_void_run(tmp_path, monkeypatch):
+    saved_run(tmp_path, monkeypatch)
+    (tmp_path / "void.csv").write_text("run_id,reason\nscreen-1,leak\n", encoding="utf-8")
+    with pytest.raises(SystemExit, match=r"void \(leak\)"):
+        run.rescore("screen-1")
+
+
+def test_void_runs_are_registered_runs():
+    with registry.RUNS.open(newline="", encoding="utf-8") as f:
+        registered = {r["run_id"] for r in csv.DictReader(f)}
+    assert run.void_runs() and run.void_runs().keys() <= registered
 
 
 @pytest.mark.parametrize(("status", "part", "expected"), [("", "test", "abc"), (" M x.py", "dev", "abc-dirty")])
@@ -334,3 +427,20 @@ def test_citation_spread_counts_the_six_most_cited():
     spread = {m.name: m for m in citation_spread([screening("s", ["a claim"], {}).model_copy(update={"flags": flags})])}
     assert spread["precedent_citations_top6"] == Metric("precedent_citations_top6", 27, 28)
     assert spread["precedent_rulings_cited"] == Metric("precedent_rulings_cited", 7, 28)
+
+
+def test_a_candidate_judge_prompt_reaches_the_screen(tmp_path, monkeypatch):
+    asked = {}
+
+    def fake_screen(done, models, precedents, screening_id, **kwargs):
+        asked.update(kwargs)
+        return screening(screening_id, ["Tasty"], {})
+
+    monkeypatch.setattr(run, "WORK", tmp_path)
+    (tmp_path / "screen-1").mkdir()
+    monkeypatch.setattr(run, "media", lambda item_id: [Path("ad.png")])
+    monkeypatch.setattr(run, "ingest", lambda path: None)
+    monkeypatch.setattr(run, "screen", fake_screen)
+    monkeypatch.setattr(run, "metered", lambda models: (models, lambda: 0.0))
+    run.screen_item(truth("T16", []), None, None, "screen-1", None, "judge_v7")
+    assert asked["judge_prompt"] == "judge_v7"

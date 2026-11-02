@@ -26,6 +26,11 @@ def matches(truth: str, said: list[str], tight: bool) -> bool:
     return carried(truth, said) != "missing" and (not tight or len(said) <= max(LONGER * n, n + SLACK))
 
 
+def holds(truth: str, said: list[str]) -> bool:
+    # a flagged line is not noise if it quotes an objected claim at any length or is mostly a piece of one
+    return matches(truth, said, tight=False) or (len(said) >= 2 and carried(" ".join(said), words(truth)) != "missing")
+
+
 # CAP renumbered section 3 in April 2025, after these ads ran, so their rulings cite the earlier numbers, as the
 # rule titles and wording in their assessments show ("3.40 (Price Comparisons)", "3.42 (Imitation and Denigration)",
 # and 3.50 for a claimed approval by a public body, now 3.52)
@@ -72,7 +77,9 @@ def _screenable(version: str) -> tuple[str, ...]:
 def _chance(k: int, claim_rules: list[str], pack: tuple[str, ...]) -> float:
     # k rules drawn without replacement from the rules the judge may cite
     fitting = sum(fits(r, claim_rules) for r in pack)
-    return 1 - math.comb(len(pack) - fitting, k) / math.comb(len(pack), k) if k <= len(pack) else 1.0
+    # a flag citing rules outside the pack still draws at most the whole pack
+    k = min(k, len(pack))
+    return 1 - math.comb(len(pack) - fitting, k) / math.comb(len(pack), k) if pack else 0.0
 
 
 def caught(truth: list[BreachingClaim], screenings: list[Screening], item_id: str = "") -> Caught:
@@ -154,13 +161,16 @@ def near_miss(ad: TeamAd, truth: GroundTruth, screenings: list[Screening]) -> Ne
     others = [text for text, f in flagged if not on_line(ad.inserted, text)]
     authorised = _authorised(screenings[0].snapshots.gb_register) if screenings else {}
     substance = (ad.substance or "").lower()
+    said = f" {' '.join(words(ad.inserted))} "
+    # a line naming two substances ("calcium and vitamin D") may take either's wording or their joint entry
+    fits = {i for i, s in authorised.items() if s == substance or f" {' '.join(words(s))} " in said}
     suggested = [f.suggested_wording.register_id for f in inserted if f.suggested_wording]
     return NearMiss(
         caught=caught(truth.claims, screenings, truth.item_id).with_rule[0],
         clean_lines=len(clean),
         clean_lines_flagged=sum(any(on_line(line, text) for text in others) for line in clean),
-        eligible=substance in authorised.values(),
-        wording=any(authorised.get(i) == substance for i in suggested),
+        eligible=bool(fits),
+        wording=any(i in fits for i in suggested),
     )
 
 
@@ -202,7 +212,7 @@ def line_counts(truth: list[BreachingClaim], screenings: list[Screening], item_i
         for top, nested in fold(s):
             total += 1
             unmatched += not any(
-                matches(t.claim, words(c.text), tight=True)
+                holds(t.claim, words(c.text))
                 and any(related(r, g) for r in cited[c.claim_id] for g in w)
                 for c in [top, *nested] for t, w in zip(truth, wanted, strict=True)
             )  # fmt: skip
@@ -250,7 +260,7 @@ def interval(
     out_of: Callable[[ItemScore], float],
     draws: int = DRAWS,
     seed: int = SEED,
-) -> tuple[float, float]:
+) -> tuple[float, float] | tuple[None, None]:
     rng = random.Random(seed)
     stats = []
     for _ in range(draws):
@@ -259,6 +269,9 @@ def interval(
         # a resample with nothing to divide by says nothing about the ratio
         if total:
             stats.append(sum(map(hit, sample)) / total)
+    if len(stats) < 2:
+        # no ad has anything to divide by, as on an --only run whose flags cite no rule
+        return None, None
     cuts = statistics.quantiles(stats, n=40, method="inclusive")
     return round(cuts[0], 3), round(cuts[-1], 3)
 
@@ -268,7 +281,7 @@ def at_most(k: int, n: int, p: float) -> float:
 
 
 def exact(hits: int, n: int) -> tuple[float, float]:
-    # Clopper-Pearson: the proportions whose binomial tail beyond the count holds 2.5% on each side
+    # exact (Clopper-Pearson) bounds: the proportions whose binomial tail beyond the count holds 2.5% on each side
     def solve(k: int, target: float) -> float:
         lo, hi = 0.0, 1.0
         for _ in range(50):
@@ -278,7 +291,8 @@ def exact(hits: int, n: int) -> tuple[float, float]:
 
     low = 0.0 if hits == 0 else solve(hits - 1, 0.975)
     high = 1.0 if hits == n else solve(hits, 0.025)
-    return round(low, 3), round(high, 3)
+    # rounded outwards, so the printed interval never claims more certainty than the exact one
+    return math.floor(low * 1000) / 1000, math.ceil(high * 1000) / 1000
 
 
 def metric(name: str, items: list[ItemScore], hit: Callable, out_of: Callable = lambda i: 1) -> Metric:

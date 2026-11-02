@@ -80,6 +80,21 @@ def test_clean_result_names_every_dated_source():
         assert day in page
 
 
+@pytest.mark.parametrize("status", ["failed", "skipped", None])
+def test_unfinished_extraction_does_not_claim_that_the_ad_has_no_claims(status):
+    stages = (() if status is None else (StageRun(stage="claims", status=status),))
+    stages += (StageRun(stage="check", status="skipped"),)
+    screening = build(stages=stages).model_copy(update={"claims": ()})
+    page = render_html(screening)
+    assert "No claims were found in the ad" not in page
+    assert "no claim result is available" in page
+
+
+def test_completed_empty_extraction_can_report_that_no_claims_were_found():
+    screening = build().model_copy(update={"claims": ()})
+    assert "No claims were found in the ad" in render_html(screening)
+
+
 @pytest.mark.parametrize("screening", variants())
 def test_notice_is_on_every_report(screening):
     assert escape(NOTICE) in render_html(screening)
@@ -165,4 +180,37 @@ def test_evidence_cited_by_several_claims_is_quoted_once():
 def test_an_ad_with_no_claims_says_so():
     skipped = (*STAGES[:2], StageRun(stage="check", status="skipped"))
     page = render_html(build(stages=skipped).model_copy(update={"claims": ()}))
-    assert "No claims were found" in page and "not checked" not in page and "No issues found against" in page
+    assert "No claims were found" in page and "Incomplete" in page and "No issues found against" not in page
+
+
+@pytest.mark.parametrize("absolute", [False, True])
+def test_crop_cannot_read_outside_its_root(tmp_path, absolute):
+    root = tmp_path / "crops"
+    root.mkdir()
+    sentinel = tmp_path / "synthetic.txt"
+    sentinel.write_bytes(b"SYNTHETIC_SENTINEL")
+    path = str(sentinel) if absolute else "../synthetic.txt"
+    page = render_html(with_track(path), root)
+    assert "crop not available" in page and "data:image/png;base64," not in page
+
+
+def test_crop_symlink_cannot_escape_its_root(tmp_path):
+    root = tmp_path / "crops"
+    root.mkdir()
+    sentinel = tmp_path / "synthetic.txt"
+    sentinel.write_bytes(b"SYNTHETIC_SENTINEL")
+    try:
+        (root / "escape.png").symlink_to(sentinel)
+    except OSError:
+        pytest.skip("symlinks are not permitted on this system")
+    assert "crop not available" in render_html(with_track("escape.png"), root)
+
+
+def test_crop_at_another_time_is_not_shown_as_the_cited_frame(tmp_path):
+    (tmp_path / "c.png").write_bytes(b"png")
+    s = with_track(None)
+    track = s.tracks[0].model_copy(update={"regions": (
+        Region(frame_time=1.0, box=(0, 0, 10, 10)),
+        Region(frame_time=2.0, box=(0, 0, 10, 10), crop="c.png"),
+    )})
+    assert "crop not available" in render_html(s.model_copy(update={"tracks": (track,)}), tmp_path)

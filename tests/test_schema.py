@@ -38,6 +38,7 @@ def screening(**overrides) -> dict:
         "stages": [
             {"stage": "transcribe", "status": "done", "model": "muse-voice-transcribe-1.0"},
             {"stage": "claims", "status": "done", "model": "muse-spark-1.3", "prompt": "1", "effort": "low"},
+            {"stage": "check", "status": "done", "model": "muse-spark-1.3", "prompt": "judge_v3", "effort": "high"},
         ],
         "screened_at": "2026-10-31T12:00:00Z",
         "segments": [

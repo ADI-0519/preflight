@@ -270,6 +270,36 @@ def test_approve_refuses_needs_person(tmp_path):
         approve(tmp_path / "work" / "audit.jsonl", "Ana")
 
 
+@pytest.mark.parametrize("status", ["skipped", "failed", None])
+def test_incomplete_check_is_not_clean_or_awaiting_approval(tmp_path, status):
+    stages = (StageRun(stage="claims", status="done"),)
+    if status is not None:
+        stages += (StageRun(stage="check", status=status),)
+    unfinished = screening("unfinished").model_copy(update={"stages": stages})
+    assert not is_clean(unfinished)
+    result, records = run(draft_of(tmp_path), Scripted(lambda i, p: unfinished), tmp_path)
+    assert result.state == "needs_person"
+    assert records[-1]["state"] != "awaiting_approval"
+
+
+def test_rendering_temporaries_stay_under_the_retained_output(tmp_path, monkeypatch):
+    from preflight.agent import draft as module
+
+    temporary = module.tempfile.TemporaryDirectory
+    parents = []
+
+    def scoped(*args, **kwargs):
+        parents.append(kwargs.get("dir"))
+        return temporary(*args, **kwargs)
+
+    monkeypatch.setattr(module.tempfile, "TemporaryDirectory", scoped)
+    output = tmp_path / "retained"
+    draft = Draft(format="image", scenes=(DraftScene(still=FIXTURE / "still.png"),))
+    result = module.render_draft(draft, output)
+    assert parents == [output]
+    assert result.media.is_file() and result.media.is_relative_to(output)
+
+
 def test_no_ad_text_in_logging(tmp_path, caplog):
     def broken(i, p):
         raise RuntimeError(SECRET)

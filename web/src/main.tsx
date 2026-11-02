@@ -1,0 +1,818 @@
+import { StrictMode, useEffect, useRef, useState } from 'react';
+import { createRoot } from 'react-dom/client';
+import { canApprove, complete, NOTICE, post, progressMessage, request, upload } from './api';
+import type { Config, Demo, Fix, Job, Result, Reveal, Round, Scoreboard } from './api';
+import './style.css';
+import { ClaimTrack, Inspector } from './evidence';
+import { FlagCount, FlaggedList, RoundComparison, StageList, StillStage } from './workspace';
+
+function Metrics({ board }: { board: Scoreboard }) {
+  return (
+    <section className="score" aria-labelledby="score-title">
+      <h2 id="score-title">Registered test scoreboard</h2>
+      {!board.available ? (
+        <p>{board.reason} Only the registered final test run is shown here.</p>
+      ) : (
+        <>
+          <p>
+            Run {board.run_id} on split {board.split}, revision {board.git_sha}
+          </p>
+          <table>
+            <thead>
+              <tr>
+                <th>Metric</th>
+                <th>Count</th>
+                <th>Rate</th>
+                <th>95% interval</th>
+              </tr>
+            </thead>
+            <tbody>
+              {board.metrics.map((m) => (
+                <tr key={m.name}>
+                  <td>{m.name.replaceAll('_', ' ')}</td>
+                  <td>
+                    {m.hits} / {m.total}
+                  </td>
+                  <td>
+                    {m.total > 0 ? `${((100 * m.hits) / m.total).toFixed(1)}%` : 'Not measured'}
+                  </td>
+                  <td>
+                    {m.low !== null && m.high !== null
+                      ? `${(m.low * 100).toFixed(1)} to ${(m.high * 100).toFixed(1)}%`
+                      : 'Not registered'}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </>
+      )}
+    </section>
+  );
+}
+
+function initialAppearance(): 'dark' | 'light' {
+  return window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+}
+
+document.documentElement.dataset.appearance = initialAppearance();
+
+function App() {
+  const [config, setConfig] = useState<Config | null>(null);
+  const [mode, setMode] = useState<'screen' | 'demo'>('screen');
+  const [demos, setDemos] = useState<Demo[]>([]);
+  const [demo, setDemo] = useState<Demo | null>(null);
+  const [reveal, setReveal] = useState<Reveal | null>(null);
+  const [result, setResult] = useState<Result | null>(null);
+  const [resultOwner, setResultOwner] = useState<string | null>(null);
+  const [job, setJob] = useState<Job | null>(null);
+  const [source, setSource] = useState<string | null>(null);
+  const [media, setMedia] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState('');
+  const [status, setStatus] = useState('No ad loaded.');
+  const [stages, setStages] = useState<Record<string, string>>({});
+  const [selected, setSelected] = useState<string | null>(null);
+  const [fix, setFix] = useState<Fix | null>(null);
+  const [rounds, setRounds] = useState<Round[]>([]);
+  const [by, setBy] = useState('');
+  const [note, setNote] = useState('');
+  const [confirmed, setConfirmed] = useState(false);
+  const [format, setFormat] = useState<'image' | 'video'>('image');
+  const [draftText, setDraftText] = useState('');
+  const [voiceover, setVoiceover] = useState('');
+  const [still, setStill] = useState<File | null>(null);
+  const [view, setView] = useState<'evidence' | 'edit' | 'compare'>('evidence');
+  const [appearance, setAppearance] = useState<'dark' | 'light'>(initialAppearance);
+  const [chosen, setChosen] = useState<{ name: string; video: boolean } | null>(null);
+  const chrome = useRef<HTMLDivElement>(null);
+  const [currentTime, setCurrentTime] = useState(0);
+  const player = useRef<HTMLVideoElement>(null);
+  const generation = useRef(0);
+  const active = busy || (!!job && !['completed', 'incomplete', 'failed'].includes(job.status));
+
+  useEffect(() => {
+    document.documentElement.dataset.appearance = appearance;
+  }, [appearance]);
+
+  useEffect(() => {
+    if (view !== 'evidence') player.current?.pause();
+  }, [view]);
+
+  function fail(e: unknown) {
+    setError(
+      e instanceof Error
+        ? e.message
+        : 'The request failed and the server gave no reason. Try again.',
+    );
+  }
+
+  useEffect(() => {
+    const controller = new AbortController();
+    request<Config>('/ui/config', { signal: controller.signal })
+      .then(setConfig)
+      .catch((e) => {
+        if (!controller.signal.aborted) fail(e);
+      });
+    request<Demo[]>('/ui/demos', { signal: controller.signal })
+      .then(setDemos)
+      .catch((e) => {
+        if (!controller.signal.aborted) fail(e);
+      });
+    const id = new URLSearchParams(location.search).get('job');
+    if (id && /^[0-9a-f]{32}$/.test(id))
+      request<Job>(`/jobs/${id}`, { signal: controller.signal })
+        .then(setJob)
+        .catch((e) => {
+          if (!controller.signal.aborted) fail(e);
+        });
+    return () => controller.abort();
+  }, []);
+
+  useEffect(() => {
+    if (!job) return;
+    const controller = new AbortController();
+    const current = generation.current;
+    const isCurrent = () => !controller.signal.aborted && current === generation.current;
+    let fetching = false;
+    const events = new EventSource(`/jobs/${job.job_id}/events`);
+    async function finish(status: string) {
+      if (fetching || !isCurrent()) return;
+      fetching = true;
+      events.close();
+      setJob((j) => (j ? { ...j, status } : j));
+      setStatus(
+        status === 'failed'
+          ? 'Screening failed before it produced a result.'
+          : status === 'incomplete'
+            ? 'Some stages did not finish. They are listed under Screening stages.'
+            : 'Screening finished.',
+      );
+      if (status === 'failed') return;
+      try {
+        const value = await request<Result>(`/ui/jobs/${job!.job_id}`, {
+          signal: controller.signal,
+        });
+        if (!isCurrent()) return;
+        setResult(value);
+        setResultOwner(job!.job_id);
+        if (value.media_url) setMedia(value.media_url);
+        setSelected(
+          value.claims.find((c) => c.flags.length)?.claim_id ?? value.claims[0]?.claim_id ?? null,
+        );
+        if (job!.kind === 'fix') {
+          const [fixed, history] = await Promise.all([
+            request<Fix>(`/fixes/${job!.job_id}`, { signal: controller.signal }),
+            request<Round[]>(`/ui/fixes/${job!.job_id}/rounds`, { signal: controller.signal }),
+          ]);
+          if (isCurrent()) {
+            setFix(fixed);
+            setRounds(history);
+            setView('compare');
+            if (history.length) setMedia(history[history.length - 1].media_url);
+          }
+        } else setSource(job!.job_id);
+      } catch (e) {
+        if (isCurrent()) fail(e);
+      }
+    }
+    events.addEventListener('progress', (event) => {
+      if (!isCurrent()) return;
+      try {
+        const data = progressMessage((event as MessageEvent).data);
+        if (data.stage)
+          setStages((old) => ({ ...old, [data.stage!]: data.stage_status ?? 'unknown' }));
+        if (['completed', 'incomplete', 'failed'].includes(data.status)) void finish(data.status);
+        else
+          setStatus(
+            data.stage
+              ? `${data.stage.replaceAll('_', ' ')}: ${data.stage_status}`
+              : `Job ${data.status}…`,
+          );
+      } catch {
+        events.close();
+        setJob((j) => (j ? { ...j, status: 'failed' } : j));
+        setStatus('Progress stream closed. Reload to reconnect to the saved job.');
+        setError('The progress stream could not be read. Reload to reconnect.');
+      }
+    });
+    events.onerror = () => {
+      if (fetching || !isCurrent()) return;
+      if (events.readyState === EventSource.CLOSED) {
+        setJob((j) => (j ? { ...j, status: 'failed' } : j));
+        setError(
+          'Progress is unavailable. The item may have expired. Reload, or upload the ad again.',
+        );
+        setStatus('Progress stream closed.');
+      } else setStatus('Connection lost. Reconnecting…');
+    };
+    return () => {
+      events.close();
+      controller.abort();
+    };
+    // Status updates must not create a second stream for the same job.
+  }, [job?.job_id]);
+
+  function reset() {
+    generation.current += 1;
+    setJob(null);
+    setResult(null);
+    setResultOwner(null);
+    setFix(null);
+    setRounds([]);
+    setError('');
+    setReveal(null);
+    setSelected(null);
+    setSource(null);
+    setMedia('');
+    setStages({});
+    setConfirmed(false);
+    setBy('');
+    setNote('');
+    setFormat('image');
+    setDraftText('');
+    setVoiceover('');
+    setStill(null);
+    setView('evidence');
+    setCurrentTime(0);
+    setChosen(null);
+    setStatus('No ad loaded.');
+    history.replaceState(null, '', location.pathname);
+  }
+
+  async function screenFile(file: File) {
+    reset();
+    setDemo(null);
+    setChosen({ name: file.name, video: file.type.startsWith('video/') });
+    setBusy(true);
+    setStatus('Uploading ad…');
+    const current = generation.current;
+    try {
+      if (!config)
+        throw new Error('The page has not loaded its settings yet. Reload and try again.');
+      if (file.size > config.max_upload_bytes)
+        throw new Error('The upload limit is 100 MiB. Choose a smaller file.');
+      const saved = await upload(file);
+      const queued = await post<Job>('/screenings', { upload_id: saved.upload_id, align: false });
+      if (current !== generation.current) return;
+      setMedia(`/uploads/${saved.upload_id}/media`);
+      setJob(queued);
+      history.replaceState(null, '', `?job=${queued.job_id}`);
+    } catch (e) {
+      if (current === generation.current) {
+        fail(e);
+        setStatus('The ad was not screened.');
+      }
+    } finally {
+      if (current === generation.current) setBusy(false);
+    }
+  }
+
+  async function chooseDemo(item: Demo) {
+    reset();
+    setDemo(item);
+    setBusy(true);
+    const current = generation.current;
+    try {
+      const value = await request<Result>(`/ui/demos/${item.id}`);
+      if (current !== generation.current) return;
+      setResult(value);
+      setMedia(value.media_url ?? '');
+      setStatus('Replaying a recorded screening. Nothing is sent to a model.');
+      setSelected(
+        value.claims.find((c) => c.flags.length)?.claim_id ?? value.claims[0]?.claim_id ?? null,
+      );
+    } catch (e) {
+      if (current === generation.current) fail(e);
+    } finally {
+      if (current === generation.current) setBusy(false);
+    }
+  }
+
+  async function revealDemo() {
+    if (!demo) return;
+    const current = generation.current;
+    try {
+      const value = await request<Reveal>(`/ui/demos/${demo.id}/reveal`);
+      if (current === generation.current) setReveal(value);
+    } catch (e) {
+      if (current === generation.current) fail(e);
+    }
+  }
+
+  async function startFix(event: React.FormEvent) {
+    event.preventDefault();
+    if (!source || !still) return;
+    setBusy(true);
+    setError('');
+    setConfirmed(false);
+    try {
+      const saved = await upload(still);
+      const queued = await post<Job>('/fixes', {
+        screening_id: source,
+        format,
+        rounds: 3,
+        align: false,
+        scenes: [
+          {
+            upload_id: saved.upload_id,
+            on_screen_text: draftText.split('\n').filter((t) => t.trim()),
+            voiceover,
+            duration_seconds: 4,
+          },
+        ],
+      });
+      setJob(queued);
+      setStages({});
+      setStatus('Revision queued…');
+      history.replaceState(null, '', `?job=${queued.job_id}`);
+    } catch (e) {
+      fail(e);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function approve(event: React.FormEvent) {
+    event.preventDefault();
+    if (!job || !confirmed || !by.trim() || !canApprove(fix)) return;
+    setBusy(true);
+    setError('');
+    try {
+      await post(`/fixes/${job.job_id}/approve`, { by, note });
+      setFix(await request<Fix>(`/fixes/${job.job_id}`));
+      setStatus('Your decision is recorded. Meta has not reviewed this ad.');
+    } catch (e) {
+      fail(e);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  const claim = result?.claims.find((c) => c.claim_id === selected);
+  function select(id: string, seconds: number) {
+    setSelected(id);
+    setCurrentTime(seconds);
+    if (player.current) player.current.currentTime = seconds;
+  }
+
+  function openScreen() {
+    reset();
+    setMode('screen');
+    setDemo(null);
+  }
+
+  function openDemos() {
+    reset();
+    setMode('demo');
+  }
+
+  useEffect(() => {
+    const el = chrome.current!;
+    const measure = () =>
+      document.documentElement.style.setProperty('--chrome-h', `${el.offsetHeight}px`);
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  const processing =
+    mode === 'screen' && !result && (active || (!!job && job.status !== 'failed' && !error));
+  const entry = mode === 'screen' && !result && !processing;
+  const lanes = result?.screening.ad.media === 'video' && !(fix && fix.draft.format !== 'video');
+  const lastRound = rounds[rounds.length - 1];
+
+  const demoChoices =
+    demos.length === 0 ? (
+      <p>No demo reconstructions are available yet.</p>
+    ) : (
+      <div className="demos">
+        {demos.map((d) => (
+          <button
+            key={d.id}
+            className="outline"
+            disabled={active}
+            aria-pressed={demo?.id === d.id}
+            onClick={() => void chooseDemo(d)}
+          >
+            {d.title}
+            <small>
+              {d.kind === 'synthetic'
+                ? 'Synthetic replay'
+                : `Reconstruction of ASA ruling ${d.ruling_id}`}
+            </small>
+          </button>
+        ))}
+      </div>
+    );
+
+  return (
+    <>
+      <div className="chrome" ref={chrome}>
+        <header className="bar">
+          <a className="brand" href="/">
+            <svg width="22" height="22" viewBox="0 0 22 22" aria-hidden="true">
+              <rect
+                x="1"
+                y="1"
+                width="20"
+                height="20"
+                rx="3"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.6"
+              />
+              <path d="M6 16V6h10" fill="none" stroke="currentColor" strokeWidth="2.4" />
+            </svg>
+            PreFlight
+          </a>
+          <nav className="modes" aria-label="Workspace mode">
+            <button aria-pressed={mode === 'screen'} disabled={active} onClick={openScreen}>
+              Screen an ad
+            </button>
+            <button aria-pressed={mode === 'demo'} disabled={active} onClick={openDemos}>
+              Explore demos
+            </button>
+          </nav>
+          <button
+            className="appearance outline"
+            aria-label={appearance === 'dark' ? 'Light appearance' : 'Dark appearance'}
+            aria-pressed={appearance === 'light'}
+            onClick={() => setAppearance(appearance === 'dark' ? 'light' : 'dark')}
+          >
+            {appearance === 'dark' ? 'Light' : 'Dark'}
+            <span className="long"> appearance</span>
+          </button>
+        </header>
+        <aside className="notice" role="note">
+          {config?.notice ?? NOTICE}
+        </aside>
+      </div>
+      <main id="workspace">
+        {config?.verification_label && <p className="replay">{config.verification_label}</p>}
+        {error && (
+          <div className="error" role="alert">
+            {error}
+          </div>
+        )}
+        <p className="sr-only" role="status" aria-live="polite">
+          {status}
+        </p>
+        {mode === 'demo' && !result && (
+          <>
+            <div className="title-row">
+              <div className="what">
+                <h1>Explore demos</h1>
+                <p className="lead">
+                  Reconstructions of ruled ads and fixtures the team made. Outcomes stay hidden
+                  until you reveal them.
+                </p>
+              </div>
+            </div>
+            {demoChoices}
+          </>
+        )}
+        {mode === 'demo' && result && demoChoices}
+        {entry && (
+          <>
+            <div className="title-row">
+              <div className="what">
+                <h1>Screen an ad</h1>
+                <p className="lead">
+                  Upload one ad. Each claim is checked against the GB register, the CAP Code and ASA
+                  rulings, and every flag shows its evidence.
+                </p>
+              </div>
+            </div>
+            <div className="work">
+              <div className="slot">
+                <span>Nothing uploaded yet.</span>
+                <label className="file-button primary">
+                  Choose image or video
+                  <input
+                    aria-label="Upload ad"
+                    type="file"
+                    accept="image/png,image/jpeg,image/webp,video/mp4,video/webm,video/quicktime"
+                    disabled={active || !config}
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      e.target.value = '';
+                      if (file) void screenFile(file);
+                    }}
+                  />
+                </label>
+              </div>
+              <div className="facts">
+                <h2>Formats</h2>
+                <p>PNG, JPEG, WebP, MP4, WebM or QuickTime, up to 100 MiB.</p>
+                <h2>Retention</h2>
+                <p>
+                  Uploads are deleted after {config ? config.retention_seconds / 3600 : 24} hours,
+                  or later if a job is still using them. Screening spends model credits.
+                </p>
+                <h2>Demos</h2>
+                <p>
+                  <button className="link" onClick={openDemos}>
+                    Explore labelled demos
+                  </button>
+                  . Their ASA outcomes stay hidden until you reveal them.
+                </p>
+              </div>
+            </div>
+          </>
+        )}
+        {processing && (
+          <>
+            <div className="title-row">
+              <div className="what">
+                <h1>{chosen ? `Screening ${chosen.name}` : 'Screening your ad'}</h1>
+                <p className="headline" aria-hidden="true">
+                  {status}
+                </p>
+              </div>
+            </div>
+            <div className="work">
+              <section className="stage-col">
+                <div className="stage">
+                  {media ? (
+                    chosen?.video ? (
+                      <video src={media} controls preload="metadata" aria-label="Uploaded ad" />
+                    ) : (
+                      <img src={media} alt="Uploaded ad" />
+                    )
+                  ) : (
+                    <p>{busy ? 'Uploading the ad…' : 'No preview is available for this job.'}</p>
+                  )}
+                </div>
+              </section>
+              <section className="facts">
+                <StageList stages={stages} />
+              </section>
+            </div>
+          </>
+        )}
+        {result && (
+          <>
+            <div className="title-row">
+              <div className="what">
+                <div className="title-line">
+                  <h1>{demo?.title ?? 'Screening evidence'}</h1>
+                  <FlagCount screening={result.screening} />
+                </div>
+                <p className="headline">{result.screening.headline}</p>
+                {demo && (
+                  <p className="muted">
+                    {demo.kind === 'synthetic'
+                      ? 'Synthetic replay of a recorded screening.'
+                      : `Recorded screening of a reconstruction of ASA ruling ${demo.ruling_id}.`}{' '}
+                    Nothing is sent to a model.
+                  </p>
+                )}
+              </div>
+              <div className="views">
+                <nav aria-label="Review views">
+                  <button aria-pressed={view === 'evidence'} onClick={() => setView('evidence')}>
+                    Evidence
+                  </button>
+                  {mode === 'screen' && source && !fix && complete(result.screening) && (
+                    <button aria-pressed={view === 'edit'} onClick={() => setView('edit')}>
+                      Prepare revision
+                    </button>
+                  )}
+                  {fix && (
+                    <button aria-pressed={view === 'compare'} onClick={() => setView('compare')}>
+                      Compare rounds
+                    </button>
+                  )}
+                </nav>
+                {resultOwner && (
+                  <a href={`/screenings/${resultOwner}/report`} target="_blank" rel="noreferrer">
+                    Open full source report
+                  </a>
+                )}
+                {demo && !reveal && (
+                  <button className="primary" onClick={() => void revealDemo()}>
+                    Reveal ASA outcome
+                  </button>
+                )}
+              </div>
+            </div>
+            {reveal && (
+              <div className="reveal">
+                <div className="band">
+                  {reveal.kind === 'synthetic' ? (
+                    <strong>{reveal.message}</strong>
+                  ) : (
+                    <strong>
+                      ASA ruling{' '}
+                      <a href={reveal.url} target="_blank" rel="noreferrer">
+                        {reveal.ruling_id}
+                      </a>
+                      , {reveal.date}: {reveal.outcome}. CAP rules: {reveal.rules?.join(', ')}.
+                    </strong>
+                  )}
+                  <p>PreFlight's screening and the ASA's ruling are separate results.</p>
+                </div>
+              </div>
+            )}
+            {active && (
+              <section className="fix-progress">
+                <p className="headline" aria-hidden="true">
+                  {status}
+                </p>
+                <StageList stages={stages} />
+              </section>
+            )}
+            <div className="workspace" hidden={view !== 'evidence'}>
+              <section className="viewer" aria-label="Ad and claim timeline">
+                <div className="stage">
+                  {media ? (
+                    (fix ? fix.draft.format === 'video' : result.screening.ad.media === 'video') ? (
+                      <video
+                        ref={player}
+                        onLoadedMetadata={(e) => {
+                          const start = claim?.evidence[0]?.start ?? 0;
+                          e.currentTarget.currentTime = start;
+                          setCurrentTime(start);
+                        }}
+                        onTimeUpdate={(e) => setCurrentTime(e.currentTarget.currentTime)}
+                        controls
+                        preload="metadata"
+                        src={media}
+                        aria-label="Ad video"
+                      />
+                    ) : (
+                      <img className="ad-image" src={media} alt="Ad being screened" />
+                    )
+                  ) : (
+                    <p>The ad preview is not kept after a reload. Its evidence is below.</p>
+                  )}
+                </div>
+                <ClaimTrack
+                  claims={result.claims}
+                  duration={lanes ? (result.screening.ad.duration ?? 0) : 0}
+                  selected={selected}
+                  currentTime={currentTime}
+                  onSelect={select}
+                />
+                {result.claims.length === 0 && (
+                  <p>
+                    {complete(result.screening)
+                      ? 'No claims were extracted.'
+                      : 'Screening stopped before claims were extracted.'}
+                  </p>
+                )}
+              </section>
+              <Inspector claim={claim} />
+            </div>
+          </>
+        )}
+        {mode === 'screen' && source && !fix && result && complete(result.screening) && (
+          <div className="work editor" hidden={view !== 'edit'}>
+            <section className="stage-col">
+              <StillStage file={still} />
+              <FlaggedList claims={result.claims} />
+            </section>
+            <form onSubmit={startFix} className="sheet draft-form">
+              <h2>Editable draft</h2>
+              <p className="muted">
+                Upload the scene as a still image without text, then type the captions the ad shows.
+                Each round is re-screened. Text burned into an uploaded video cannot be edited.
+              </p>
+              <label>
+                Draft format
+                <select
+                  value={format}
+                  disabled={active}
+                  onChange={(e) => setFormat(e.target.value as 'image' | 'video')}
+                >
+                  <option value="image">Image</option>
+                  <option value="video">Video, one scene</option>
+                </select>
+              </label>
+              <label>
+                Scene still
+                <input
+                  required
+                  type="file"
+                  accept="image/png,image/jpeg,image/webp"
+                  disabled={active}
+                  onChange={(e) => setStill(e.target.files?.[0] ?? null)}
+                />
+              </label>
+              <label>
+                On-screen captions, one per line
+                <textarea
+                  rows={4}
+                  maxLength={80000}
+                  value={draftText}
+                  disabled={active}
+                  onChange={(e) => setDraftText(e.target.value)}
+                />
+              </label>
+              {format === 'video' && (
+                <label>
+                  Voiceover
+                  <textarea
+                    rows={3}
+                    maxLength={4000}
+                    value={voiceover}
+                    disabled={active}
+                    onChange={(e) => setVoiceover(e.target.value)}
+                  />
+                  <small>Voiced video needs the local rendering tools installed.</small>
+                </label>
+              )}
+              <button className="primary" type="submit" disabled={active || !still}>
+                Run fix and re-screen
+              </button>
+            </form>
+          </div>
+        )}
+        {fix && (
+          <section className="comparison" hidden={view !== 'compare'}>
+            <p className="muted">
+              Each column is one saved draft and its screening. A person decides what to do about
+              any flag that remains.
+            </p>
+            <RoundComparison rounds={rounds} />
+            <div className="review sheet">
+              <div className="summary">
+                <h2>Your review decision</h2>
+                {lastRound && (
+                  <p>
+                    You are recording a decision on round {lastRound.round}, the last saved draft.
+                  </p>
+                )}
+                <p>Its screening: {fix.screening.headline}</p>
+                <p className="muted">Evidence shows the last round's screening and its sources.</p>
+              </div>
+              {fix.decision ? (
+                <div className="decision">
+                  <h3>Human review recorded</h3>
+                  <p>
+                    {fix.decision.by}, {new Date(fix.decision.at).toLocaleString()}
+                  </p>
+                  <p>{fix.decision.note}</p>
+                  <p>Recorded by a person in PreFlight. Meta has not reviewed this ad.</p>
+                </div>
+              ) : canApprove(fix) ? (
+                <form onSubmit={approve} className="review-form">
+                  <label>
+                    Your name
+                    <input
+                      required
+                      maxLength={100}
+                      value={by}
+                      onChange={(e) => setBy(e.target.value)}
+                    />
+                  </label>
+                  <label>
+                    Review note
+                    <textarea
+                      maxLength={2000}
+                      value={note}
+                      onChange={(e) => setNote(e.target.value)}
+                    />
+                  </label>
+                  <label className="checkbox">
+                    <input
+                      type="checkbox"
+                      checked={confirmed}
+                      onChange={(e) => setConfirmed(e.target.checked)}
+                    />
+                    I reviewed the final draft and its evidence, and I am making this decision
+                    myself.
+                  </label>
+                  <button
+                    className="primary"
+                    type="submit"
+                    disabled={busy || !by.trim() || !confirmed}
+                  >
+                    Record my review decision
+                  </button>
+                </form>
+              ) : (
+                <p className="needs-person">
+                  Flags remain or screening is incomplete, so no review decision can be recorded for
+                  this draft.
+                </p>
+              )}
+            </div>
+          </section>
+        )}
+        {mode === 'demo' && config && <Metrics board={config.scoreboard} />}
+      </main>
+      <footer>
+        <a href="/docs">API documentation</a>
+      </footer>
+    </>
+  );
+}
+
+createRoot(document.getElementById('root')!).render(
+  <StrictMode>
+    <App />
+  </StrictMode>,
+);

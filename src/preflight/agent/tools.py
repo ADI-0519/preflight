@@ -58,7 +58,9 @@ AWAITING = (
     "A person on the team must review the fixed draft and record their own approval in PreFlight. "
     "An agent cannot approve or publish it."
 )
-INCOMPLETE = "A screening stage failed, so the result is incomplete. A person must look at it before anything else."
+INCOMPLETE = (
+    "A screening stage did not finish, so the result is incomplete. A person must look at it before anything else."
+)
 OPEN = "A person must decide on the open lines. Each flag says why it was handed over."
 
 
@@ -102,7 +104,10 @@ def flag_summary(screening: Screening, flag: Flag) -> dict:
 
 
 def incomplete_stages(screening: Screening) -> list[str]:
-    return [r.stage for r in screening.stages if r.status == "failed"]
+    failed = [r.stage for r in screening.stages if r.status == "failed"]
+    # rule 1: a check that was skipped leaves the ad unscreened, as a failed one does
+    checked = any(r.stage == "check" and r.status == "done" for r in screening.stages)
+    return failed if checked or "check" in failed else [*failed, "check"]
 
 
 def open_lines(result: FixResult) -> list[dict]:

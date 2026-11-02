@@ -67,10 +67,16 @@ def link(url: str, label: str) -> str:
 def crop_image(screening: Screening, e: RegionEvidence, crops: Path | None) -> str:
     track = next(t for t in screening.tracks if t.track_id == e.track_id)
     cited = next(r for r in track.regions if r.frame_time == e.frame_time)
-    rel = cited.crop or next((r.crop for r in track.regions if r.crop), None)
-    if crops is None or rel is None or not (crops / rel).is_file():
+    if crops is None or cited.crop is None:
         return "crop not available"
-    encoded = base64.b64encode((crops / rel).read_bytes()).decode()
+    root = crops.resolve()
+    try:
+        path = (root / cited.crop).resolve()
+        if Path(cited.crop).is_absolute() or not path.is_relative_to(root) or not path.is_file():
+            return "crop not available"
+        encoded = base64.b64encode(path.read_bytes()).decode()
+    except (OSError, RuntimeError, ValueError):
+        return "crop not available"
     return f'<img alt="crop of {escape(track.prompt)}" src="data:image/png;base64,{encoded}">'
 
 
@@ -153,7 +159,11 @@ def render_html(screening: Screening, crops: Path | None = None) -> str:
     checked = any(r.stage == "check" and r.status == "done" for r in screening.stages)
     rest = "Claims with no flag raised" if checked else "Claims not checked"
     if not screening.claims:
-        empty = "<p>No claims were found in the ad.</p>"
+        extracted = any(r.stage == "claims" and r.status == "done" for r in screening.stages)
+        empty = (
+            "<p>No claims were found in the ad.</p>" if extracted
+            else "<p>Claim extraction did not finish; no claim result is available.</p>"
+        )
     elif checked:
         empty = "<p>No flags raised.</p>"
     else:

@@ -123,7 +123,7 @@ def test_on_hold_match_is_reported_as_on_hold():
 @pytest.mark.parametrize("bad", [verdict("possible_breach"), verdict("possible_breach", on_hold=[ASHWAGANDHA])])
 def test_a_breach_citing_no_breach_source_raises(bad):
     with pytest.raises(ValidationError):
-        run({"claim-0": bad, "claim-1": verdict(), "claim-2": verdict()})
+        run({"claim-0": verdict(), "claim-1": bad, "claim-2": verdict()})
 
 
 def test_schema_asks_for_every_claim_and_only_listed_ids():
@@ -185,7 +185,7 @@ def test_every_claim_needs_exactly_one_verdict(given):
 
 def test_no_claims_skips_the_model():
     out, calls = run({}, texts=[])
-    assert (out.flags, out.stages[-1].status, calls) == ((), "skipped", [])
+    assert (out.flags, out.stages[-1].status, calls) == ((), "done", [])
 
 
 def test_precedents_must_come_from_the_screenings_snapshot():
@@ -194,3 +194,77 @@ def test_precedents_must_come_from_the_screenings_snapshot():
 
     with pytest.raises(ValueError, match="not the screening's rulings snapshot"):
         check(screening(), FakeSpark({}), Other())
+
+
+def test_suggestion_for_another_claims_substance_is_dropped_and_the_flag_kept():
+    out, _ = run({
+        "claim-0": verdict(),
+        "claim-1": verdict("possible_breach", ["15.1.1"], [TIREDNESS], suggested=TIREDNESS),
+        "claim-2": verdict(),
+    })
+    (flag,) = out.flags
+    assert flag.suggested_wording is None and [s.kind for s in flag.sources] == ["cap_rule"]
+
+
+def test_on_hold_citation_for_another_claims_substance_is_dropped():
+    with pytest.raises(ValidationError):
+        run({"claim-0": verdict("on_hold", on_hold=[ASHWAGANDHA]), "claim-1": verdict(), "claim-2": verdict()})
+
+
+def test_claim_naming_no_substance_may_cite_the_ads_entries():
+    out, _ = run({
+        "claim-0": verdict(),
+        "claim-1": verdict(),
+        "claim-2": verdict("possible_breach", ["15.1.1"], [TIREDNESS], suggested=TIREDNESS),
+    })
+    (flag,) = out.flags
+    assert flag.suggested_wording.register_id == TIREDNESS
+    assert any(getattr(s, "register_id", None) == TIREDNESS for s in flag.sources)
+
+
+def test_replayed_suggestion_outside_the_authorised_shortlist_is_rejected():
+    with pytest.raises(ValueError, match="authorised shortlist"):
+        run({
+            "claim-0": verdict("possible_breach", ["15.1.1"], suggested=NON_AUTHORISED),
+            "claim-1": verdict(),
+            "claim-2": verdict(),
+        })
+
+
+def test_no_issue_cannot_silently_discard_sources():
+    with pytest.raises(ValueError, match="no_issue"):
+        run({"claim-0": verdict(rules=["15.1.1"]), "claim-1": verdict(), "claim-2": verdict()})
+
+
+@pytest.mark.parametrize("bad", [verdict("unknown"), verdict("possible_breach", ["15.1.1"], reason=" ")])
+def test_malformed_verdict_is_rejected(bad):
+    with pytest.raises(ValueError):
+        run({"claim-0": bad, "claim-1": verdict(), "claim-2": verdict()})
+
+
+def test_snapshot_rule_outside_the_screenable_candidates_is_rejected():
+    with pytest.raises(ValueError, match="CAP"):
+        run({"claim-0": verdict("possible_breach", ["1.7"]), "claim-1": verdict(), "claim-2": verdict()})
+
+
+def test_successful_empty_extraction_finishes_check_without_model_call():
+    s = screening([])
+    spark = FakeSpark({})
+    out = check(s, spark, FakeIndex())
+    assert out.stages[-1].status == "done" and spark.calls == []
+    assert out.headline.startswith("No issues found")
+
+
+def test_skipped_extraction_with_no_claims_does_not_read_clean():
+    s = screening([]).model_copy(update={"stages": (StageRun(stage="claims", status="skipped"),)})
+    out = check(s, FakeSpark({}), FakeIndex())
+    assert out.stages[-1].status == "skipped"
+    assert out.headline.startswith("Incomplete")
+
+
+def test_existing_check_is_not_overwritten():
+    s, _ = run({f"claim-{n}": verdict() for n in range(3)})
+    spark = FakeSpark({})
+    with pytest.raises(ValueError, match="already"):
+        check(s, spark, FakeIndex())
+    assert spark.calls == []

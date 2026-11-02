@@ -32,6 +32,14 @@ uv run ruff check
 
 Tests that call the real Meta Model API are marked `live` and run only with `uv run pytest -m live`.
 
+For an inspectable synthetic replay with no credentials or network requests (requires FFmpeg):
+
+```powershell
+uv run --offline python scripts/verify_screening_replay.py --out data/work/verification/replay-001
+```
+
+Choose a new output directory on each run. It writes labelled HTML, screening JSON and a provenance manifest. This checks recorded-response contracts and rendering, not live model accuracy or ruling-text retrieval. See [the development workflow](docs/notes/engineering-workflow.md) for the research, limitations and next verification steps.
+
 ## Use as a tool
 
 Other agents can call PreFlight as two tools: `screen_ad` (screen a video, image or page) and `fix_ad` (screen a draft and swap flagged lines for register wording). There is no approve or publish tool. A person records approval with `preflight approve <log> --by <name>`.
@@ -47,6 +55,15 @@ The tools read any file path or URL the calling agent passes, and send the ad to
 `scripts/agent_demo.py <draft.yaml>` shows an agent given a draft ad that calls `screen_ad` before it would publish. It needs the `render` extra.
 
 ## Status
+
+The [web workspace guide](docs/web.md) covers building and running P52, synthetic
+browser verification, demo asset configuration and the registered-run scoreboard.
+
+The [local API guide](docs/api.md) documents P51 endpoints, SSE, retention and the
+localhost run command. API verification uses synthetic replay, not live models.
+
+Optional agent coordination, Context7, OpenSpec, Promptfoo, browser checks and tracing
+setup are documented in [the development toolkit](tooling/README.md).
 
 Work in progress for the Meta Global AI Developer Hackathon (submission 4 November 2026). The plan, architecture and task list are in [docs/plan.md](docs/plan.md); tasks are tracked as issues on the project board.
 

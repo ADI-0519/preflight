@@ -117,7 +117,13 @@ def main() -> None:
     rows = []
     for score, screenings, usd in done:
         failed = sorted({r.stage for s in screenings for r in s.stages if r.status == "failed"})
-        rows.append(asdict(score) | {"media": len(screenings), "failed": " ".join(failed), "cost_usd": round(usd, 5)})
+        incomplete_check = not screenings or any(
+            not any(r.stage == "check" and r.status == "done" for r in s.stages) for s in screenings
+        )
+        rows.append(asdict(score) | {
+            "media": len(screenings), "failed": " ".join(failed), "incomplete_check": incomplete_check,
+            "cost_usd": round(usd, 5),
+        })
         print(f"{score.item_id} ({score.label}): {score.caught} of {score.claims} caught, {score.flags} flags"
               + (f", FAILED {' '.join(failed)}" if failed else ""), flush=True)  # fmt: skip
     (RESULTS / "runs").mkdir(parents=True, exist_ok=True)
@@ -125,9 +131,9 @@ def main() -> None:
         writer = csv.DictWriter(f, fieldnames=list(rows[0]))
         writer.writeheader()
         writer.writerows(rows)
-    if any(r["failed"] for r in rows):
+    if any(r["failed"] or r["incomplete_check"] for r in rows):
         # a failed stage would be scored as a miss or as a clean ad; rerun, and cached stages cost nothing
-        raise SystemExit(f"{run_id}: stages failed, so the run is not registered")
+        raise SystemExit(f"{run_id}: stages failed or checks did not finish, so the run is not registered")
 
     screenings = [s for _, ss, _ in done for s in ss]
     run_metrics = [

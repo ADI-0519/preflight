@@ -1,0 +1,12 @@
+description: Offline tooling smoke test; not screening quality or model accuracy
+prompts:
+  - '{{text}}'
+providers:
+  - file://identity.cjs
+tests:
+  - vars:
+      text: Synthetic tooling smoke test
+    assert:
+      - type: equals
+        value: Synthetic tooling smoke test
+writeLatestResults: false

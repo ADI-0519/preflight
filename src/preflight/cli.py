@@ -64,7 +64,8 @@ def main(argv: list[str] | None = None) -> int:
     print(screening.headline)
     print(json_path)
     print(html_path)
-    return 1 if any(r.status == "failed" for r in screening.stages) else 0
+    checked = any(r.stage == "check" and r.status == "done" for r in screening.stages)
+    return 1 if not checked or any(r.status == "failed" for r in screening.stages) else 0
 
 
 def run_fix(args, precedents) -> int:

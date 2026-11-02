@@ -49,10 +49,11 @@ def run(*cmd: str, cwd: Path | None = None) -> str:
     return done.stdout
 
 
-def probe(path: Path) -> dict:
+def probe(path: Path, *, input_options: tuple[str, ...] = ()) -> dict:
     try:
         info = json.loads(
-            run("ffprobe", "-v", "error", "-print_format", "json", "-show_format", "-show_streams", str(path))
+            run("ffprobe", "-v", "error", *input_options,
+                "-print_format", "json", "-show_format", "-show_streams", str(path))
         )
     except RuntimeError as err:
         raise ValueError(f"{path.name} is not a readable media file") from err

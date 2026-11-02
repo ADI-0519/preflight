@@ -73,17 +73,31 @@ def evidence_by_id(segments: list[Segment], texts: list[OnScreenText], tracks: l
 
 
 def parse(answer: dict, evidence: dict[str, Evidence]) -> list[Claim]:
-    merged: dict[tuple, dict] = {}
+    prepared = []
+    substances: dict[tuple, dict[str, str]] = {}
     for item in answer["claims"]:
         text = item["text"].strip()
         if not text:
             raise ValueError("claim extraction returned a claim with no text")
         substance = (item["substance"] or "").strip() or None
-        # a claim the model gives twice is one claim with both sets of evidence
         key = (" ".join(re.findall(r"\w+", text.casefold())), item["kind"])
-        entry = merged.setdefault(key, {"text": text, "substance": substance, "ids": []})
-        entry["substance"] = entry["substance"] or substance
-        entry["ids"] += [i for i in item["evidence"] if i not in entry["ids"]]
+        named = substances.setdefault(key, {})
+        if substance:
+            named.setdefault(" ".join(substance.casefold().split()), substance)
+        prepared.append((key, text, substance, item["evidence"]))
+
+    merged: dict[tuple, dict] = {}
+    for key, text, substance, ids in prepared:
+        named = substances[key]
+        name = " ".join(substance.casefold().split()) if substance else None
+        # Enrich a missing substance only when all repeats agree. Different
+        # substances, and an ambiguous unnamed claim, retain their own evidence.
+        if name is None and len(named) == 1:
+            name = next(iter(named))
+        entry = merged.setdefault(
+            (*key, name), {"text": text, "substance": named[name] if name is not None else None, "ids": []},
+        )
+        entry["ids"] += [i for i in ids if i not in entry["ids"]]
     return [
         Claim(
             claim_id=f"claim-{n}",
@@ -93,7 +107,7 @@ def parse(answer: dict, evidence: dict[str, Evidence]) -> list[Claim]:
             # a claim citing no evidence fails validation here
             evidence=tuple(evidence[i] for i in entry["ids"]),
         )
-        for n, ((_, kind), entry) in enumerate(merged.items())
+        for n, ((_, kind, _substance), entry) in enumerate(merged.items())
     ]
 
 

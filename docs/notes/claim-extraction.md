@@ -46,6 +46,19 @@ Prompts are written from the CAP rule pack and the labelling rule in `docs/plan.
 
 Tuning stopped at v3. Of its 41 misses at high effort, 13 are product and range names or contain one. Eight are short energy and focus claims in two ads that repeat such claims many times, where the model gives some forms and not others. The rest are single cases that a general instruction would not reach without fitting individual dev ads.
 
+## Parser integration review (1 November)
+
+Duplicate claims are merged by normalized wording, claim kind and substance. Substance
+comparison ignores capitalization and repeated whitespace; it does not infer chemical
+aliases. Identical wording about different substances keeps separate evidence and
+claim IDs. A repeat with no substance joins the named claim only when exactly one
+substance appears across those repeats; otherwise it remains a separate unnamed
+claim. This avoids silently assigning evidence to whichever substance arrived first.
+
+This parser correction was verified on synthetic regressions after the historical
+registered runs above. Their measured figures have not been recomputed and must not
+be presented as measurements of the corrected integration.
+
 ## Caveats
 
 - These are reconstructions rebuilt on 1 Nov with the same builder (`docs/notes/reconstructions.md`), not the set the founders' spot-check covers. Real ads have faster cuts, smaller print and real voices.

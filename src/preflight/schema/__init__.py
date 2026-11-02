@@ -245,6 +245,9 @@ class Screening(_Record):
         if failed:
             so_far = f"{found} so far, against {sources}." if found else "No result is given."
             return f"Incomplete: {', '.join(failed)} failed. {so_far}"
+        if not any(r.stage == "check" and r.status == "done" for r in self.stages):
+            so_far = f"{found} so far, against {sources}." if found else "No result is given."
+            return f"Incomplete: check did not finish. {so_far}"
         if found:
             return f"{found}, checked against {sources}."
         # rule 1: the clean result names every dated source it was checked against
@@ -298,7 +301,7 @@ def _unique(name: str, ids: list[str]) -> set[str]:
 
 
 @cache
-def _register(version: str) -> dict[str, RegisterEntry]:
+def register_entries(version: str) -> dict[str, RegisterEntry]:
     return {e.register_id: e for e in load_register(version)}
 
 
@@ -320,7 +323,7 @@ def _rulings(version: str) -> dict[str, date]:
 # rules 2 and 3: run on every screening the checker returns or the API accepts
 def verify_sources(screening: Screening) -> None:
     s = screening.snapshots
-    register, on_hold, cap_rules = _register(s.gb_register), _on_hold_ids(s.on_hold), _cap_rules(s.cap_rules)
+    register, on_hold, cap_rules = register_entries(s.gb_register), _on_hold_ids(s.on_hold), _cap_rules(s.cap_rules)
     rulings = _rulings(s.rulings)
     for flag in screening.flags:
         for ref in flag.sources:

@@ -1,5 +1,6 @@
 import logging
 from dataclasses import replace
+from datetime import UTC, datetime
 from html import escape
 
 import pytest
@@ -9,7 +10,7 @@ from preflight import cli, pipeline
 from preflight.eval import claim_recall
 from preflight.models import SparkResult
 from preflight.pipeline import SNAPSHOTS, screen
-from preflight.schema import NOTICE, Screening, verify_sources
+from preflight.schema import NOTICE, Screening, StageRun, verify_sources
 
 SECRET = "secret ad text"
 
@@ -114,3 +115,19 @@ def test_claim_recall_raises_on_a_failed_stage(monkeypatch, models, clip):  # no
     broken = replace(models, sam=BrokenSam())
     with pytest.raises(RuntimeError, match="regions failed"):
         claim_recall.screen(CLIP, broken, "run", Router(models.spark, CitingFirst(), "claims"))
+
+
+def test_cli_returns_incomplete_when_no_evidence_can_be_checked(tmp_path, monkeypatch, models, clip):  # noqa: F811
+    # A valid still may have no detected text or regions; that is not a completed check.
+    skipped = Screening(
+        screening_id="no-evidence", ad=clip.ad, snapshots=SNAPSHOTS,
+        screened_at=datetime.now(UTC),
+        stages=(StageRun(stage="claims", status="skipped"), StageRun(stage="check", status="skipped")),
+    )
+    monkeypatch.setattr(pipeline, "ingest", lambda path: clip)
+    monkeypatch.setattr(pipeline, "screen", lambda *args, **kwargs: skipped)
+    monkeypatch.setattr(cli, "from_env", lambda: models)
+    monkeypatch.setattr(cli, "load_precedents", lambda version: NoPrecedents())
+    assert cli.main(["screen", str(CLIP), "--out", str(tmp_path / "out"), "--no-align"]) == 1
+    saved = Screening.model_validate_json((tmp_path / "out" / "no-evidence.json").read_text(encoding="utf-8"))
+    assert saved.headline.startswith("Incomplete")

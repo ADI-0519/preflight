@@ -4,14 +4,59 @@ on:
   push:
   pull_request:
 
+permissions:
+  contents: read
+
 jobs:
   check:
+    name: Lint, tests and agent setup
     runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v6
+      - name: Install FFmpeg
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends ffmpeg
+      - name: Install locked dependencies
+        run: uv sync --locked --extra page --extra api --extra mcp
+      - name: Install Chromium
+        run: uv run playwright install --with-deps chromium
+      - name: Check agent setup
+        run: uv run python scripts/verify_agent_setup.py
+      - name: Lint
+        run: uv run ruff check
+      - name: Run offline tests
+        run: uv run pytest -m 'not live'
+
+  web:
+    name: Web types, build and browser workflow
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v6
-      - run: sudo apt-get update && sudo apt-get install -y --no-install-recommends ffmpeg
-      - run: uv sync --locked --extra page
-      - run: uv run playwright install --with-deps chromium
-      - run: uv run ruff check
-      - run: uv run pytest -m 'not live'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - name: Install FFmpeg
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends ffmpeg
+      - name: Install locked Python dependencies
+        run: uv sync --locked --extra api
+      - name: Install locked web dependencies
+        run: npm ci --prefix web
+      - name: Check types and build
+        run: npm --prefix web run build
+      - name: Check web formatting
+        run: npm --prefix web run format:check
+      - name: Check generated types
+        run: git diff --exit-code -- web/src/screening.d.ts
+      - name: Test review guards
+        run: npm --prefix web test
+      - name: Install Chromium
+        run: npm --prefix web run install:browser
+      - name: Test real HTTP browser workflow with network-blocked recordings
+        run: npm --prefix web run test:browser

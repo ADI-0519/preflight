@@ -2,6 +2,7 @@ import base64
 import hashlib
 import json
 import os
+import threading
 import time
 from collections.abc import Callable
 from pathlib import Path
@@ -60,7 +61,8 @@ class Store:
         response = call()
         check_model(str(response.get("model", model)))
         path.parent.mkdir(parents=True, exist_ok=True)
-        tmp = path.with_name(f"{path.name}.{os.getpid()}.tmp")
+        # API jobs share a process, so two threads can write the same key at once
+        tmp = path.with_name(f"{path.name}.{os.getpid()}.{threading.get_ident()}.tmp")
         # rule 6: the request holds ad text, so only the key and the response are kept
         tmp.write_text(json.dumps({"key": key, "response": response}), encoding="utf-8")
         tmp.replace(path)

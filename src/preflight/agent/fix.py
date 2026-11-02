@@ -71,7 +71,9 @@ def new_fix_id(draft: Draft) -> str:
 
 def is_clean(screening: Screening) -> bool:
     # rules 1 and 3: a screening with a failed stage is incomplete, never clean
-    return not screening.flags and all(r.status != "failed" for r in screening.stages)
+    return not screening.flags and all(r.status != "failed" for r in screening.stages) and any(
+        r.stage == "check" and r.status == "done" for r in screening.stages
+    )
 
 
 def tokens(text: str) -> set[str]:

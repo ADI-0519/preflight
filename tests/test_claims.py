@@ -78,6 +78,43 @@ def test_a_repeated_claim_is_merged_with_all_its_evidence(tmp_path):
     assert [e.kind for e in claims[0].evidence] == ["on_screen", "transcript"]
 
 
+@pytest.mark.parametrize("substances", [("magnesium", "vitamin C"), ("vitamin C", "magnesium")])
+def test_identical_wording_for_different_substances_keeps_its_own_evidence(substances):
+    evidence = {f"s-{n}": TranscriptEvidence(segment_id=f"s-{n}") for n in range(2)}
+    found = parse({"claims": [
+        claim("Supports normal function", [f"s-{n}"], substance=substance)
+        for n, substance in enumerate(substances)
+    ]}, evidence)
+    assert [(c.substance, c.evidence) for c in found] == [
+        (substance, (evidence[f"s-{n}"],)) for n, substance in enumerate(substances)
+    ]
+
+
+@pytest.mark.parametrize("substances", [
+    (None, "magnesium", "vitamin C"), ("magnesium", None, "vitamin C"), ("magnesium", "vitamin C", None),
+])
+def test_ambiguous_substance_is_not_assigned_to_either_named_product(substances):
+    evidence = {f"s-{n}": TranscriptEvidence(segment_id=f"s-{n}") for n in range(3)}
+    found = parse({"claims": [
+        claim("Supports normal function", [f"s-{n}"], substance=substance)
+        for n, substance in enumerate(substances)
+    ]}, evidence)
+    assert [(c.substance, c.evidence) for c in found] == [
+        (substance, (evidence[f"s-{n}"],)) for n, substance in enumerate(substances)
+    ]
+
+
+def test_substance_capitalisation_and_spacing_do_not_duplicate_a_claim():
+    evidence = {f"s-{n}": TranscriptEvidence(segment_id=f"s-{n}") for n in range(2)}
+    found = parse({"claims": [
+        claim("Supports normal function", ["s-0"], substance="Vitamin C"),
+        claim("Supports normal function", ["s-1"], substance=" vitamin   c "),
+    ]}, evidence)
+    assert len(found) == 1
+    assert found[0].substance == "Vitamin C"
+    assert found[0].evidence == tuple(evidence.values())
+
+
 @pytest.mark.parametrize("bad", [claim("Feel calmer", []), claim("  ", ["segment-0"])])
 def test_malformed_claims_raise(tmp_path, bad):
     with pytest.raises((ValidationError, ValueError)):

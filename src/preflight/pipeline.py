@@ -1,6 +1,6 @@
 import logging
 from collections.abc import Callable
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Literal
@@ -42,6 +42,7 @@ def gather(
     done: Ingested, models: Models, screening_id: str, *, spark: Spark | None = None,
     align: Literal["mms"] | None = "mms", prompt: str = extraction.PROMPT_VERSION, effort: str = extraction.EFFORT,
     second_pass: bool = False,
+    on_stage: Callable[[StageRun], None] | None = None,
 ) -> Screening:
     with ThreadPoolExecutor(max_workers=3) as pool:
         heard = pool.submit(
@@ -51,6 +52,9 @@ def gather(
             attempt, "on_screen", SPARK, on_screen.PROMPT_VERSION, [], lambda: read_on_screen(done, models.spark)
         )
         found = pool.submit(attempt, "regions", SAM, regions.PROMPT_VERSION, [], lambda: find_regions(done, models.sam))
+        if on_stage:
+            for future in as_completed((heard, read, found)):
+                on_stage(future.result()[1])
         (segments, heard_run), (texts, read_run), (tracks, found_run) = heard.result(), read.result(), found.result()
     texts = snap(texts, tracks)
     claims, claims_run = attempt(
@@ -59,6 +63,8 @@ def gather(
             done, spark or models.spark, segments, texts, tracks, prompt=prompt, effort=effort, second_pass=second_pass
         ),
     )
+    if on_stage:
+        on_stage(claims_run)
     # the schema checks every claim's evidence against the screening's segments, texts and tracks
     return Screening(
         screening_id=screening_id, ad=done.ad, snapshots=SNAPSHOTS,
@@ -69,15 +75,19 @@ def gather(
 
 def screen(
     done: Ingested, models: Models, precedents: PrecedentIndex, screening_id: str | None = None, *,
-    judge_prompt: str = judge.PROMPT_VERSION, judge_effort: str = judge.EFFORT, **config,
+    judge_prompt: str = judge.PROMPT_VERSION, judge_effort: str = judge.EFFORT,
+    on_stage: Callable[[StageRun], None] | None = None, **config,
 ) -> Screening:
-    gathered = gather(done, models, screening_id or default_id(done), **config)
+    gathered = gather(done, models, screening_id or default_id(done), on_stage=on_stage, **config)
     try:
-        return check(gathered, models.spark, precedents, prompt=judge_prompt, effort=judge_effort)
+        checked = check(gathered, models.spark, precedents, prompt=judge_prompt, effort=judge_effort)
     except Exception as e:
         log.warning("stage check failed: %s", type(e).__name__)
         failed = StageRun(stage="check", status="failed", model=SPARK, prompt=judge_prompt, effort=judge_effort)
-        return gathered.model_copy(update={"stages": (*gathered.stages, failed)})
+        checked = gathered.model_copy(update={"stages": (*gathered.stages, failed)})
+    if on_stage:
+        on_stage(checked.stages[-1])
+    return checked
 
 
 def screen_target(

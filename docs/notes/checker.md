@@ -2,6 +2,8 @@
 
 Measured 1 Nov 2026 on dev split v1. Every number below comes from a run registered in `results/runs.csv`; per-item rows are in `results/runs/<run_id>.csv`.
 
+**Since these runs (1 Nov):** judge answers are validated when parsed, including cached ones, and a `no_issue` verdict citing sources is an error. A claim that names a substance keeps only the register and on-hold citations, and the suggested wording, shortlisted for that substance; one naming none may cite any entry shortlisted for the ad. A citation or suggestion that fails this is dropped and the flag kept. The numbers below predate this and need a fresh dev run (`docs/notes/decisions.md`, 1 Nov, P27).
+
 ## What the stage does
 
 `preflight.check.check(screening, spark, precedents)` takes a screening with claims and returns it with flags and a `check` stage record. It makes one Muse Spark call per ad (Standard mode, strict JSON schema, text only) and runs `verify_sources` on the result before returning it.

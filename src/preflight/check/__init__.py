@@ -1,5 +1,8 @@
 from collections import Counter
 from functools import cache
+from typing import Literal
+
+from pydantic import BaseModel, ConfigDict, Field
 
 from preflight.check.precedents import PrecedentIndex
 from preflight.check.shortlist import Shortlist, shortlist
@@ -126,34 +129,76 @@ def question(
     return "\n".join([opening, "", *reference, "", *evidence, "", *claims, "", closing.strip()])
 
 
-def parse(answer: dict, claims: list[Claim], found: Shortlist, rulings: list[Ruling]) -> list[Flag]:
+class _Verdict(BaseModel):
+    model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
+
+    claim_id: str
+    verdict: Literal["possible_breach", "on_hold", "no_issue"]
+    cap_rules: list[str]
+    register_ids: list[str] = Field(default_factory=list)
+    on_hold_ids: list[str] = Field(default_factory=list)
+    ruling_ids: list[str] = Field(default_factory=list)
+    suggested_register_id: str | None = None
+    reason: str = Field(min_length=1)
+
+
+class _Answer(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    verdicts: list[_Verdict]
+
+
+def parse(
+    answer: dict, claims: list[Claim], found: Shortlist, rulings: list[Ruling], rules: list[CapRule],
+) -> list[Flag]:
+    # Cached and replayed responses must obey the same contract as a live answer.
+    parsed = _Answer.model_validate(answer)
     authorised = {e.register_id: e for e in found.register if e.status == "authorised"}
     dates = {r.ruling_id: r.date for r in rulings}
-    judged = [v["claim_id"] for v in answer["verdicts"]]
+    allowed_rules = {r.rule for r in rules}
+    register_ids = {e.register_id for e in found.register}
+    on_hold_ids = {e.on_hold_id for e in found.on_hold}
+    judged = [v.claim_id for v in parsed.verdicts]
     # a claim left unjudged would read as no issue
     if sorted(judged) != sorted(c.claim_id for c in claims):
         raise ValueError(f"judge gave verdicts for {judged}, not one for each of the {len(claims)} claims")
-    verdicts = {v["claim_id"]: v for v in answer["verdicts"]}
+    verdicts = {v.claim_id: v for v in parsed.verdicts}
     flags = []
     for claim in claims:
         v = verdicts[claim.claim_id]
-        if v["verdict"] == "no_issue":
+        if v.verdict == "no_issue":
+            if v.cap_rules or v.register_ids or v.on_hold_ids or v.ruling_ids or v.suggested_register_id:
+                raise ValueError(f"no_issue verdict for {claim.claim_id} contains sources or suggested wording")
             continue
-        sources: list[SourceRef] = [CapRuleRef(rule=r) for r in v["cap_rules"]]
-        sources += [RegisterRef(register_id=i) for i in v.get("register_ids", [])]
-        sources += [OnHoldRef(on_hold_id=i) for i in v.get("on_hold_ids", [])]
-        sources += [RulingRef(ruling_id=i, date=dates[i]) for i in v.get("ruling_ids", [])]
-        suggested = v.get("suggested_register_id")
+        if set(v.cap_rules) - allowed_rules:
+            raise ValueError(f"{claim.claim_id} cites a CAP rule outside the screenable candidates")
+        if set(v.register_ids) - register_ids:
+            raise ValueError(f"{claim.claim_id} cites a register entry outside the shortlist")
+        if set(v.on_hold_ids) - on_hold_ids:
+            raise ValueError(f"{claim.claim_id} cites an on-hold entry outside the shortlist")
+        if set(v.ruling_ids) - dates.keys():
+            raise ValueError(f"{claim.claim_id} cites a ruling outside the retrieved candidates")
+        if v.suggested_register_id and v.suggested_register_id not in authorised:
+            raise ValueError(f"{claim.claim_id} suggests wording outside the authorised shortlist")
+        own = shortlist([claim], found.register, found.on_hold)
+        # a claim naming a substance keeps only that substance's entries; one naming none may cite the ad's
+        own_register = {e.register_id for e in own.register} if own.register or own.on_hold else register_ids
+        own_on_hold = {e.on_hold_id for e in own.on_hold} if own.register or own.on_hold else on_hold_ids
+        sources: list[SourceRef] = [CapRuleRef(rule=r) for r in v.cap_rules]
+        sources += [RegisterRef(register_id=i) for i in v.register_ids if i in own_register]
+        sources += [OnHoldRef(on_hold_id=i) for i in v.on_hold_ids if i in own_on_hold]
+        sources += [RulingRef(ruling_id=i, date=dates[i]) for i in v.ruling_ids]
         # rule 2: section 3 and other non-health claims never get wording
-        health = v["verdict"] == "on_hold" or any(r.startswith("15.") for r in v["cap_rules"])
+        health = v.verdict == "on_hold" or any(r.startswith("15.") for r in v.cap_rules)
+        suggested = v.suggested_register_id if health and v.suggested_register_id in own_register else None
         flags.append(Flag(
             flag_id=f"flag-{len(flags)}",
             claim_id=claim.claim_id,
-            kind=v["verdict"],
-            reason=v["reason"].strip(),
+            kind=v.verdict,
+            reason=v.reason,
             # a breach or on-hold verdict citing nothing fails validation here (rule 3)
             sources=tuple(dict.fromkeys(sources)),
-            suggested_wording=SuggestedWording.from_entry(authorised[suggested]) if health and suggested else None,
+            suggested_wording=SuggestedWording.from_entry(authorised[suggested]) if suggested else None,
         ))
     return flags
 
@@ -175,12 +220,15 @@ def check(
     screening: Screening, spark: Spark, precedents: PrecedentIndex, *, prompt: str = PROMPT_VERSION,
     effort: str = EFFORT, per_claim: bool = True,
 ) -> Screening:
+    if screening.flags or any(r.stage == "check" for r in screening.stages):
+        raise ValueError("screening already contains flags or a check stage")
     s = screening.snapshots
     if precedents.version != s.rulings:
         raise ValueError(f"precedent index {precedents.version} is not the screening's rulings snapshot {s.rulings}")
     claims = list(screening.claims)
     if not claims:
-        run, flags = StageRun(stage="check", status="skipped"), []
+        extracted = any(r.stage == "claims" and r.status == "done" for r in screening.stages)
+        run, flags = StageRun(stage="check", status="done" if extracted else "skipped"), []
     else:
         found = shortlist(claims, _register(s.gb_register), _on_hold(s.on_hold))
         rules = list(_rules(s.cap_rules))
@@ -189,7 +237,7 @@ def check(
             question(screening, found, rules, rulings, prompt, closest), prompt_version=prompt, effort=effort,
             schema=output_schema(claims, found, rules, rulings),
         )
-        flags = parse(r.data, claims, found, rulings)
+        flags = parse(r.data, claims, found, rulings, rules)
         run = StageRun(stage="check", status="done", model=r.model, prompt=prompt, effort=effort)
     checked = screening.model_copy(update={"flags": flags, "stages": (*screening.stages, run)})
     # rules 2 and 3: every reference and suggested wording exists in the snapshots the screening names

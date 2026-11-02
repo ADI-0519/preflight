@@ -2,6 +2,7 @@ import csv
 import io
 import wave
 from datetime import UTC, datetime
+from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
@@ -382,3 +383,20 @@ def test_citation_spread_counts_the_six_most_cited():
     spread = {m.name: m for m in citation_spread([screening("s", ["a claim"], {}).model_copy(update={"flags": flags})])}
     assert spread["precedent_citations_top6"] == Metric("precedent_citations_top6", 27, 28)
     assert spread["precedent_rulings_cited"] == Metric("precedent_rulings_cited", 7, 28)
+
+
+def test_a_candidate_judge_prompt_reaches_the_screen(tmp_path, monkeypatch):
+    asked = {}
+
+    def fake_screen(done, models, precedents, screening_id, **kwargs):
+        asked.update(kwargs)
+        return screening(screening_id, ["Tasty"], {})
+
+    monkeypatch.setattr(run, "WORK", tmp_path)
+    (tmp_path / "screen-1").mkdir()
+    monkeypatch.setattr(run, "media", lambda item_id: [Path("ad.png")])
+    monkeypatch.setattr(run, "ingest", lambda path: None)
+    monkeypatch.setattr(run, "screen", fake_screen)
+    monkeypatch.setattr(run, "metered", lambda models: (models, lambda: 0.0))
+    run.screen_item(truth("T16", []), None, None, "screen-1", None, "judge_v7")
+    assert asked["judge_prompt"] == "judge_v7"

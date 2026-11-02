@@ -15,14 +15,14 @@ from preflight import check as judge
 from preflight.check.precedents import PrecedentIndex, load_precedents
 from preflight.eval.check_reconstructions import carried, lines, words
 from preflight.eval.claim_recall import WORK, Metered, cost, media_of
-from preflight.eval.reconstruct import OUT_DIR, ShotList
+from preflight.eval.reconstruct import IMAGE_EACH, OUT_DIR, ShotList
 from preflight.eval.registry import RESULTS, RUNS, Metric, register, revision, snapshot_text, write_rows
 from preflight.eval.score import ItemScore, metrics, score_item
 from preflight.eval.split import RULING_ID, GroundTruth, load_ground_truth, load_split
 from preflight.eval.team_media import TEAM_DIR
 from preflight.ingest import ingest
 from preflight.models import Models, from_env
-from preflight.models.clients import Sam, SamResult, Turn, VoiceTranscribe
+from preflight.models.clients import Image, Sam, SamResult, Turn, VoiceTranscribe
 from preflight.pipeline import SNAPSHOTS, screen
 from preflight.schema import Screening
 
@@ -54,11 +54,22 @@ class MeteredTranscribe:
         return self.client.transcribe(wav)
 
 
+@dataclass
+class MeteredImage:
+    client: Image
+    usd: list[float] = field(default_factory=list)
+
+    def edit(self, image: bytes, prompt: str) -> bytes:
+        self.usd.append(IMAGE_EACH)
+        return self.client.edit(image, prompt)
+
+
 def metered(models: Models) -> tuple[Models, Callable[[], float]]:
     spark, sam, heard = Metered(models.spark), MeteredSam(models.sam), MeteredTranscribe(models.transcribe)
+    image = MeteredImage(models.image)
     # cached answers are priced as if called, so the figure is what screening the ad costs
-    bill = lambda: sum(map(cost, spark.calls)) + sum(sam.usd) + sum(heard.usd)  # noqa: E731
-    return Models(spark, heard, sam, models.image, models.glimmer), bill
+    bill = lambda: sum(map(cost, spark.calls)) + sum(sam.usd) + sum(heard.usd) + sum(image.usd)  # noqa: E731
+    return Models(spark, heard, sam, image, models.glimmer), bill
 
 
 def media(item_id: str) -> list[Path]:

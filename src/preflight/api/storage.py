@@ -30,6 +30,15 @@ class Settings:
     sweep_seconds: float = 30
     workers: int = 2
     max_pending: int = 16
+    # public mode (P67, preflight.api.public): per client IP per hour, one fix round, smaller media, a daily cap
+    public: bool = False
+    public_uploads_per_hour: int = 10
+    public_screenings_per_hour: int = 3
+    public_fixes_per_hour: int = 1
+    public_fix_rounds: int = 1
+    public_max_upload_bytes: int = 25 * 1024 * 1024
+    public_max_seconds: float = 60
+    daily_cap_usd: float = 40.0
 
     def __post_init__(self):
         for value in (self.retention_seconds, self.job_grace_seconds, self.sweep_seconds):
@@ -37,6 +46,11 @@ class Settings:
                 raise ValueError("retention and sweep periods must be positive and finite")
         if min(self.max_upload_bytes, self.max_json_bytes, self.workers, self.max_pending) < 1:
             raise ValueError("storage and concurrency limits must be positive")
+        public = (self.public_uploads_per_hour, self.public_screenings_per_hour, self.public_fixes_per_hour,
+                  self.public_fix_rounds, self.public_max_upload_bytes, self.public_max_seconds,
+                  self.daily_cap_usd)  # fmt: skip
+        if not all(math.isfinite(v) and v > 0 for v in public):
+            raise ValueError("public mode limits must be positive")
 
 
 def write_json(path: Path, fields: dict) -> None:

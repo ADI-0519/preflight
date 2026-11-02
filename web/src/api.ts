@@ -129,16 +129,33 @@ export interface Config {
   verification_label: string | null;
   retention_seconds: number;
   max_upload_bytes: number;
+  max_seconds: number;
+  public_mode: 'off' | 'on' | 'replay';
+  upload_notice: string;
+  uploads_closed: 'uploads_paused' | 'daily_cap_reached' | null;
   scoreboard: Scoreboard;
 }
 
 export const NOTICE =
   'PreFlight screens ads against the dated sources named in this report. It is not legal advice, and it does not decide whether an ad may run: a person makes that call.';
 
+export const PUBLIC_ERRORS: Record<string, string> = {
+  rate_limited:
+    'This workspace allows a few uploads, screenings and fixes an hour. Try again later.',
+  daily_cap_reached: 'Uploads are closed for today. The labelled demos still run.',
+  uploads_paused: 'Uploads are paused. The labelled demos still run.',
+  media_too_long: 'The video is too long. Choose a shorter one.',
+};
+
 export async function request<T>(url: string, init?: RequestInit): Promise<T> {
   const response = await fetch(url, { ...init, cache: 'no-store' });
   if (!response.ok) {
     const code = response.status;
+    const error = await response
+      .json()
+      .then((body: { error?: string }) => body.error)
+      .catch(() => undefined);
+    if (error && error in PUBLIC_ERRORS) throw new Error(PUBLIC_ERRORS[error]);
     if (code === 404 || code === 410)
       throw new Error(
         'This item is unavailable or its retention period has ended. Upload it again.',

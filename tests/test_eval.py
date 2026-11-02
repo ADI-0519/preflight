@@ -10,7 +10,7 @@ import pytest
 from preflight.eval import check_recall, registry, run, score
 from preflight.eval.reconstruct import LABEL, overlay_filter
 from preflight.eval.registry import Metric, register, revision
-from preflight.eval.run import MeteredSam, MeteredTranscribe, citation_spread
+from preflight.eval.run import MeteredImage, MeteredSam, MeteredTranscribe, citation_spread
 from preflight.eval.score import exact, interval, metrics, near_miss, score_item
 from preflight.eval.split import BreachingClaim, GroundTruth, TeamAd
 from preflight.eval.team_media import LABEL as TEAM_LABEL
@@ -400,7 +400,7 @@ class FakeTranscribe:
         return []
 
 
-def test_meters_price_sam_frames_and_transcribed_audio():
+def test_meters_price_sam_frames_transcribed_audio_and_image_edits():
     sam = MeteredSam(FakeSam())
     sam.segment("label", video="clip.mp4")
     sam.segment("label", image=b"png")
@@ -415,6 +415,8 @@ def test_meters_price_sam_frames_and_transcribed_audio():
     heard = MeteredTranscribe(FakeTranscribe())
     heard.transcribe(buffer.getvalue())
     assert heard.usd == pytest.approx([36 / 3600 * 0.18])
+    image = MeteredImage(SimpleNamespace(edit=lambda image, prompt: image))
+    assert image.edit(b"png", "replace the claim") == b"png" and image.usd == [0.01]
 
 
 def test_citation_spread_counts_the_six_most_cited():

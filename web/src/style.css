@@ -750,6 +750,15 @@ h1 {
   gap: 16px;
   font-size: 16px;
 }
+
+.upload-notice {
+  max-width: 52ch;
+  margin: 0;
+  padding: 0 16px;
+  text-align: center;
+  font-size: 14px;
+  color: var(--label);
+}
 .file-button {
   position: relative;
   display: inline-flex;

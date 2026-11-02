@@ -299,7 +299,7 @@ def read_log(log: Path) -> list[dict]:
     return [json.loads(line) for line in log.read_text(encoding="utf-8").splitlines() if line]
 
 
-def approve(log: Path, by: str, note: str = "") -> dict:
+def approve(log: Path, by: str, note: str = "", public_demo: bool = False) -> dict:
     # rule 4: the only place an ad is marked approved, and it records who did it
     if not by.strip():
         raise ValueError("an approval names the person who approved")
@@ -311,5 +311,8 @@ def approve(log: Path, by: str, note: str = "") -> dict:
     record = {
         "event": "approved", "by": by.strip(), "at": now(), "screening_id": records[-1]["screening_id"], "note": note,
     }
+    if public_demo:
+        # an approval given in the public workspace by an unidentified visitor: a demonstration of the step only
+        record["public_demo"] = True
     append(log, record)
     return record

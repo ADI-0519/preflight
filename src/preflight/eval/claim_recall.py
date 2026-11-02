@@ -68,6 +68,8 @@ def main() -> None:
     config = {"prompt": args.prompt, "effort": args.effort, "second_pass": args.second_pass}
     dev = [i for i in load_split("v1").dev if not args.only or i in args.only]
     items = [i for i in dev if load_ground_truth("v1", i).label == "positive"]
+    if not items:
+        raise SystemExit("no dev positive among the items asked for")
     sha = revision(PART)
     created = datetime.now(UTC)
     run_id = f"claims-{created:%Y%m%dT%H%M%S}"

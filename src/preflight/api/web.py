@@ -272,13 +272,14 @@ def install_web(app, service, *, web_root: Path, demo_root: Path, results_root: 
     @app.get("/ui/fixes/{job_id}/rounds/{number}/media")
     def round_media(job_id: str, number: int, request: Request):
         with storage.lock:
-            found = next((r for r in rounds(job_id) if r["round"] == number), None)
-            if found is None:
-                raise APIError(404, "round_not_available")
+            service.fix_result(job_id)
             directory = storage.job_dir(storage.job(job_id))
-            suffix = "mp4" if found["format"] == "video" else "png"
-            path = inside(directory, f'renders/{found["screening"]["screening_id"]}/draft.{suffix}')
-            return media_response(path, request)
+            record = next((r for r in read_log(directory / "audit.jsonl")
+                           if r["event"] == "round" and r["round"] == number), None)
+            if record is None:
+                raise APIError(404, "round_not_available")
+            suffix = "mp4" if record["draft"]["format"] == "video" else "png"
+            return media_response(inside(directory, f'renders/{record["screening_id"]}/draft.{suffix}'), request)
 
     @app.get("/ui/demos")
     def demo_items():

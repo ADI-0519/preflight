@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from functools import cache
 from typing import NamedTuple
 
+from preflight.check import voters
 from preflight.eval.check_reconstructions import carried, words
 from preflight.eval.registry import Metric
 from preflight.eval.split import BreachingClaim, GroundTruth, TeamAd, load_near_miss
@@ -67,6 +68,7 @@ class Caught(NamedTuple):
     rules_found: int  # ... of which cited on a flag matching that claim
     by_chance: list[float]  # chance that the flags matching the claim would cite one of its rules if picked at random
     weighted: list[float]  # best share of a matching flag's rules that belong to the claims it carries
+    votes: list[tuple[bool | None, bool]]  # each flag: unanimous or split when voted, and whether it matches a claim
 
 
 @cache
@@ -84,11 +86,15 @@ def _chance(k: int, claim_rules: list[str], pack: tuple[str, ...]) -> float:
 
 def caught(truth: list[BreachingClaim], screenings: list[Screening], item_id: str = "") -> Caught:
     rules: dict[tuple[str, str], list[str]] = {}
+    votes: dict[tuple[str, str], bool | None] = {}
     for s in screenings:
         for f in s.flags:
             rules.setdefault((s.screening_id, f.claim_id), []).extend(r.rule for r in f.sources if r.kind == "cap_rule")
-    flagged = [(words(c.text), rules[s.screening_id, c.claim_id]) for s in screenings for c in s.claims
-               if (s.screening_id, c.claim_id) in rules]  # fmt: skip
+            votes[s.screening_id, f.claim_id] = None if f.votes is None else f.votes == voters(s)
+    keys = [(s.screening_id, c.claim_id, c.text) for s in screenings for c in s.claims
+            if (s.screening_id, c.claim_id) in rules]  # fmt: skip
+    flagged = [(words(text), rules[s, c]) for s, c, text in keys]
+    voted = [votes[s, c] for s, c, _ in keys]
     wanted = [current(t.rules, item_id) for t in truth]
     # the ground-truth claims each flag matches: one extracted phrase can carry two claims with different rules
     matched = [[i for i, t in enumerate(truth) if matches(t.claim, said, tight=True)] for said, _ in flagged]
@@ -131,6 +137,10 @@ def caught(truth: list[BreachingClaim], screenings: list[Screening], item_id: st
         rules_found=sum(found(g, h) for h, w in zip(hits, wanted, strict=True) if h for g in w),
         by_chance=[by_chance(h, w) for h, w in zip(hits, wanted, strict=True)],
         weighted=[weighted(h, w) for h, w in zip(hits, wanted, strict=True)],
+        votes=[
+            (v, any(fits(r, wanted[i]) for i in m for r in flagged[k][1]))
+            for k, (v, m) in enumerate(zip(voted, matched, strict=True))
+        ],
     )
 
 
@@ -200,6 +210,10 @@ class ItemScore:
     clean_lines_flagged: int = 0
     wording_eligible: bool = False
     wording_suggested: bool = False
+    unanimous_flags: int = 0  # flags every answering judge sample gave
+    unanimous_matched: int = 0  # ... that match a ground-truth claim and cite one of its rules
+    split_flags: int = 0  # flags some answering sample did not give
+    split_matched: int = 0
 
 
 def line_counts(truth: list[BreachingClaim], screenings: list[Screening], item_id: str = "") -> tuple[int, int]:
@@ -251,6 +265,10 @@ def score_item(truth: GroundTruth, screenings: list[Screening], kept: list[bool]
         clean_lines_flagged=n.clean_lines_flagged if n else 0,
         wording_eligible=bool(n and n.eligible),
         wording_suggested=bool(n and n.eligible and n.wording),
+        unanimous_flags=sum(v is True for v, _ in c.votes),
+        unanimous_matched=sum(v is True and hit for v, hit in c.votes),
+        split_flags=sum(v is False for v, _ in c.votes),
+        split_matched=sum(v is False and hit for v, hit in c.votes),
     )
 
 
@@ -327,6 +345,14 @@ def metrics(items: list[ItemScore]) -> list[Metric]:
             Metric("flagged_lines_per_positive_ad", sum(i.lines for i in positives), len(positives)),
             Metric("unmatched_lines_per_positive_ad", sum(i.unmatched_lines for i in positives), len(positives)),
         ]
+        if any(i.unanimous_flags or i.split_flags for i in positives):
+            # for the P66 gate, flags all samples agree on should match the ASA's claims more often than split ones
+            out += [
+                metric(
+                    "unanimous_flags_matched", positives, lambda i: i.unanimous_matched, lambda i: i.unanimous_flags
+                ),
+                metric("split_flags_matched", positives, lambda i: i.split_matched, lambda i: i.split_flags),
+            ]
     near = [i for i in positives if i.near_miss]
     if near:
         # a compliant team ad with one breaching line put in (P65)

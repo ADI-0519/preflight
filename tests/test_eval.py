@@ -446,3 +446,28 @@ def test_a_candidate_judge_prompt_reaches_the_screen(tmp_path, monkeypatch):
     monkeypatch.setattr(run, "metered", lambda models: (models, lambda: 0.0))
     run.screen_item(truth("T16", []), None, None, "screen-1", None, "judge_v7")
     assert asked["judge_prompt"] == "judge_v7"
+
+
+def voted(s: Screening, votes: dict[int, int]) -> Screening:
+    return s.model_copy(update={"flags": [f.model_copy(update={"votes": votes[n]}) for n, f in enumerate(s.flags)]})
+
+
+def test_unanimous_and_split_flags_are_scored_apart():
+    s = screening("s1", ["Cures anxiety fast", "Doctor recommended", "Tasty"], {0: ["15.6"], 1: ["12.1"], 2: ["15.1"]})
+    item = score_item(truth("A1", [("cures anxiety fast", ["15.6.2"]), ("doctor recommended", ["12.1"])]),
+                      [voted(s, {0: 3, 1: 2, 2: 2})])  # fmt: skip
+    found = {m.name: m for m in metrics([item])}
+    assert (found["unanimous_flags_matched"].hits, found["unanimous_flags_matched"].total) == (1, 1)
+    assert (found["split_flags_matched"].hits, found["split_flags_matched"].total) == (1, 2)
+
+
+def test_a_single_sample_run_registers_no_vote_metrics():
+    assert "unanimous_flags_matched" not in by_name()
+
+
+def test_a_flag_every_answering_sample_gave_is_unanimous():
+    s = voted(screening("s1", ["Cures anxiety fast"], {0: ["15.6"]}), {0: 2})
+    s = s.model_copy(update={"stages": (StageRun(stage="check", status="done", samples=2),)})
+    item = score_item(truth("A1", [("cures anxiety fast", ["15.6.2"])]), [s])
+    assert (item.unanimous_flags, item.split_flags) == (1, 0)
+

@@ -10,7 +10,11 @@ from preflight.eval.split import ROOT, RULING_ID, Split, TeamAd, load_split, loa
 
 TEAM_DIR = ROOT / "data" / "raw" / "team"
 LABEL = "Team-written test ad"
-STILL = "A plain unbranded {product} pack on a simple tabletop, soft daylight, studio product shot"
+# the image model draws "iron and vitamin C tablets" as two products unless told the pack holds one
+STILL = (
+    "A single plain unbranded pack of {product}, every unit identical, one product only, on a simple tabletop, "
+    "soft daylight, studio product shot"
+)
 
 
 def build_team(ad: TeamAd, builder: Builder, out_dir: Path = TEAM_DIR) -> Path:

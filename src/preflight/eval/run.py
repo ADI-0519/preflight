@@ -138,7 +138,8 @@ def main() -> None:
     if missing:
         raise SystemExit(f"no rendered media for {', '.join(missing)}; build reconstructions and team ads first")
     truths = [load_ground_truth(args.split, i) for i in items]
-    precedents = load_precedents(SNAPSHOTS.rulings, args.split)
+    # each item gets its own index, so an item's ruling never stands as its own precedent
+    precedents = {t.item_id: load_precedents(SNAPSHOTS.rulings, args.split, t.item_id) for t in truths}
     models = from_env()
     created = datetime.now(UTC)
     run_id = f"screen-{created:%Y%m%dT%H%M%S}"
@@ -146,7 +147,7 @@ def main() -> None:
     began = time.monotonic()
     align = None if args.no_align else "mms"
     with ThreadPoolExecutor(max_workers=WORKERS) as pool:
-        done = list(pool.map(lambda t: screen_item(t, models, precedents, run_id, align), truths))
+        done = list(pool.map(lambda t: screen_item(t, models, precedents[t.item_id], run_id, align), truths))
     seconds = time.monotonic() - began
 
     rows = []

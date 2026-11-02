@@ -10,7 +10,7 @@
   base: T27
   line: Vitamin K2 helps prevent osteoporosis as you get older.
   substance: Vitamin K
-  rules: ["15.6", "15.6.2"]
+  rules: ["12.1", "15.1.1", "15.6", "15.6.2", "15.7"]
   written_by: assistant
 - item_id: N13
   base: T28
@@ -34,7 +34,7 @@
   base: T31
   line: EPA and DHA protect you against heart disease.
   substance: Eicosapentaenoic acid and docosahexaenoic acid (EPA/DHA)
-  rules: ["15.6", "15.6.2"]
+  rules: ["12.1", "15.1.1", "15.6", "15.6.2", "15.7"]
   written_by: assistant
 - item_id: N17
   base: T32
@@ -46,7 +46,7 @@
   base: T33
   line: Iodine helps prevent thyroid disease.
   substance: Iodine
-  rules: ["15.6", "15.6.2"]
+  rules: ["12.1", "15.1.1", "15.6", "15.6.2", "15.7"]
   written_by: assistant
 - item_id: N19
   base: T34

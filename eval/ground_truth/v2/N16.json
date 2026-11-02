@@ -7,8 +7,11 @@
     {
       "claim": "EPA and DHA protect you against heart disease.",
       "rules": [
+        "12.1",
+        "15.1.1",
         "15.6",
-        "15.6.2"
+        "15.6.2",
+        "15.7"
       ],
       "points": []
     }

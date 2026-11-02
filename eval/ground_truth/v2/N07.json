@@ -1,0 +1,18 @@
+{
+  "item_id": "N07",
+  "kind": "team",
+  "label": "positive",
+  "outcome": null,
+  "claims": [
+    {
+      "claim": "Calcium and vitamin D prevent osteoporosis",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "points": []
+    }
+  ],
+  "written_by": "Neesay: breach line in compliant team ad T22",
+  "checked_by": null
+}

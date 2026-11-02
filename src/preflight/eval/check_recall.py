@@ -1,7 +1,6 @@
 import argparse
 import hashlib
 import json
-import re
 from concurrent.futures import ThreadPoolExecutor
 from datetime import UTC, datetime
 
@@ -9,8 +8,8 @@ from preflight.check import EFFORT, PROMPT_VERSION, check
 from preflight.check.precedents import load_precedents
 from preflight.eval.claim_recall import PART, WORK, Metered, cost
 from preflight.eval.registry import RESULTS, register, revision, snapshot_text, write_rows
-from preflight.eval.score import caught, exact
-from preflight.eval.split import GroundTruth, load_ground_truth, load_split, load_team_ad
+from preflight.eval.score import caught, exact, near_miss
+from preflight.eval.split import GroundTruth, load_ground_truth, load_near_miss, load_split, load_team_ad
 from preflight.models import from_env
 from preflight.models.clients import SPARK
 from preflight.models.store import Store
@@ -23,8 +22,7 @@ CLAIMS_RUN = "claims-20261101T023641"
 
 def team_screening(item_id: str) -> Screening:
     ad = load_team_ad(item_id)
-    lines = ad.on_screen_text + [s for s in re.split(r"(?<=[.!?])\s+", ad.voiceover.strip()) if s]
-    texts = [OnScreenText(text_id=f"text-{n}", text=t, start=0, end=0) for n, t in enumerate(lines)]
+    texts = [OnScreenText(text_id=f"text-{n}", text=t, start=0, end=0) for n, t in enumerate(ad.lines)]
     # judge-only: each line of the team ad is taken as a claim, with no extraction stage
     claims = [
         Claim(claim_id=f"claim-{n}", text=t.text, kind="explicit", evidence=(OnScreenEvidence(text_id=t.text_id),))
@@ -48,6 +46,8 @@ def scored(judged: dict[str, list[Screening]], truths: dict[str, GroundTruth]) -
         truth = truths[item_id]
         c = caught(truth.claims, screenings, item_id)
         flags = [f for s in screenings for f in s.flags]
+        ad = load_near_miss(item_id) if truth.kind == "team" else None
+        n = near_miss(ad, truth, screenings) if ad else None
         rows.append(
             {
                 "item_id": item_id,
@@ -65,12 +65,20 @@ def scored(judged: dict[str, list[Screening]], truths: dict[str, GroundTruth]) -
                 "flags": len(flags),
                 "on_hold": sum(f.kind == "on_hold" for f in flags),
                 "suggested": sum(f.suggested_wording is not None for f in flags),
+                "near_miss": n is not None,
+                "near_miss_caught": bool(n and n.caught),
+                "clean_lines": n.clean_lines if n else 0,
+                "clean_lines_flagged": n.clean_lines_flagged if n else 0,
+                "wording_eligible": bool(n and n.eligible),
+                "wording_suggested": bool(n and n.eligible and n.wording),
             }
         )
         print(f"{item_id} ({truth.label}): {sum(c.any_rule)} of {len(truth.claims)} caught, {len(flags)} flags",
               flush=True)  # fmt: skip
     positives = [r for r in rows if r["label"] == "positive"]
     negatives = [r for r in rows if r["label"] == "negative"]
+    near = [r for r in positives if r["near_miss"]]
+    eligible = [r for r in near if r["wording_eligible"]]
 
     def total(group: list[dict], column: str) -> int:
         return sum(r[column] for r in group)
@@ -92,6 +100,10 @@ def scored(judged: dict[str, list[Screening]], truths: dict[str, GroundTruth]) -
         ("flags_per_positive_ad", total(positives, "flags"), len(positives)),
         ads("negative_ads_flagged_judge_only", sum(r["flags"] > 0 for r in negatives), len(negatives)),
         ("flags_per_negative_ad_judge_only", total(negatives, "flags"), len(negatives)),
+        # a compliant team ad with one breaching line put in (P65)
+        ads("near_miss_caught_judge_only", total(near, "near_miss_caught"), len(near)),
+        ("clean_lines_flagged_judge_only", total(near, "clean_lines_flagged"), total(near, "clean_lines")),
+        ads("wording_on_eligible_judge_only", total(eligible, "wording_suggested"), len(eligible)),
     ]
     # a run on negatives alone has no positive to divide by, and a 0 of 0 row says nothing
     return rows, [m for m in found if m[2]]

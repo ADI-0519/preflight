@@ -11,8 +11,8 @@ from preflight.eval import check_recall, registry, run, score
 from preflight.eval.reconstruct import LABEL, overlay_filter
 from preflight.eval.registry import Metric, register, revision
 from preflight.eval.run import MeteredSam, MeteredTranscribe, citation_spread
-from preflight.eval.score import exact, interval, metrics, score_item
-from preflight.eval.split import BreachingClaim, GroundTruth
+from preflight.eval.score import exact, interval, metrics, near_miss, score_item
+from preflight.eval.split import BreachingClaim, GroundTruth, TeamAd
 from preflight.eval.team_media import LABEL as TEAM_LABEL
 from preflight.models.clients import SamResult
 from preflight.schema import (
@@ -26,6 +26,7 @@ from preflight.schema import (
     Screening,
     Snapshots,
     StageRun,
+    SuggestedWording,
 )
 
 SNAPSHOTS = Snapshots(gb_register="2026-05-19", on_hold="2021-01-12", cap_rules="2026-10-31", rulings="2026-11-01")
@@ -143,6 +144,49 @@ def test_leaving_rules_out_costs_rule_recall_but_not_exact_rules():
     )
     assert (item.caught_exact_rules, item.caught_all_rules) == (1, 0)
     assert (item.rules_related, item.rules_cited, item.rules_found, item.rules_wanted) == (1, 1, 1, 2)
+
+
+def test_near_miss_scores_the_inserted_line_and_the_clean_ones():
+    ad = TeamAd(
+        item_id="N99", format="image", product="vitamin C tablets", register_ids=["gbhc-222b3bfc340d"],
+        on_screen_text=["Vitamin C contributes to the normal function of the immune system", "Zesty orange flavour",
+                        "Vitamin C supercharges your immune system"],
+        voiceover="", base="T99", inserted="Vitamin C supercharges your immune system", substance="Vitamin C",
+    )
+    truth = GroundTruth(
+        item_id="N99", kind="team", label="positive", outcome=None, written_by="w", checked_by="c",
+        claims=[BreachingClaim(claim=ad.inserted, rules=["15.1", "15.1.1", "15.7"], points=[])],
+    )
+    s = screening("s10", ad.lines, {0: ["15.1.1"], 2: ["15.1", "15.1.1", "15.7"]})
+    wording = SuggestedWording(register_id="gbhc-222b3bfc340d", wording=ad.on_screen_text[0])
+    s = s.model_copy(update={"flags": (s.flags[0], s.flags[1].model_copy(update={"suggested_wording": wording}))})
+    n = near_miss(ad, truth, [s])
+    # the authorised line is flagged, a false alarm; the flavour line is not; register wording is offered
+    assert (n.caught, n.clean_lines, n.clean_lines_flagged, n.eligible, n.wording) == (True, 2, 1, True, True)
+    missed = near_miss(ad, truth, [s.model_copy(update={"flags": (s.flags[0],)})])
+    assert (missed.caught, missed.wording) == (False, False)
+
+
+@pytest.mark.parametrize(
+    ("register_id", "fits"),
+    [("gbhc-c41b26b64b9c", True), ("gbhc-99fee7203c79", True), ("gbhc-6e9ced5f8edb", True),
+     ("gbhc-070dd4b125bd", False)],
+)  # fmt: skip
+def test_near_miss_takes_the_wording_of_any_substance_the_line_names(register_id, fits):
+    # the joint calcium and vitamin D entry, vitamin D's and calcium's fit a line naming both; biotin's does not
+    line = "Calcium and vitamin D prevent osteoporosis"
+    ad = TeamAd(
+        item_id="N99", format="image", product="calcium and vitamin D tablets", register_ids=[],
+        on_screen_text=["Lemon flavour", line], voiceover="", base="T99", inserted=line, substance="Calcium",
+    )
+    truth = GroundTruth(
+        item_id="N99", kind="team", label="positive", outcome=None, written_by="w", checked_by="c",
+        claims=[BreachingClaim(claim=line, rules=["15.6", "15.6.2"], points=[])],
+    )
+    s = screening("s11", ad.lines, {1: ["15.6.2"]})
+    wording = SuggestedWording(register_id=register_id, wording="w")
+    s = s.model_copy(update={"flags": (s.flags[0].model_copy(update={"suggested_wording": wording}),)})
+    assert near_miss(ad, truth, [s]).wording is fits
 
 
 def test_toy_split_scores():

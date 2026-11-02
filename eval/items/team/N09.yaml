@@ -1,0 +1,17 @@
+# Near-miss item (P65): team ad T24 with one breaching line put in by scripts/near_miss.py from eval/near_miss/dev.yaml.
+item_id: N09
+format: image
+product: biotin gummies
+register_ids:
+- gbhc-070dd4b125bd
+on_screen_text:
+- Biotin gummies
+- Raspberry flavour
+- Biotin contributes to the maintenance of normal hair
+- Subscribe and get free delivery
+- Biotin makes your hair grow thicker and faster
+- Food supplements should not be used as a substitute for a varied and balanced diet and a healthy lifestyle.
+voiceover: ''
+base: T24
+inserted: Biotin makes your hair grow thicker and faster
+substance: Biotin

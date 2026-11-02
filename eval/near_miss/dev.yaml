@@ -1,0 +1,64 @@
+# P65 dev breach lines: one line put into each compliant split v2 dev team ad (T16 to T25) by scripts/near_miss.py.
+# Each overstates the ad's own authorised claim, or turns it into a disease claim. Rules are the CAP rules the line
+# breaches on its own; 15.7 goes with a health claim on a food supplement. Test lines live in a file the judge's
+# author never reads (docs/product-rules.md, rule 5). Drafted for Neesay with an AI assistant; NEESAY checks them.
+- item_id: N01
+  base: T16
+  line: Vitamin C supercharges your immune system
+  substance: Vitamin C
+  rules: ["15.1", "15.1.1", "15.7"]
+  written_by: Neesay
+- item_id: N02
+  base: T17
+  line: Vitamin D keeps winter colds and flu away.
+  substance: Vitamin D
+  rules: ["15.6", "15.6.2"]
+  written_by: Neesay
+- item_id: N03
+  base: T18
+  line: Magnesium stops muscle cramps for good
+  substance: Magnesium
+  rules: ["15.6", "15.6.2"]
+  written_by: Neesay
+- item_id: N04
+  base: T19
+  line: Iron banishes tiredness and fatigue for good.
+  substance: Iron
+  rules: ["15.1", "15.1.1", "15.7"]
+  written_by: Neesay
+- item_id: N05
+  base: T20
+  line: Vitamin B12 gives you boundless energy all day
+  substance: Vitamin B12
+  rules: ["15.1", "15.1.1", "15.7"]
+  written_by: Neesay
+- item_id: N06
+  base: T21
+  line: Zinc doubles your body's natural defences.
+  substance: Zinc
+  rules: ["15.1", "15.1.1", "15.7"]
+  written_by: Neesay
+- item_id: N07
+  base: T22
+  line: Calcium and vitamin D prevent osteoporosis
+  substance: Calcium
+  rules: ["15.6", "15.6.2"]
+  written_by: Neesay
+- item_id: N08
+  base: T23
+  line: Vitamin C relieves anxiety.
+  substance: Vitamin C
+  rules: ["15.6", "15.6.2"]
+  written_by: Neesay
+- item_id: N09
+  base: T24
+  line: Biotin makes your hair grow thicker and faster
+  substance: Biotin
+  rules: ["15.1", "15.1.1", "15.7"]
+  written_by: Neesay
+- item_id: N10
+  base: T25
+  line: DHA repairs damaged eyesight.
+  substance: Docosahexaenoic acid (DHA)
+  rules: ["15.6", "15.6.2"]
+  written_by: Neesay

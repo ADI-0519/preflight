@@ -1,0 +1,17 @@
+# Near-miss item (P65): team ad T23 with one breaching line put in by scripts/near_miss.py from eval/near_miss/dev.yaml.
+item_id: N08
+format: video
+product: multivitamin tablets
+register_ids:
+- gbhc-d05fc1549c25
+- gbhc-549e35aabe14
+on_screen_text:
+- Daily multivitamin
+- Made for real life
+- One tablet a day
+- Food supplements should not be used as a substitute for a varied and balanced diet and a healthy lifestyle.
+voiceover: Our daily multivitamin, made for real life. Good nutrition, wherever your day takes you. Vitamin B6 contributes
+  to the reduction of tiredness and fatigue. Vitamin C contributes to normal psychological function. Vitamin C relieves anxiety.
+base: T23
+inserted: Vitamin C relieves anxiety.
+substance: Vitamin C

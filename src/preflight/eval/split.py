@@ -12,6 +12,10 @@ ROOT = Path(__file__).resolve().parents[3]
 EVAL_DIR = ROOT / "eval"
 
 RULING_ID = re.compile(r"^[AG]\d{2}-\d{6,8}$")
+# the food supplement statement every team ad carries on screen
+DISCLAIMER = (
+    "Food supplements should not be used as a substitute for a varied and balanced diet and a healthy lifestyle."
+)
 
 
 class Split(BaseModel):
@@ -61,6 +65,14 @@ class TeamAd(BaseModel):
     register_ids: list[str]
     on_screen_text: list[str]
     voiceover: str
+    base: str | None = None
+    inserted: str | None = None
+    substance: str | None = None
+
+    @property
+    def lines(self) -> list[str]:
+        """The on-screen lines, then the voiceover sentence by sentence."""
+        return self.on_screen_text + [s for s in re.split(r"(?<=[.!?])\s+", self.voiceover.strip()) if s]
 
 
 def advertiser_key(advertiser: str) -> str:
@@ -80,6 +92,13 @@ def load_ground_truth(version: str, item_id: str) -> GroundTruth:
 def load_team_ad(item_id: str) -> TeamAd:
     path = EVAL_DIR / "items" / "team" / f"{item_id}.yaml"
     return TeamAd(**yaml.safe_load(path.read_text(encoding="utf-8")))
+
+
+def load_near_miss(item_id: str) -> TeamAd | None:
+    """The team ad if the item is a near-miss item (P65), with one breaching line put in."""
+    path = EVAL_DIR / "items" / "team" / f"{item_id}.yaml"
+    ad = load_team_ad(item_id) if path.exists() else None
+    return ad if ad and ad.inserted else None
 
 
 def write_ground_truth(version: str, truth: GroundTruth) -> None:

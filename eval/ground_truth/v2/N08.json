@@ -1,0 +1,18 @@
+{
+  "item_id": "N08",
+  "kind": "team",
+  "label": "positive",
+  "outcome": null,
+  "claims": [
+    {
+      "claim": "Vitamin C relieves anxiety.",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "points": []
+    }
+  ],
+  "written_by": "Neesay: breach line in compliant team ad T23",
+  "checked_by": null
+}

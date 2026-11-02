@@ -1,0 +1,18 @@
+# Near-miss item (P65): team ad T18 with one breaching line put in by scripts/near_miss.py from eval/near_miss/dev.yaml.
+item_id: N03
+format: image
+product: magnesium tablets
+register_ids:
+- gbhc-ec4ca7e01201
+on_screen_text:
+- Magnesium tablets
+- Magnesium contributes to normal muscle function
+- Easy-to-swallow tablets
+- Take one with breakfast
+- 60-day supply
+- Magnesium stops muscle cramps for good
+- Food supplements should not be used as a substitute for a varied and balanced diet and a healthy lifestyle.
+voiceover: ''
+base: T18
+inserted: Magnesium stops muscle cramps for good
+substance: Magnesium

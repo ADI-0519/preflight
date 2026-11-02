@@ -8,9 +8,10 @@ from typing import NamedTuple
 
 from preflight.eval.check_reconstructions import carried, words
 from preflight.eval.registry import Metric
-from preflight.eval.split import BreachingClaim, GroundTruth
+from preflight.eval.split import BreachingClaim, GroundTruth, TeamAd, load_near_miss
 from preflight.schema import Screening
 from preflight.sources.cap import load_cap_rules
+from preflight.sources.register import load_register
 from preflight.view import fold
 
 # a quote longer than this many times a ground-truth claim, plus slack words, covers more than that claim
@@ -133,6 +134,46 @@ def caught(truth: list[BreachingClaim], screenings: list[Screening], item_id: st
     )
 
 
+@cache
+def _authorised(version: str) -> dict[str, str]:
+    """The substance of each authorised register entry, by entry."""
+    return {e.register_id: (e.substance or "").lower() for e in load_register(version) if e.status == "authorised"}
+
+
+def on_line(line: str, claim: str) -> bool:
+    # a flagged claim belongs to a line when it lies within the line or holds no more than it
+    return carried(claim, words(line)) != "missing" or matches(line, words(claim), tight=True)
+
+
+class NearMiss(NamedTuple):
+    caught: bool  # a flag on the inserted line cites one of its rules
+    clean_lines: int  # the ad's other lines, all compliant
+    clean_lines_flagged: int  # ... of which some flag lands on
+    eligible: bool  # the register authorises the inserted line's substance
+    wording: bool  # ... and a flag on the inserted line suggests an authorised entry for it
+
+
+def near_miss(ad: TeamAd, truth: GroundTruth, screenings: list[Screening]) -> NearMiss:
+    flagged = [(c.text, f) for s in screenings for f in s.flags for c in s.claims if c.claim_id == f.claim_id]
+    inserted = [f for text, f in flagged if on_line(ad.inserted, text)]
+    clean = [line for line in ad.lines if line != ad.inserted]
+    # a flag on the inserted line is not a false alarm, even where its words also fit a clean line
+    others = [text for text, f in flagged if not on_line(ad.inserted, text)]
+    authorised = _authorised(screenings[0].snapshots.gb_register) if screenings else {}
+    substance = (ad.substance or "").lower()
+    said = f" {' '.join(words(ad.inserted))} "
+    # a line naming two substances ("calcium and vitamin D") may take either's wording or their joint entry
+    fits = {i for i, s in authorised.items() if s == substance or f" {' '.join(words(s))} " in said}
+    suggested = [f.suggested_wording.register_id for f in inserted if f.suggested_wording]
+    return NearMiss(
+        caught=caught(truth.claims, screenings, truth.item_id).with_rule[0],
+        clean_lines=len(clean),
+        clean_lines_flagged=sum(any(on_line(line, text) for text in others) for line in clean),
+        eligible=bool(fits),
+        wording=any(i in fits for i in suggested),
+    )
+
+
 @dataclass(frozen=True)
 class ItemScore:
     item_id: str
@@ -153,6 +194,12 @@ class ItemScore:
     unmatched_lines: int = 0
     chance_carried: float = 0.0
     weighted_carried: float = 0.0
+    near_miss: bool = False
+    near_miss_caught: bool = False
+    clean_lines: int = 0
+    clean_lines_flagged: int = 0
+    wording_eligible: bool = False
+    wording_suggested: bool = False
 
 
 def line_counts(truth: list[BreachingClaim], screenings: list[Screening], item_id: str = "") -> tuple[int, int]:
@@ -177,6 +224,8 @@ def score_item(truth: GroundTruth, screenings: list[Screening], kept: list[bool]
     kept = kept if kept is not None else [True] * len(truth.claims)
     c = caught(truth.claims, screenings, truth.item_id)
     lines, unmatched = line_counts(truth.claims, screenings, truth.item_id)
+    ad = load_near_miss(truth.item_id) if truth.kind == "team" else None
+    n = near_miss(ad, truth, screenings) if ad else None
     return ItemScore(
         item_id=truth.item_id,
         label=truth.label,
@@ -196,6 +245,12 @@ def score_item(truth: GroundTruth, screenings: list[Screening], kept: list[bool]
         unmatched_lines=unmatched,
         chance_carried=round(sum(p for p, k in zip(c.by_chance, kept, strict=True) if k), 3),
         weighted_carried=round(sum(w for w, k in zip(c.weighted, kept, strict=True) if k), 3),
+        near_miss=n is not None,
+        near_miss_caught=bool(n and n.caught),
+        clean_lines=n.clean_lines if n else 0,
+        clean_lines_flagged=n.clean_lines_flagged if n else 0,
+        wording_eligible=bool(n and n.eligible),
+        wording_suggested=bool(n and n.eligible and n.wording),
     )
 
 
@@ -272,6 +327,16 @@ def metrics(items: list[ItemScore]) -> list[Metric]:
             Metric("flagged_lines_per_positive_ad", sum(i.lines for i in positives), len(positives)),
             Metric("unmatched_lines_per_positive_ad", sum(i.unmatched_lines for i in positives), len(positives)),
         ]
+    near = [i for i in positives if i.near_miss]
+    if near:
+        # a compliant team ad with one breaching line put in (P65)
+        out += [
+            per_ad("near_miss_caught", near, lambda i: i.near_miss_caught),
+            metric("clean_lines_flagged", near, lambda i: i.clean_lines_flagged, lambda i: i.clean_lines),
+        ]
+        eligible = [i for i in near if i.wording_eligible]
+        if eligible:
+            out.append(per_ad("wording_on_eligible", eligible, lambda i: i.wording_suggested))
     if negatives:
         # every flag on a negative ad is a false alarm
         out += [

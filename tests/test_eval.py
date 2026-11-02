@@ -9,12 +9,23 @@ import pytest
 from preflight.eval import check_recall, registry, run
 from preflight.eval.reconstruct import LABEL, overlay_filter
 from preflight.eval.registry import Metric, register, revision
-from preflight.eval.run import MeteredSam, MeteredTranscribe
+from preflight.eval.run import MeteredSam, MeteredTranscribe, citation_spread
 from preflight.eval.score import exact, interval, metrics, score_item
 from preflight.eval.split import BreachingClaim, GroundTruth
 from preflight.eval.team_media import LABEL as TEAM_LABEL
 from preflight.models.clients import SamResult
-from preflight.schema import Ad, CapRuleRef, Claim, Flag, OnScreenEvidence, OnScreenText, Screening, Snapshots, StageRun
+from preflight.schema import (
+    Ad,
+    CapRuleRef,
+    Claim,
+    Flag,
+    OnScreenEvidence,
+    OnScreenText,
+    RulingRef,
+    Screening,
+    Snapshots,
+    StageRun,
+)
 
 SNAPSHOTS = Snapshots(gb_register="2026-05-19", on_hold="2021-01-12", cap_rules="2026-10-31", rulings="2026-11-01")
 
@@ -268,3 +279,15 @@ def test_meters_price_sam_frames_and_transcribed_audio():
     heard = MeteredTranscribe(FakeTranscribe())
     heard.transcribe(buffer.getvalue())
     assert heard.usd == pytest.approx([36 / 3600 * 0.18])
+
+
+def test_citation_spread_counts_the_six_most_cited():
+    cited = {f"A25-00000{n}": 8 - n for n in range(1, 8)}  # seven rulings cited 7, 6, ... 1 times
+    flags = [
+        Flag(flag_id=f"flag-{ruling_id}-{i}", claim_id="claim-0", kind="possible_breach", reason="r",
+             sources=(CapRuleRef(rule="15.1"), RulingRef(ruling_id=ruling_id, date="2026-01-01")))
+        for ruling_id, times in cited.items() for i in range(times)
+    ]  # fmt: skip
+    spread = {m.name: m for m in citation_spread([screening("s", ["a claim"], {}).model_copy(update={"flags": flags})])}
+    assert spread["precedent_citations_top6"] == Metric("precedent_citations_top6", 27, 28)
+    assert spread["precedent_rulings_cited"] == Metric("precedent_rulings_cited", 7, 28)

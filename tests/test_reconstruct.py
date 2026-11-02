@@ -1,4 +1,5 @@
 import shutil
+import subprocess
 import types
 from pathlib import Path
 
@@ -101,6 +102,17 @@ def test_long_text_is_shrunk_not_cut():
     lines = [f"Claim number {i} that the ad made in full" for i in range(20)]
     drawn = overlay_filter(lines)
     assert all(line in drawn for line in lines)
+
+
+@pytest.mark.skipif(not shutil.which("ffmpeg"), reason="ffmpeg not installed")
+def test_a_line_with_a_percent_sign_is_drawn():
+    drawn = subprocess.run(
+        ["ffmpeg", "-v", "warning", "-f", "lavfi", "-i", "color=black:s=1080x1080", "-frames:v", "1",
+         "-vf", overlay_filter(["Save 20% on your first order: 100% vegan"]), "-f", "null", "-"],
+        capture_output=True, text=True, check=True,
+    )  # fmt: skip
+    # drawtext drops a line whose % it cannot expand, warning "Stray %"
+    assert "%" not in drawn.stderr
 
 
 class Refuser(Recorder):

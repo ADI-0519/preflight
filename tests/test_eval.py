@@ -205,7 +205,13 @@ def test_ad_counts_get_exact_intervals():
 
 def test_rule_precision_and_recall_get_intervals():
     m = by_name()
-    assert m["rule_precision"].low is not None and m["rule_recall"].low is not None
+    positives = [i for i in TOY if i.label == "positive"]
+    rules = interval(positives, lambda i: i.rules_related, lambda i: i.rules_cited)
+    assert (m["rule_precision"].low, m["rule_precision"].high) == rules
+    assert (m["rule_recall"].low, m["rule_recall"].high) == interval(
+        positives, lambda i: i.rules_found, lambda i: i.rules_wanted
+    )
+    assert rules != interval(positives, lambda i: i.rules_cited, lambda i: i.rules_related)
 
 
 def test_no_denominator_gives_no_interval():

@@ -1,6 +1,6 @@
 # Checker (P27)
 
-Measured 1 Nov 2026 on dev split v1. Every number below comes from a run registered in `results/runs.csv`; per-item rows are in `results/runs/<run_id>.csv`.
+Measured 1 Nov 2026 on dev split v1, and rescored on 2 Nov 2026. Every number below comes from a run registered in `results/runs.csv`; per-item rows are in `results/runs/<run_id>.csv`.
 
 **Since these runs (1 Nov):** judge answers are validated when parsed, including cached ones, and a `no_issue` verdict citing sources is an error. A claim that names a substance keeps only the register and on-hold citations, and the suggested wording, shortlisted for that substance; one naming none may cite any entry shortlisted for the ad. A citation or suggestion that fails this is dropped and the flag kept. The numbers below predate this and need a fresh dev run (`docs/notes/decisions.md`, 1 Nov, P27).
 
@@ -12,7 +12,7 @@ The call carries four lists:
 
 - **The ad's claims**, with the transcript, on-screen text and tracks they came from.
 - **A register and on-hold shortlist** (`preflight.check.shortlist`). Each claim's substance, and every register substance named in a claim's text, is matched by whole-word phrase, a parenthetical name or a short alias table. All matching authorised entries are kept; non-authorised and on-hold matches are capped at 30 per substance. No model call is made per entry. On the dev screenings the shortlist runs from 0 to 127 register entries per ad.
-- **The screenable rules of the CAP rule pack** (43 rules, `data/snapshots/cap-2026-11-01.yaml`). The 2026-11-01 pack adds 3.39 (price comparisons) and 3.41 (denigration) to the 2026-10-31 pack, in the CAP Code's current numbering, read from the section 3 page on 1 Nov 2026.
+- **The screenable rules of the CAP rule pack** (43 screenable of 44 rules, `data/snapshots/cap-2026-11-02.yaml`). The 2026-11-01 pack adds 3.39 (price comparisons) and 3.41 (denigration) to the 2026-10-31 pack, and the 2026-11-02 pack adds 3.52 (claimed approval or trust marks), all in the CAP Code's current numbering, read from the section 3 page on 1 Nov 2026.
 - **The closest past rulings** under BM25 against each claim's text (`preflight.check.precedents`, up to five per ad in `judge_v4` and `v5`, or three per ad in `judge_v1`–`v3`), each with its ad description and the opening of its assessment.
 
 The model returns one verdict per claim: `possible_breach`, `on_hold` or `no_issue`, with the rules, register entries, on-hold entries and rulings it cites and a short reason (`reason` precedes `verdict` in the output schema so the model writes its reasoning before committing to a verdict). The schema limits every citation to an enum of what the call listed, and the parser raises unless every claim is judged exactly once, since an unjudged claim would read as no issue. The issue's "needs a person" verdict was dropped: the schema has no such flag kind, and every flag is for a person to decide (`docs/product-rules.md`, rule 4).
@@ -27,38 +27,48 @@ Rule 5 keeps every split v1 ruling out of the index. By founders' decision of 1 
 
 ## How it is scored
 
-`uv run python -m preflight.eval.check_recall --claims-run claims-20261101T184413 --cap-rules 2026-11-01 --prompt judge_v5` judges the claims of saved P26 dev screenings, so extraction is not rerun. A ground-truth claim is matched when a flagged claim matches it under P26's length-limited match. Five numbers come from that:
+`uv run python -m preflight.eval.check_recall --claims-run claims-20261101T184413 --prompt judge_v5` judges the claims of saved P26 dev screenings, so extraction is not rerun. A ground-truth claim is matched when a flagged claim matches it under P26's length-limited match. One extracted phrase can match two ground-truth claims with different rules, such as a phrase holding a health claim and a disease claim; a flag's rules are then judged against the rules of every claim it matches. Rules are related when one is the other or above or below it (15.6 and 15.6.2).
 
 - `claim_recall_any_rule`: the claim is flagged, whatever rules it cites.
-- `claim_recall`: the flag cites one of the claim's rules, or a rule above or below it (15.6 matches 15.6.2).
-- `claim_recall_exact_rules`: every rule the flag cites is one of the claim's rules, or above or below one. Citing extra rules earns nothing here, so `claim_recall` can no longer be raised by citing many rules at once.
-- `rule_precision`: of the CAP rules cited on flags that match a ground-truth claim, the share related to that claim's rules.
+- `claim_recall`: the flag cites a rule related to one of the claim's rules.
+- `claim_recall_exact_rules`: ... and cites no rule unrelated to the claims the flag matches. Extra rules earn nothing here, but leaving rules out costs nothing either.
+- `claim_recall_all_rules`: ... and also cites a rule related to every one of the claim's rules. This is the only claim count where both extra and missing rules cost.
+- `rule_precision`: of the CAP rules cited on flags that match a ground-truth claim, the share related to the claims that flag matches. Each flag counts once.
+- `rule_recall`: of the rules the rulings gave the flagged ground-truth claims, the share cited on a flag matching that claim. It falls when the judge leaves out rules the ASA cites, which `rule_precision` rewards.
 - `flags_per_positive_ad`: every flag on the positives, matched or not.
 
-**Rule numbers changed.** CAP renumbered rules 3.39 to 3.43 after some split v1 ads ran. Their rulings cite the earlier numbers: A23-1216841 cites "3.40 (Price Comparisons)", and A23-1224570 and A24-1251814 cite "3.42 (Imitation and Denigration)". In the current Code those are 3.39 and 3.41, while 3.40 is now about who made the product and 3.42 about a rival's reputation. Scoring reads those three rulings' 3.40 and 3.42 as 3.39 and 3.41 (`preflight.eval.score.FORMER_NUMBERS`), and the judge cites from a pack in current numbering. The ground truth is unchanged.
+Read `rule_precision` and `rule_recall` together: either one can be raised alone by citing fewer or more rules.
 
-`--rescore RUN_ID` scores a saved run again under the current scoring with no model calls, registering it as `<run_id>-rescored`. `--cache-dir` gives a run a fresh model cache: without it, a repeat run with the same prompt replays the cached answers and measures nothing.
+**Rule numbers changed.** CAP renumbered section 3 when it added the consumer-review rules (3.44 to 3.46, in April 2025), and rulings on earlier ads cite the earlier numbers. In split v1 these are A23-1216841 ("3.40 (Price Comparisons)", now 3.39), A23-1224570 and A24-1251814 ("3.42 (Imitation and Denigration)", now 3.41) and A24-1241017 (3.50 for a claimed approval by a public body, now 3.52; the current 3.50 is about testimonials given without permission). Scoring reads each of these rulings' numbers in current numbering (`preflight.eval.score.FORMER_NUMBERS`), and the judge cites from a pack in current numbering. No other split v1 ruling cites a renumbered section 3 rule. The ground truth is unchanged. The 2026-11-02 pack adds 3.52, read from the section 3 page on 1 Nov 2026; every run below used the 2026-11-01 pack, so none could cite 3.52 and each misses A24-1241017's two approval claims under it.
+
+`--rescore RUN_ID` scores a saved run again under the current scoring with no model calls, registering it as `<run_id>-rescored-<time>`. `--cache-dir` gives a run a fresh model cache: without it, a repeat run with the same prompt replays the cached answers and measures nothing.
 
 The five team-written dev negatives have no rendered media. Their on-screen lines and voiceover sentences are judged directly as claims, so their false-alarm figures measure the judge alone and are named `*_judge_only`.
 
 ## Results
 
-### On the same extracted claims (`claims-20261101T184413`, 211 of 250 ground-truth claims extracted)
+### On the same extracted claims (`claims-20261101T184413`, 211 of 250 ground-truth claims extracted; CAP pack 2026-11-01)
 
-| Run | Prompt | Ads with a correct flag | Claims, matching rule | Claims, any rule | Claims, every rule correct | Rule precision | Flags per positive ad | Team negatives flagged | Cost per item |
+All rescored on 2 Nov 2026 under the scoring above. Every run gets 0 of 5 team negatives flagged.
+
+| Run | Prompt | Ads with a correct flag | Claims, matching rule | Claims, any rule | Claims, no wrong rule | Claims, all rules right | Rule precision | Rule recall | Flags per positive ad |
 |---|---|---|---|---|---|---|---|---|---|
-| check-20261101T210411 | judge_v3 | 24 of 25 | 166 of 250 | 203 of 250 | 60 of 250 | 358 of 775 (46%) | 23 | 0 of 5 | $0.059 |
-| check-20261101T191521-rescored | judge_v4 | 25 of 25 | 208 of 250 | 211 of 250 | 56 of 250 | 573 of 1,254 (46%) | 25 | 0 of 5 | $0.048 |
-| check-20261101T210408 | **judge_v5** | 25 of 25 | 194 of 250 | 210 of 250 | 63 of 250 | 523 of 1,162 (45%) | 24 | 0 of 5 | $0.046 |
-| check-20261101T210951 | **judge_v5**, repeat with a fresh cache | 25 of 25 | 190 of 250 | 211 of 250 | 63 of 250 | 522 of 1,161 (45%) | 24 | 0 of 5 | $0.050 |
+| check-20261101T210411-rescored-20261102T000152 | judge_v3 | 24 of 25 | 166 | 203 | 60 | 40 | 349 of 746 (47%) | 382 of 497 (77%) | 23 |
+| check-20261101T191521-rescored-20261102T000154 | judge_v4 | 25 of 25 | 208 | 211 | 60 | 54 | 558 of 1,210 (46%) | 493 of 515 (96%) | 25 |
+| check-20261101T210408-rescored-20261102T000157 | judge_v5 | 25 of 25 | 194 | 210 | 64 | 55 | 508 of 1,121 (45%) | 455 of 512 (89%) | 24 |
+| check-20261101T210951-rescored-20261102T000200 | judge_v5, repeat with a fresh cache | 25 of 25 | 190 | 211 | 64 | 56 | 507 of 1,118 (45%) | 450 of 515 (87%) | 24 |
+| check-20261101T215001-rescored-20261102T000202 | judge_v6 draft | 25 of 25 | 187 | 209 | 169 | 92 | 414 of 488 (85%) | 366 of 510 (72%) | 24 |
+| check-20261102T002108 | **judge_v6** (pack 2026-11-02) | 25 of 25 | 185 | 206 | 166 | 152 | 475 of 577 (82%) | 428 of 506 (85%) | 24 |
 
-`check-20261101T210914` is a second v5 run that replayed the first run's cached answers; it is registered but is not a repeat. The v3 run used per-ad precedents, as v3 always has. The v4 run used its own rule pack (below) and is rescored under the renumbering; its registered figure of 211 claims with a matching rule counted three price and denigration claims that it cited under 3.40 and 3.42 in their former meaning.
+Claims are out of 250. `check-20261101T210914` is a second v5 run that replayed the first run's cached answers; it is registered but is not a repeat. The v3 run used per-ad precedents, as v3 always has. v4 was run on its own edited pack (below). The v6 draft asked for the fewest rules each claim breaches; the final v6 also asks for 15.7 on supplement health claims and cites 3.52, and is the only run here on the 2026-11-02 pack, which gives it A24-1241017's two approval claims.
 
 **What the figures show.**
 
-- **Every prompt cites about two rules for each one that applies** (rule precision 45–46%), and only about a quarter of claims get no wrong rule. A flag's rule list is not yet reliable enough to show without a person's read.
-- **v5 keeps most of v4's gain over v3** (194 and 190 against 166 claims with a matching rule) without v4's item-specific wording. The 14 to 18 claims between v4 and v5 are what that wording bought on dev, where it was written; it is not expected to carry to test.
-- **Run-to-run noise is about ±4 claims** on one repeat. Differences of that size between prompts are not real.
+- **v3 to v5 cite about two rules for each one that applies** (rule precision 45–47%). v4 and v5 get there by citing nearly every rule the ASA cites and many more.
+- **v6 is the default.** It gets 152 claims with every rule right against about 55 for v5, at 82% rule precision and 85% rule recall (v5: 45% and 87–89%), with claim recall (185) within noise of v5 (190–194). On the 10 split v2 team negatives (T16–T25), judged alone, it flags none (`check-20261102T003258`), as v5 did.
+- **The v6 draft traded rule recall for precision.** It cites under half as many rules, so precision rises to 85% and claims with every rule right rise from about 55 to 92. But it leaves out 28% of the rules the rulings gave the claims it flags, against 11–13% for v5. Most of that is 15.7: v6 leaves it out on 84 flagged claims whose ruling cites it, against 11 for v5.
+- **v5 keeps most of v4's gain over v3** (194 and 190 against 166 claims with a matching rule) without v4's item-specific wording. The 14 to 18 claims between v4 and v5 are partly noise and partly guidance v5 deleted (beauty claims under 12.1).
+- **Run-to-run noise is larger than the totals suggest.** The two v5 runs differ by 4 claims net, but 15 claims changed between them, because one call judges all of an ad's claims and a change in how it reads one ad moves several claims together. Take differences under about 8 claims as noise.
 - **Extraction is the ceiling.** 39 of the 250 claims never reach the judge.
 - **The judge flags 23 to 25 claims per positive ad** against 10 ground-truth claims, since P26 lists overlapping phrases and the claims inside them. On the 5 register-worded team ads, which no version flags, that is not a false-alarm rate; split v2's negatives are below.
 
@@ -86,7 +96,8 @@ The judge prompt follows the P26 authorship rule: it is written from the CAP rul
 - **v4** places the reference material first and the claims and instructions last, puts `reason` before `verdict` in the schema, includes the proposed wording of on-hold entries, retrieves precedents per claim, and adds guidance on nutrition claims, names, deficiency claims, beauty, weight, safety, prices and denigration. **It is not used**, for two reasons:
   - **Its guidance restates particular dev rulings.** Examples: "Mental Health" as a benefit heading, "superstar" ingredients, hair changes from a deficiency, adding the product to a child's drink, a competitor's "complaints or motives", "Doctor" in a product name, "feeling like one's old self again". The evaluation protocol builds prompts with every dev and test ruling excluded (item 4), and the leakage test, which looks for copied claims of three or more words, does not catch reworded lessons.
   - **It was written against a rule pack edited in place.** The 2026-10-31 pack was changed to give 3.40, 3.42, 3.43 and 3.44 their former meanings, so v4 cites 3.40 for price comparisons, which in the current Code is the rule on who made the product. That edit is undone; the 2026-10-31 pack is again as read on 31 Oct and matches the current Code.
-- **v5** is v4 with the item-specific wording, the example lists drawn from dev ads and the instructions to cite extra rules "alongside" removed, and 3.40 and 3.42 changed to 3.39 and 3.41. Nothing was added. It was written by someone who has read test-split ground truth (in P14 and P15), so it was made by deletion only, which can carry nothing from the test split into the prompt (rule 5).
+- **v6** (default) asks for the fewest rules each claim's own words breach, with 15.1 and 15.1.1, 15.6 and its sub-rule, and 15.7 on supplement health claims cited together. It drops the instructions to cite extra rules, restores general guidance on 12.1, 13.7 and 15.6.3 written from the rule pack, cites 3.52 for claimed approvals, and states the line between function health claims (15.1.1) and disease claims (15.6.2). It was written by someone who has not read the test split; lines in its draft that echoed dev rulings (named conditions, testimonial framing, lists of functions, body parts, beauty examples) were cut or stated generally before the final run.
+- **v5** is v4 with the item-specific wording and the example lists drawn from dev ads removed, and 3.40 and 3.42 changed to 3.39 and 3.41. Nothing was added. Despite what PR #56 said, it still asks for extra rules: 15.7 on supplement health claims, 15.1, 15.1.1 and 15.7 "alongside" 15.6.2, and 13.10.1 on weight-loss claims. It also kept one phrase drawn from a dev ruling (about side effects and overdose), and it lost all guidance on 12.1, 13.7 and 15.6.3. It was written by someone who has read test-split ground truth (in P14 and P15), so it was made by deletion only, which can carry nothing from the test split into the prompt (rule 5).
 
 ## Checks beyond the registered runs
 

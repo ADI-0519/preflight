@@ -68,3 +68,11 @@ def test_2026_11_01_pack_uses_current_section_3_numbers():
     assert "price" in pack.rules["3.39"].summary and "denigrate" in pack.rules["3.41"].summary
     # rules both packs hold are unchanged
     assert all(pack.rules[r] == old.rules[r] for r in old.rules)
+
+
+def test_2026_11_02_pack_adds_claimed_approval():
+    pack = load_cap_rules("2026-11-02")
+    old = load_cap_rules("2026-11-01")
+    assert set(pack.rules) - set(old.rules) == {"3.52"}
+    assert "approved" in pack.rules["3.52"].summary
+    assert all(pack.rules[r] == old.rules[r] for r in old.rules)

@@ -219,7 +219,7 @@ def at_most(k: int, n: int, p: float) -> float:
 
 
 def exact(hits: int, n: int) -> tuple[float, float]:
-    # Clopper-Pearson: the proportions whose binomial tail beyond the count holds 2.5% on each side
+    # exact (Clopper-Pearson) bounds: the proportions whose binomial tail beyond the count holds 2.5% on each side
     def solve(k: int, target: float) -> float:
         lo, hi = 0.0, 1.0
         for _ in range(50):
@@ -229,7 +229,8 @@ def exact(hits: int, n: int) -> tuple[float, float]:
 
     low = 0.0 if hits == 0 else solve(hits - 1, 0.975)
     high = 1.0 if hits == n else solve(hits, 0.025)
-    return round(low, 3), round(high, 3)
+    # rounded outwards, so the printed interval never claims more certainty than the exact one
+    return math.floor(low * 1000) / 1000, math.ceil(high * 1000) / 1000
 
 
 def metric(name: str, items: list[ItemScore], hit: Callable, out_of: Callable = lambda i: 1) -> Metric:

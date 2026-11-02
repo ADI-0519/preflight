@@ -34,22 +34,28 @@ def test_no_approve_or_publish_tool():
     assert {t["name"] for t in TOOLS} == {"screen_ad", "fix_ad"}
 
 
-def test_screen_summary_carries_sources_and_register_wording(box):
+def test_screen_summary_returns_lines_with_sources_and_register_wording(box):
     summary = box.call("screen_ad", {"target": "ad.mp4"})
     assert summary["headline"] == FLAGGED.headline
     assert summary["notice"] == FLAGGED.notice
-    assert len(summary["flags"]) == len(FLAGGED.flags)
-    for found, flag in zip(summary["flags"], FLAGGED.flags, strict=True):
-        assert found["sources"]
-        assert found["evidence"]
-        if flag.suggested_wording:
-            assert found["suggested_wording"] == {
-                "register_id": flag.suggested_wording.register_id, "wording": flag.suggested_wording.wording,
-            }
-        else:
-            assert found["suggested_wording"] is None
-    assert any(f["suggested_wording"] for f in summary["flags"])
-    assert "CAP 15.1" in summary["flags"][0]["sources"]
+    lines = summary["lines"]
+    assert 0 < len(lines) < len(FLAGGED.flags)
+    # rule 3: every flag is shown on a line or a phrase folded under one, with its rules and evidence
+    shown = [i for line in lines for i in line["flags"]["flag_ids"]]
+    shown += [i for line in lines for n in line["folded"] for i in n["flag_ids"]]
+    assert sorted(shown) == sorted(f.flag_id for f in FLAGGED.flags)
+    keys = ("primary_rules", "other_rules", "register_refs", "on_hold_refs", "rulings")
+    for line in lines:
+        assert line["evidence"] and any(line[k] for k in keys)
+        assert all(any(n[k] for k in keys) for n in line["folded"])
+    assert any(n["on_hold_refs"] and not n["primary_rules"] for line in lines for n in line["folded"])
+    # rule 2: wording as the register holds it
+    wordings = {f.suggested_wording.register_id: f.suggested_wording.wording for f in FLAGGED.flags
+                if f.suggested_wording}
+    found = {w["register_id"]: w["wording"] for line in lines for w in line["suggested_wording"]}
+    assert found and found.items() <= wordings.items()
+    assert all(e["wording"] for m in summary["may_say"] for e in m["entries"])
+    assert "15.1.1" in lines[0]["primary_rules"]
 
 
 def fixed(state, open_=(), screening=CLEAN):

@@ -8,6 +8,7 @@ from preflight.check.precedents import PrecedentIndex
 from preflight.models import Models
 from preflight.pipeline import screen_target
 from preflight.schema import Evidence, Flag, Screening, SourceRef
+from preflight.view import build_view, incomplete_stages
 
 log = logging.getLogger(__name__)
 
@@ -21,8 +22,8 @@ TOOLS = [
         "name": "screen_ad",
         "description": (
             "Screens a draft ad against the GB nutrition and health claims register, the CAP Code and past ASA "
-            "rulings before it is published. Returns flags with their sources, evidence and any authorised "
-            "register wording. This is screening, not legal advice."
+            "rulings before it is published. Returns flagged lines with their CAP rules, sources, evidence and "
+            "any authorised register wording. This is screening, not legal advice."
         ),
         "parameters": {
             "type": "object",
@@ -103,13 +104,6 @@ def flag_summary(screening: Screening, flag: Flag) -> dict:
     }
 
 
-def incomplete_stages(screening: Screening) -> list[str]:
-    failed = [r.stage for r in screening.stages if r.status == "failed"]
-    # rule 1: a check that was skipped leaves the ad unscreened, as a failed one does
-    checked = any(r.stage == "check" and r.status == "done" for r in screening.stages)
-    return failed if checked or "check" in failed else [*failed, "check"]
-
-
 def open_lines(result: FixResult) -> list[dict]:
     # rule 3: a handed-over flag keeps its sources and evidence
     flags = {f.flag_id: f for f in result.screening.flags}
@@ -152,12 +146,14 @@ class Toolbox:
         screening, json_path, html_path = screen_target(
             target, self.models, self.precedents, self.out / "screenings", align=self.align
         )
+        view = build_view(screening)
         return {
             "screening_id": screening.screening_id,
             "notice": screening.notice,
             "headline": screening.headline,
-            "incomplete_stages": incomplete_stages(screening),
-            "flags": [flag_summary(screening, f) for f in screening.flags],
+            "incomplete_stages": view["incomplete_stages"],
+            "lines": view["lines"],
+            "may_say": view["may_say"],
             "report": str(html_path),
             "json": str(json_path),
         }

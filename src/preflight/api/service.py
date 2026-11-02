@@ -4,7 +4,7 @@ import json
 import mimetypes
 from collections.abc import Callable
 from concurrent.futures import ThreadPoolExecutor
-from contextlib import contextmanager
+from contextlib import ExitStack, contextmanager
 from functools import cache
 from pathlib import Path
 
@@ -30,12 +30,12 @@ def completed(screening: Screening) -> bool:
 @contextmanager
 def private_models(directory: Path):
     models = from_env(Store(directory / "cache"))
-    try:
-        yield models
-    finally:
+    with ExitStack() as resources:
+        resources.callback(models.transcribe.http.close)
         clients = {id(c.api): c.api for c in (models.spark, models.sam, models.image, models.glimmer) if c is not None}
         for client in clients.values():
-            client.close()
+            resources.callback(client.close)
+        yield models
 
 
 class Service:

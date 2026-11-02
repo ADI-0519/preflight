@@ -36,7 +36,7 @@ def revision(part: str) -> str:
             raise SystemExit("refusing to run on the test part from a dirty tree; commit or stash first")
         return sha
     # a run on uncommitted code is not reproducible from its SHA alone
-    return sha + "-dirty" if git("status", "--porcelain", "--untracked-files=no") else sha
+    return sha + "-dirty" if git("status", "--porcelain") else sha
 
 
 def snapshot_text(s: Snapshots) -> str:

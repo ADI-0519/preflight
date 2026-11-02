@@ -3,6 +3,20 @@ import path from 'node:path';
 
 const media = path.resolve(import.meta.dirname, '../../tests/fixtures/models/media/captions.mp4');
 
+test('a missing ad preview keeps its claims usable and another demo recovers', async ({ page }) => {
+  await page.route('**/ui/demos/flagged/media', (route) => route.fulfill({ status: 410 }));
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Explore demos', exact: true }).click();
+  await page.getByRole('button', { name: 'Synthetic replay · flagged', exact: false }).click();
+  await expect(page.getByText('Ad preview unavailable.', { exact: false })).toBeVisible();
+  await expect(page.locator('.claim-row')).toHaveCount(4);
+  await page.locator('.claim-row').last().click();
+  await expect(page.locator('.claim-row').last()).toHaveAttribute('aria-pressed', 'true');
+  await page.getByRole('button', { name: 'Synthetic replay · no flags', exact: false }).click();
+  await expect(page.getByLabel('Ad video')).toBeVisible();
+  await expect(page.getByText('Ad preview unavailable.', { exact: false })).toHaveCount(0);
+});
+
 test('a malformed progress stream leaves the user able to start again', async ({ page }) => {
   await page.route('**/jobs/*/events', (route) =>
     route.fulfill({
@@ -18,7 +32,44 @@ test('a malformed progress stream leaves the user able to start again', async ({
   await expect(page.getByRole('button', { name: 'Explore demos' })).toBeEnabled();
   await page.unroute('**/jobs/*/events');
   await page.reload();
-  await expect(page.getByRole('heading', { name: 'Screening evidence' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Screening evidence' })).toBeVisible({
+    timeout: 30000,
+  });
+});
+
+test('a refused revision keeps the original evidence and can be retried', async ({ page }) => {
+  await page.goto('/');
+  await expect(page.getByLabel('Upload ad')).toBeEnabled();
+  await page.getByLabel('Upload ad').setInputFiles(media);
+  await page.getByRole('button', { name: 'Prepare revision', exact: true }).click();
+  await page
+    .getByLabel('Scene still')
+    .setInputFiles(
+      path.resolve(import.meta.dirname, '../../tests/fixtures/agent/magnesium/still.png'),
+    );
+  await page
+    .getByLabel('On-screen captions')
+    .fill('Magnesium tablets\nBeats fatigue in seven days');
+  const originalReport = await page
+    .getByRole('link', { name: 'Open full source report' })
+    .getAttribute('href');
+  await page.route('**/fixes', (route) =>
+    route.fulfill({ status: 503, json: { error: 'worker_unavailable' } }),
+  );
+  await page.getByRole('button', { name: 'Run fix and re-screen' }).click();
+  await expect(page.getByRole('alert')).toContainText('HTTP 503');
+  await expect(page.getByRole('link', { name: 'Open full source report' })).toHaveAttribute(
+    'href',
+    originalReport!,
+  );
+  await expect(page.getByLabel('On-screen captions')).toHaveValue(
+    'Magnesium tablets\nBeats fatigue in seven days',
+  );
+  await page.unroute('**/fixes');
+  await page.getByRole('button', { name: 'Run fix and re-screen' }).click();
+  await expect(page.getByRole('heading', { name: 'Round 1', exact: true })).toBeVisible({
+    timeout: 30000,
+  });
 });
 
 test('a delayed reveal cannot attach one demos outcome to a different demo', async ({ page }) => {

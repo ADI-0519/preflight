@@ -2,6 +2,7 @@ import base64
 import json
 import os
 import re
+import ssl
 import time
 from collections.abc import Callable
 from contextlib import contextmanager
@@ -192,7 +193,9 @@ class Spark:
 class VoiceTranscribe:
     store: Store
     key: str = field(repr=False)
-    http: httpx.Client = field(default_factory=lambda: httpx.Client(timeout=120), repr=False)
+    http: httpx.Client = field(
+        default_factory=lambda: httpx.Client(timeout=120, verify=ssl.create_default_context()), repr=False,
+    )
     base_url: str = BASE_URL
     sleep: Callable[[float], None] = time.sleep
 

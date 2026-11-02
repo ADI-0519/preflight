@@ -6,6 +6,7 @@ from test_eval import screening, truth
 
 from preflight.eval import baseline, run
 from preflight.eval.score import score_item
+from preflight.eval.split import Split
 from preflight.schema import StageRun
 
 
@@ -33,7 +34,9 @@ def test_registration_requires_a_completed_check(tmp_path, monkeypatch, status):
     registered = []
     monkeypatch.setattr(sys, "argv", ["test", "--part", "dev"])
     monkeypatch.setattr(run, "revision", lambda part: "synthetic")
-    monkeypatch.setattr(run, "load_split", lambda version: SimpleNamespace(dev=[item.item_id]))
+    monkeypatch.setattr(run, "load_split", lambda version: Split(
+        version=version, created="2026-11-02", frozen=False, dev=[item.item_id], test=[],
+    ))
     monkeypatch.setattr(run, "media", lambda item_id: [tmp_path / "synthetic.png"])
     monkeypatch.setattr(run, "load_ground_truth", lambda version, item_id: item)
     monkeypatch.setattr(run, "load_precedents", lambda *args: None)

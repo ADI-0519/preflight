@@ -60,16 +60,23 @@ def cost(r: SparkResult) -> float:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Extract claims from dev reconstructions and score claim recall.")
-    parser.add_argument("--only", nargs="*", help="dev item IDs to run (default: every dev positive)")
+    parser.add_argument("--only", nargs="+", help="dev item IDs to run (default: every dev positive)")
     parser.add_argument("--prompt", default=PROMPT_VERSION)
     parser.add_argument("--effort", default=EFFORT)
     parser.add_argument("--second-pass", action="store_true")
     args = parser.parse_args()
     config = {"prompt": args.prompt, "effort": args.effort, "second_pass": args.second_pass}
-    dev = [i for i in load_split("v1").dev if not args.only or i in args.only]
+    split = load_split("v1")
+    if not split.dev or len(set(split.items)) != len(split.items):
+        parser.error("split needs nonempty development and unique, disjoint partitions")
+    if args.only and set(args.only) - set(split.dev):
+        parser.error("selection contains IDs outside development")
+    dev = [i for i in split.dev if not args.only or i in args.only]
     items = [i for i in dev if load_ground_truth("v1", i).label == "positive"]
     if not items:
         raise SystemExit("no dev positive among the items asked for")
+    if any(not media_of(i) or not (OUT_DIR / i / "shotlist.json").is_file() for i in items):
+        parser.error("restore selected development reconstruction media and shot lists before running")
     sha = revision(PART)
     created = datetime.now(UTC)
     run_id = f"claims-{created:%Y%m%dT%H%M%S}"

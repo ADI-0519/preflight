@@ -127,18 +127,36 @@ def rescore(run_id: str) -> None:
     if "-rescored-" in run_id or not scored.exists():
         raise SystemExit(f"{run_id} has no saved screenings; rescore the run that screened the ads")
     with scored.open(newline="", encoding="utf-8") as f:
-        expected = {r["item_id"]: int(r["media"]) for r in csv.DictReader(f)}
+        original = list(csv.DictReader(f))
+    expected = {r["item_id"]: int(r["media"]) for r in original}
+    dev = load_split(row["split"]).dev
+    if not expected or len(expected) != len(original) or not set(expected) <= set(dev) or any(
+        n < 1 for n in expected.values()
+    ):
+        raise SystemExit("rescore requires unique original development rows with positive media counts")
     screenings: dict[str, list[Screening]] = {}
     for path in sorted((WORK / run_id).glob(f"{run_id}-*.json")):
-        # files are named <run_id>-<item_id>-<media stem>; the media stem holds no hyphen, so the last one splits them
-        item_id = path.stem.removeprefix(f"{run_id}-").rsplit("-", 1)[0]
+        # Multi-image stems can contain hyphens, e.g. reconstruction-1.
+        suffix = path.stem.removeprefix(f"{run_id}-")
+        matched = [item for item in expected if suffix.startswith(item + "-")]
+        if len(matched) != 1:
+            raise SystemExit("saved screening is outside the original development cohort")
+        item_id = matched[0]
         screenings.setdefault(item_id, []).append(Screening.model_validate_json(path.read_text(encoding="utf-8")))
     short = sorted(i for i, n in expected.items() if len(screenings.get(i, [])) != n)
     if short:
         # rule 11: a rescore on fewer ads would register under the same split and part as the whole run
         raise SystemExit(f"{run_id}: saved screenings missing for {', '.join(short)}")
+    if any(any(stage.status == "failed" for stage in s.stages) or not any(
+        stage.stage == "check" and stage.status == "done" for stage in s.stages
+    ) for saved in screenings.values() for s in saved):
+        raise SystemExit("incomplete saved screenings cannot be rescored")
+    if row.get("snapshots") and any(
+        snapshot_text(s.snapshots) != row["snapshots"] for saved in screenings.values() for s in saved
+    ):
+        raise SystemExit("saved sources disagree with the original run")
     # in the split's order, as the run scored them, so the bootstrap draws the same resamples
-    order = [i for i in getattr(load_split(row["split"]), row["part"]) if i in expected]
+    order = [i for i in dev if i in expected]
     truths = [load_ground_truth(row["split"], i) for i in order]
     scores = [score_item(t, screenings[t.item_id], kept(t)) for t in truths]
     created = datetime.now(UTC)
@@ -169,7 +187,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Screen every item of a split part end to end and register the run.")
     parser.add_argument("--split", help="split version (default: v1)")
     parser.add_argument("--part", choices=["dev", "test"], help="split part (default: dev)")
-    parser.add_argument("--only", nargs="*", help="item IDs to run (default: the whole part)")
+    parser.add_argument("--only", nargs="+", help="item IDs to run (default: the whole part)")
     parser.add_argument("--no-align", action="store_true", help="keep each transcription turn's timing")
     parser.add_argument("--judge-prompt", default=judge.PROMPT_VERSION, help="a candidate judge prompt to measure")
     parser.add_argument("--rescore", metavar="RUN_ID", help="score a registered dev run again; no model calls")
@@ -186,8 +204,13 @@ def main() -> None:
     if args.part == "test" and not split.frozen:
         # rule 5: the test part is run once, on a split that can no longer change
         raise SystemExit(f"split {args.split} is not frozen; check and freeze it before a test run")
+    selected = getattr(split, args.part)
+    if not selected or len(set(split.items)) != len(split.items):
+        raise SystemExit("split needs nonempty selected and unique, disjoint partitions")
+    if args.only and set(args.only) - set(selected):
+        raise SystemExit("selection contains IDs outside the selected partition")
     sha = revision(args.part)
-    items = [i for i in getattr(split, args.part) if not args.only or i in args.only]
+    items = [i for i in selected if not args.only or i in args.only]
     missing = [i for i in items if not media(i)]
     if missing:
         raise SystemExit(f"no rendered media for {', '.join(missing)}; build reconstructions and team ads first")

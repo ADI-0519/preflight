@@ -7,6 +7,20 @@ What each source's terms let us fetch, store and show (`docs/product-rules.md`, 
 | asa.org.uk (rulings) | Allowed for ruling pages. `robots.txt` disallows only `*/type/capcode/code_rule/*`, `*/type/bcapcode/code_rule/*` and `*/account/*` for all user agents. | Full pages locally under `data/raw/` (git-ignored) only. The site states no reuse terms, so copyright is reserved by default. The repo may hold short quotes of ad wording as a ruling quotes them, in the evaluation ground truth (`eval/ground_truth/`), by founders' decision of 31 Oct 2026 (`docs/notes/decisions.md`). | Ruling ID, date, advertiser, outcome, rules cited, URL and short attributed quotes. No full ruling text in the repo, the page or the video until the ASA gives permission. | No crawl delay for generic agents (`Crawl-delay: 120` for Slurp, 60 for BLEXBot and MJ12bot). In practice the server reset connections and refused new ones after bursts at 6 s spacing: use at least 10 s between requests, with back-off. | None stated. Footer: "Copyright © 2026 ASA and CAP". No Open Government Licence statement. | 31 Oct 2026 |
 | gov.uk (GB nutrition and health claims register, and DHSC's "on hold" claims list) | Allowed: a single published file, downloaded once per release. `www.gov.uk/robots.txt` disallows only print views and site search for generic agents; `assets.publishing.service.gov.uk`, which serves the files, has no `robots.txt` (404). | Raw XLSX under `data/raw/register/` (git-ignored); processed snapshot committed under `data/snapshots/`. | Allowed in full with attribution, including verbatim claim wording. The attribution line is "Contains public sector information licensed under the Open Government Licence v3.0.", since the page gives no other; no use may suggest official status or endorsement. | One request per release. | Open Government Licence v3.0. Page footer: "All content is available under the Open Government Licence v3.0, except where otherwise stated"; no exception stated for this file. © Crown copyright. The same terms cover the on-hold list (`https://www.gov.uk/government/publications/on-hold-health-claims-on-foods`). | 31 Oct 2026 |
 
+## Baseten synchronous Model APIs (P43)
+
+Read 2 November 2026: [Terms, section 6.3](https://www.baseten.co/terms-and-conditions/)
+exclude customer content from training, fine-tuning and model development.
+[Security Practices](https://www.baseten.co/security-practices/) describe no
+persistent input/output storage for synchronous Model APIs. Customer-selected
+logging, integrations and configurations can alter that posture. Asynchronous
+queues may retain inputs for up to 72 hours; security metadata has separate
+retention. The policy dates both documents 15 September 2026.
+
+Founder confirmation remains pending. P43 therefore uses only dev reconstructions
+and synthetic inputs and remains disconnected from customer screening. Provider
+retention is separate from our ignored local response cache and experiment files.
+
 ## asa.org.uk
 
 Pages read on 31 Oct 2026:

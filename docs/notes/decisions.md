@@ -1,5 +1,29 @@
 # Decisions
 
+- **2 Nov 2026 (PR82 comparison follow-up).** Compared PR82 with dev `33535b8`
+  against their shared base. Ported concrete source-boundary, client-cleanup,
+  TLS, preview-recovery, selection and rescore fixes into the current P43 branch.
+  Retained the newer P60 decision allowing explicitly named registered dev
+  cohorts and all P67 public-mode safeguards; did not import the legacy baseline,
+  alternate corpus or historical document inventory. This does not change founder
+  acceptance thresholds, frozen data, prompt selection or benchmark history.
+  See [audit and verification](../reviews/pr82-dev-gap-audit-2026-11-02.md).
+
+- **2 Nov 2026 (P43 implementation, pending measurement).** At the user's request,
+  started `p43-open-weights-triage` from dev `33535b8`. Use Muse Spark Open through
+  Baseten synchronous Model APIs with the existing `Glimmer` client. Triage is an
+  offline dev experiment and does not gate screening. Invalid decisions retain
+  all units; reports preserve the source cohort, evidence IDs, model/host, hashes,
+  usage and false skips. Provider terms are recorded in [source terms](../source-terms.md),
+  pending founder confirmation. A real synthetic smoke passed on 2 November with
+  returned ID `meta-models/muse-spark-open-1026`; the unversioned alias returned
+  HTTP 403, so the pinned variant is the default. The original saved dev bundle
+  is still absent, so recall and net-savings measurement remain pending.
+  The participant rules allow partner-hosted
+  open weights in principle, but an offline prototype without measured meaningful
+  use does not establish award eligibility; the formal Official Rules remain a
+  separate unresolved source. P43 is not marked complete or cut. See [P43](../p43.md).
+
 - **1 Nov 2026 (P52 presentation).** Following the user-approved design research, loaded results use a compact media-first workspace with separate evidence, editable-draft and saved-round comparison views. Dark/light appearance is session-local. The time axis supplements the full claim list and preserves recorded timing; changed caption highlighting never rewrites wording. No API, model, evaluation or review-eligibility behavior changes. See [the design research](./p52-design-research.md) and [verification](../reviews/p52-user-verification-2026-11-01.md).
 
 - **1 Nov 2026 (P52 implementation).** The local React page consumes P51 and receives progress over SSE. Screening types are generated from the schema; private media and exact evidence crops are served through confined API reads. Demo outcomes are revealed from committed ruling metadata, while scoreboard rates require an explicit registered test-run selection in `results/final.md`. Missing final assets/metrics stay unavailable rather than being replaced with development or replay results. See [the web guide](../web.md).

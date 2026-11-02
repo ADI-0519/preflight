@@ -166,3 +166,14 @@ def test_mms_aligner_on_fixture():
     assert 0.1 <= spans[0][0] and spans[-1][1] <= 2.8
     other = mms_aligner()(pcm, 16000, "the quick brown fox jumps over a lazy dog near the river".split())
     assert other[1] < score
+
+
+def test_audio_other_than_mono_16_bit_is_refused(tmp_path):
+    path = tmp_path / "stereo.wav"
+    with wave.open(str(path), "wb") as f:
+        f.setnchannels(2)
+        f.setsampwidth(2)
+        f.setframerate(16000)
+        f.writeframes(bytes(16000 * 4))
+    with pytest.raises(ValueError, match="mono 16-bit"):
+        transcribe(ingested(path), Stub([]), align=None)

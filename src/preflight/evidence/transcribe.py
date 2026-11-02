@@ -61,6 +61,7 @@ def align_turn(
     start, end = bounds(turn, duration)
     lo, hi = max(start - PAD, 0.0), min(end + PAD, duration)
     try:
+        # 2 bytes per mono s16 sample
         spans, score = aligner(pcm[round(lo * rate) * 2:round(hi * rate) * 2], rate, words)
     except RuntimeError as e:
         # forced alignment fails on a slice too short for its letters; the turn keeps its own timing
@@ -79,6 +80,8 @@ def transcribe(
     run = StageRun(stage="transcribe", status="done", model=TRANSCRIBE)
     wav = done.audio.read_bytes()
     with wave.open(io.BytesIO(wav)) as f:
+        if (f.getnchannels(), f.getsampwidth()) != (1, 2):
+            raise ValueError("transcription expects the mono 16-bit audio ingest writes")
         rate, frames = f.getframerate(), f.getnframes()
         pcm = f.readframes(frames)
     if frames == 0:

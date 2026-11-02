@@ -518,6 +518,19 @@ def test_public_mode_allows_one_fix_per_client_an_hour():
         pass
 
 
+def test_public_mode_forgets_clients_idle_for_an_hour():
+    from preflight.api.public import Public
+
+    clock = [1_800_000_000.0]
+    public = Public(Settings(public=True), clock=lambda: clock[0])
+    with public.admit("203.0.113.1", "screening"):
+        pass
+    clock[0] += 3601
+    with public.admit("203.0.113.2", "screening"):
+        pass
+    assert list(public.starts) == [("203.0.113.2", "screening")]
+
+
 def test_refused_screenings_leave_the_hourly_allowance(tmp_path, replay_models, monkeypatch):
     app = public_app(tmp_path, replay_models, monkeypatch)
     with TestClient(app) as client:

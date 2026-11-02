@@ -89,6 +89,8 @@ class Public:
                    "fix": s.public_fixes_per_hour}[kind]
         with self.lock:
             now = self.clock()
+            # forget clients idle for an hour, so the table holds only the last hour's visitors
+            self.starts = {key: times for key, times in self.starts.items() if times and times[-1] > now - HOUR}
             recent = [t for t in self.starts.get((client, kind), []) if t > now - HOUR]
             if len(recent) >= allowed:
                 raise APIError(429, "rate_limited")

@@ -1,0 +1,11 @@
+item_id,label,claims,carried,caught,caught_carried,caught_any_rule,flags,caught_exact_rules,caught_all_rules,rules_cited,rules_related,rules_wanted,rules_found,lines,unmatched_lines,chance_carried,weighted_carried,near_miss,near_miss_caught,clean_lines,clean_lines_flagged,wording_eligible,wording_suggested,media,failed,incomplete_check,cost_usd
+N01,positive,1,1,1,1,1,1,1,1,3,3,3,3,1,0,0.199,1.0,True,True,6,0,True,True,1,,False,0.06708
+N02,positive,1,1,1,1,1,3,1,1,2,2,2,2,3,2,0.302,1.0,True,True,8,0,True,False,1,,False,0.13594
+N03,positive,1,1,0,0,1,1,0,0,3,0,2,0,1,1,0.421,0.0,True,False,6,0,True,True,1,,False,0.07806
+N04,positive,1,1,1,1,1,3,1,1,3,3,3,3,3,2,0.199,1.0,True,True,7,0,True,True,1,,False,0.12848
+N05,positive,1,1,1,1,1,1,1,1,3,3,3,3,1,0,0.199,1.0,True,True,6,0,True,True,1,,False,0.06288
+N06,positive,1,1,1,1,1,2,1,1,3,3,3,3,2,1,0.199,1.0,True,True,8,1,True,True,1,,False,0.11529
+N07,positive,1,1,1,1,1,1,1,1,2,2,2,2,1,0,0.302,1.0,True,True,6,0,True,False,1,,False,0.07042
+N08,positive,1,1,1,1,1,1,1,1,2,2,2,2,1,0,0.302,1.0,True,True,8,0,True,False,1,,False,0.14338
+N09,positive,1,1,1,1,1,3,1,1,3,3,3,3,2,1,0.199,1.0,True,True,5,0,True,True,1,,False,0.065
+N10,positive,1,1,1,1,1,2,1,1,2,2,2,2,1,0,0.302,1.0,True,True,6,0,True,True,1,,False,0.12646

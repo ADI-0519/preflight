@@ -220,6 +220,12 @@ def test_no_denominator_gives_no_interval():
     assert (m["rule_precision"].hits, m["rule_precision"].total, m["rule_precision"].low) == (0, 0, None)
 
 
+def test_chance_never_exceeds_the_rules_that_fit():
+    pack = score._screenable(SNAPSHOTS.cap_rules)
+    assert score._chance(len(pack) + 3, ["99.9"], pack) == 0.0
+    assert score._chance(len(pack) + 3, ["15.6.2"], pack) == 1.0
+
+
 def test_judge_only_false_alarms_get_an_exact_interval():
     negatives = {f"T{n}": [screening(f"s{n}", ["Iron contributes"], {})] for n in range(10)}
     _, found = check_recall.scored(negatives, {i: truth(i, []) for i in negatives})

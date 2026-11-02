@@ -71,7 +71,9 @@ def _screenable(version: str) -> tuple[str, ...]:
 def _chance(k: int, claim_rules: list[str], pack: tuple[str, ...]) -> float:
     # k rules drawn without replacement from the rules the judge may cite
     fitting = sum(fits(r, claim_rules) for r in pack)
-    return 1 - math.comb(len(pack) - fitting, k) / math.comb(len(pack), k) if k <= len(pack) else 1.0
+    # a flag citing rules outside the pack still draws at most the whole pack
+    k = min(k, len(pack))
+    return 1 - math.comb(len(pack) - fitting, k) / math.comb(len(pack), k) if pack else 0.0
 
 
 def caught(truth: list[BreachingClaim], screenings: list[Screening], item_id: str = "") -> Caught:

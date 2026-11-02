@@ -169,11 +169,16 @@ def test_prompt_holds_no_split_item(path):
     text = normalised(prompt)
     split = load_split("v1")
     assert len(list((EVAL_DIR / "ground_truth" / "v1").glob("*.json"))) == len(split.items)
-    for item_id in split.items:
-        for c in load_ground_truth("v1", item_id).claims:
-            # single words such as "energy" are ordinary vocabulary; a phrase of three or more is a quote
-            if len(normalised(c.claim).split()) >= 3:
-                assert f" {normalised(c.claim)} " not in f" {text} ", item_id
+    quoted = sorted({
+        item_id
+        for item_id in split.items
+        for c in load_ground_truth("v1", item_id).claims
+        # single words such as "energy" are ordinary vocabulary; a phrase of three or more is a quote
+        if len(normalised(c.claim).split()) >= 3 and f" {normalised(c.claim)} " in f" {text} "
+    })  # fmt: skip
+    # item IDs only: pytest would print a failing assert's operands, showing a test claim to the prompt's author
+    if quoted:
+        pytest.fail(f"{path.name} quotes a ground-truth claim of {', '.join(quoted)}", pytrace=False)
 
 
 def test_second_pass_is_shown_the_first_and_adds_what_it_missed(tmp_path):

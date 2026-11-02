@@ -170,6 +170,11 @@ def test_ad_counts_get_exact_intervals():
     assert (m["negative_ads_flagged"].low, m["negative_ads_flagged"].high) == exact(1, 2)
 
 
+def test_rule_precision_and_recall_get_intervals():
+    m = by_name()
+    assert m["rule_precision"].low is not None and m["rule_recall"].low is not None
+
+
 def test_judge_only_false_alarms_get_an_exact_interval():
     negatives = {f"T{n}": [screening(f"s{n}", ["Iron contributes"], {})] for n in range(10)}
     _, found = check_recall.scored(negatives, {i: truth(i, []) for i in negatives})

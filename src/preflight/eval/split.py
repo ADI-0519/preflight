@@ -28,7 +28,7 @@ class Split(BaseModel):
         return [*self.dev, *self.test]
 
     def excluded_ruling_ids(self) -> set[str]:
-        """Rulings that must never reach prompts, examples or the precedent index (rule 5)."""
+        # rule 5: these rulings never reach prompts, examples or the precedent index
         return {i for i in self.items if RULING_ID.match(i)}
 
 
@@ -53,11 +53,6 @@ class GroundTruth(BaseModel):
 
 
 class TeamAd(BaseModel):
-    """An ad the team wrote whose only health claims are verbatim authorised register wording.
-
-    A near-miss item (P65) is one of these with one breaching line put in: `inserted`, about `substance`.
-    """
-
     model_config = ConfigDict(frozen=True, extra="forbid")
 
     item_id: str

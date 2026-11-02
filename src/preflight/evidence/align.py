@@ -1,3 +1,4 @@
+import logging
 import re
 import statistics
 from collections.abc import Callable
@@ -6,6 +7,8 @@ from functools import cache
 Span = tuple[float, float]
 # (mono s16 PCM, sample rate, words) -> seconds from the PCM's start per word (None if unalignable), score 0-1
 Aligner = Callable[[bytes, int, list[str]], tuple[list[Span | None], float]]
+
+log = logging.getLogger(__name__)
 
 
 def letters(word: str) -> str:
@@ -27,9 +30,14 @@ def mms_aligner() -> Aligner | None:
         import torchaudio.functional as F
     except ImportError:
         return None
+    try:
+        model, labels, model_rate = load()
+    except (OSError, RuntimeError) as e:
+        # weights neither cached nor downloadable: the ad keeps turn timing, and no turn retries the download
+        log.warning("word alignment unavailable: %s", type(e).__name__)
+        return None
 
     def align(pcm: bytes, rate: int, words: list[str]) -> tuple[list[Span | None], float]:
-        model, labels, model_rate = load()
         spelt = [letters(w) for w in words]
         if not any(spelt):
             return [None] * len(words), 0.0

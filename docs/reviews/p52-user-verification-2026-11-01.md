@@ -4,7 +4,7 @@
 
 After the P52 implementation was committed as `dd0ba9b`, a separate frontend
 presentation pass implemented the [approved design direction](../notes/p52-design-research.md).
-This follow-up remains uncommitted. It adds dark/light appearance, a compact loaded
+It was committed as `4b09f25`. It adds dark/light appearance, a compact loaded
 workspace, recorded-evidence time-axis lanes, dedicated editor/comparison views
 and exact changed-line highlighting between any two saved rounds. No API,
 model, schema, source, evaluation or decision-eligibility logic changed.

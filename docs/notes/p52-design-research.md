@@ -1,7 +1,8 @@
 # P52 design research and proposed direction
 
-Researched 1 November 2026 against implementation `dd0ba9b`. This is a proposal,
-not a record of a shipped redesign. Runtime code is unchanged by this research.
+Researched 1 November 2026 against implementation `dd0ba9b`. This note is the
+research record and the proposal as it stood then; the direction was implemented in
+`4b09f25`, and the shipped behaviour is described in [web.md](../web.md).
 
 ## Assessment of the current page
 

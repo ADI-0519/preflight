@@ -5,6 +5,7 @@ import json
 import math
 import mimetypes
 import re
+from functools import cache
 from pathlib import Path
 from typing import Literal
 
@@ -15,11 +16,10 @@ from pydantic import BaseModel, Field, model_validator
 
 from preflight.agent.fix import read_log
 from preflight.api.storage import APIError
-from preflight.schema import NOTICE, Screening, verify_sources
-from preflight.sources.cap import load_cap_rules
-from preflight.sources.on_hold import load_on_hold
-from preflight.sources.register import load_register
-from preflight.sources.rulings import load_ruling_index
+from preflight.schema import NOTICE, Screening, register_entries, verify_sources
+from preflight.sources.cap import CapRule, load_cap_rules
+from preflight.sources.on_hold import OnHoldClaim, load_on_hold
+from preflight.sources.rulings import RulingMeta, load_ruling_index
 
 ROOT = Path(__file__).resolve().parents[3]
 
@@ -32,11 +32,11 @@ def inside(root: Path, name: str) -> Path:
 
 
 def media_response(path: Path, request: Request) -> Response:
-    # Copy while holding the retention lock: no open file survives local expiry.
-    body = path.read_bytes()
-    size = len(body)
+    size = path.stat().st_size
     headers = {"Accept-Ranges": "bytes", "X-Content-Type-Options": "nosniff"}
+    media_type = mimetypes.guess_type(path)[0] or "application/octet-stream"
     value = request.headers.get("range")
+    start, end, status = 0, size - 1, 200
     if value:
         match = re.fullmatch(r"bytes=(\d*)-(\d*)", value)
         if len(value) > 200 or not match or not any(match.groups()):
@@ -47,18 +47,36 @@ def media_response(path: Path, request: Request) -> Response:
         if start >= size or end < start:
             return Response(status_code=416, headers=headers | {"Content-Range": f"bytes */{size}"})
         headers["Content-Range"] = f"bytes {start}-{end}/{size}"
-        return Response(body[start:end + 1], status_code=206, headers=headers,
-                        media_type=mimetypes.guess_type(path)[0] or "application/octet-stream")
-    return Response(body, headers=headers, media_type=mimetypes.guess_type(path)[0] or "application/octet-stream")
+        status = 206
+    # read the slice while the caller holds the retention lock: no open file survives local expiry
+    with path.open("rb") as f:
+        f.seek(start)
+        body = f.read(end - start + 1)
+    return Response(body, status_code=status, headers=headers, media_type=media_type)
+
+
+@cache
+def ruling_lookup(version: str) -> dict[str, RulingMeta]:
+    return {e.ruling_id: e for e in load_ruling_index(version)}
+
+
+@cache
+def cap_rule_lookup(version: str) -> dict[str, CapRule]:
+    return load_cap_rules(version).rules
+
+
+@cache
+def on_hold_lookup(version: str) -> dict[str, OnHoldClaim]:
+    return {e.on_hold_id: e for e in load_on_hold(version)}
 
 
 def presentation(screening: Screening, crop_base: str) -> dict:
     verify_sources(screening)
     snapshots = screening.snapshots
-    caps = load_cap_rules(snapshots.cap_rules).rules
-    register = {e.register_id: e for e in load_register(snapshots.gb_register)}
-    held = {e.on_hold_id: e for e in load_on_hold(snapshots.on_hold)}
-    rulings = {e.ruling_id: e for e in load_ruling_index(snapshots.rulings)}
+    caps = cap_rule_lookup(snapshots.cap_rules)
+    register = register_entries(snapshots.gb_register)
+    held = on_hold_lookup(snapshots.on_hold)
+    rulings = ruling_lookup(snapshots.rulings)
 
     def source(ref):
         if ref.kind == "cap_rule":
@@ -269,13 +287,14 @@ def install_web(app, service, *, web_root: Path, demo_root: Path, results_root: 
     @app.get("/ui/fixes/{job_id}/rounds/{number}/media")
     def round_media(job_id: str, number: int, request: Request):
         with storage.lock:
-            found = next((r for r in rounds(job_id) if r["round"] == number), None)
-            if found is None:
-                raise APIError(404, "round_not_available")
+            service.fix_result(job_id)
             directory = storage.job_dir(storage.job(job_id))
-            suffix = "mp4" if found["format"] == "video" else "png"
-            path = inside(directory, f'renders/{found["screening"]["screening_id"]}/draft.{suffix}')
-            return media_response(path, request)
+            record = next((r for r in read_log(directory / "audit.jsonl")
+                           if r["event"] == "round" and r["round"] == number), None)
+            if record is None:
+                raise APIError(404, "round_not_available")
+            suffix = "mp4" if record["draft"]["format"] == "video" else "png"
+            return media_response(inside(directory, f'renders/{record["screening_id"]}/draft.{suffix}'), request)
 
     @app.get("/ui/demos")
     def demo_items():
@@ -309,8 +328,7 @@ def install_web(app, service, *, web_root: Path, demo_root: Path, results_root: 
         if entry["kind"] == "synthetic":
             return {"kind": "synthetic", "message": "Team-made synthetic fixture. No ASA outcome exists."}
         result = demos.result(entry)
-        ruling = next((r for r in load_ruling_index(result.snapshots.rulings)
-                       if r.ruling_id == entry.get("ruling_id")), None)
+        ruling = ruling_lookup(result.snapshots.rulings).get(entry.get("ruling_id"))
         if ruling is None:
             raise APIError(409, "ruling_not_available")
         return {"kind": "reconstruction", "ruling_id": ruling.ruling_id, "date": str(ruling.date),

@@ -1,10 +1,9 @@
 import { test, expect } from '@playwright/test';
 import path from 'node:path';
-import { mkdirSync } from 'node:fs';
 
 const media = path.resolve(import.meta.dirname, '../../tests/fixtures/models/media/captions.mp4');
-const screenshots = path.resolve(import.meta.dirname, '../../data/work/verification/p52-redesign');
-mkdirSync(screenshots, { recursive: true });
+
+test.use({ colorScheme: 'dark' });
 
 async function checkTextContrast(page: import('@playwright/test').Page) {
   const tokens = await page.evaluate(() => {
@@ -44,7 +43,7 @@ async function checkTextContrast(page: import('@playwright/test').Page) {
 
 test('loaded evidence leads on desktop and appearance preserves the selected claim', async ({
   page,
-}) => {
+}, testInfo) => {
   const errors: string[] = [];
   page.on('pageerror', (e) => errors.push(e.message));
   await page.setViewportSize({ width: 1280, height: 800 });
@@ -66,9 +65,9 @@ test('loaded evidence leads on desktop and appearance preserves the selected cla
   await checkTextContrast(page);
   await expect(evidence.locator('h3')).toHaveText(title);
   await expect(page.getByRole('note')).toBeInViewport();
-  await page.screenshot({ path: path.join(screenshots, 'evidence-light.png'), fullPage: true });
+  await page.screenshot({ path: testInfo.outputPath('evidence-light.png'), fullPage: true });
   await page.getByRole('button', { name: 'Dark appearance', exact: true }).click();
-  await page.screenshot({ path: path.join(screenshots, 'evidence-dark.png'), fullPage: true });
+  await page.screenshot({ path: testInfo.outputPath('evidence-dark.png'), fullPage: true });
   expect(errors).toEqual([]);
 });
 
@@ -95,7 +94,7 @@ test('each time-axis row is keyboard selectable and seeks to recorded evidence',
 
 test('a loaded result remains readable on mobile and at doubled content scale', async ({
   page,
-}) => {
+}, testInfo) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/');
   await expect(page.getByLabel('Upload ad')).toBeEnabled();
@@ -106,11 +105,38 @@ test('a loaded result remains readable on mobile and at doubled content scale', 
   await page.getByRole('button', { name: 'Prepare revision', exact: true }).click();
   await expect(page.getByLabel('On-screen captions')).toBeVisible();
   expect(await noOverflow()).toBe(true);
-  await page.screenshot({ path: path.join(screenshots, 'editor-mobile.png'), fullPage: true });
+  await page.screenshot({ path: testInfo.outputPath('editor-mobile.png'), fullPage: true });
   await page.setViewportSize({ width: 1280, height: 800 });
   await page.evaluate(() => {
     document.body.style.zoom = '2';
   });
   expect(await noOverflow()).toBe(true);
   await expect(page.getByRole('note')).toBeVisible();
+});
+
+test('leaving the evidence view pauses the ad video', async ({ page }) => {
+  await page.goto('/');
+  await expect(page.getByLabel('Upload ad')).toBeEnabled();
+  await page.getByLabel('Upload ad').setInputFiles(media);
+  const video = page.locator('.viewer video');
+  await expect(video).toBeVisible({ timeout: 30000 });
+  await video.evaluate((v: HTMLVideoElement) => {
+    v.muted = true;
+    v.loop = true;
+    return v.play();
+  });
+  expect(await video.evaluate((v: HTMLVideoElement) => v.paused)).toBe(false);
+  await page.getByRole('button', { name: 'Prepare revision', exact: true }).click();
+  await expect.poll(() => video.evaluate((v: HTMLVideoElement) => v.paused)).toBe(true);
+});
+
+test.describe('light system preference', () => {
+  test.use({ colorScheme: 'light' });
+
+  test('initial appearance follows prefers-color-scheme', async ({ page }) => {
+    await page.goto('/');
+    await expect(page.locator('html')).toHaveAttribute('data-appearance', 'light');
+    expect(await page.evaluate(() => document.documentElement.dataset.appearance)).toBe('light');
+    await expect(page.getByRole('button', { name: 'Dark appearance', exact: true })).toBeVisible();
+  });
 });

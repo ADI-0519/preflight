@@ -78,7 +78,7 @@ test('an expired job link is recoverable without offering approval', async ({ pa
   await page.goto('/?job=ffffffffffffffffffffffffffffffff');
   await expect(page.getByRole('alert')).toContainText('retention period has ended');
   await expect(page.getByLabel('Upload ad')).toBeEnabled();
-  await expect(page.getByRole('button', { name: 'Approve · record my review' })).toHaveCount(0);
+  await expect(page.getByRole('button', { name: 'Record my review decision' })).toHaveCount(0);
 });
 
 test('a dropped SSE connection resumes without replaying earlier events', async ({ page }) => {

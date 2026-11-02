@@ -86,7 +86,9 @@ function App() {
   const [voiceover, setVoiceover] = useState('');
   const [still, setStill] = useState<File | null>(null);
   const [view, setView] = useState<'evidence' | 'edit' | 'compare'>('evidence');
-  const [appearance, setAppearance] = useState<'dark' | 'light'>('dark');
+  const [appearance, setAppearance] = useState<'dark' | 'light'>(() =>
+    window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark',
+  );
   const [currentTime, setCurrentTime] = useState(0);
   const player = useRef<HTMLVideoElement>(null);
   const generation = useRef(0);
@@ -95,6 +97,10 @@ function App() {
   useEffect(() => {
     document.documentElement.dataset.appearance = appearance;
   }, [appearance]);
+
+  useEffect(() => {
+    if (view !== 'evidence') player.current?.pause();
+  }, [view]);
 
   function fail(e: unknown) {
     setError(e instanceof Error ? e.message : 'Something went wrong. Please try again.');
@@ -775,13 +781,13 @@ function App() {
                   verdict.
                 </label>
                 <button type="submit" disabled={busy || !by.trim() || !confirmed}>
-                  Approve · record my review
+                  Record my review decision
                 </button>
               </form>
             ) : (
               <p className="notice">
-                This draft needs a person. Approval is unavailable while flags remain or screening
-                is incomplete.
+                This draft needs a person. Recording a review decision is unavailable while flags
+                remain or screening is incomplete.
               </p>
             )}
           </section>

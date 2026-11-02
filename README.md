@@ -40,6 +40,8 @@ uv run --offline python scripts/verify_screening_replay.py --out data/work/verif
 
 Choose a new output directory on each run. It writes labelled HTML, screening JSON and a provenance manifest. This checks recorded-response contracts and rendering, not live model accuracy or ruling-text retrieval. See [the development workflow](docs/notes/engineering-workflow.md) for the research, limitations and next verification steps.
 
+`preflight screen`, `preflight fix` and `scripts/agent_demo.py` take `--replay`: every model answer comes from the recordings in `data/cache/`, a missing one fails the run instead of calling the API, and no `META_API_KEY` is needed.
+
 ## Use as a tool
 
 Other agents can call PreFlight as two tools: `screen_ad` (screen a video, image or page) and `fix_ad` (screen a draft and swap flagged lines for register wording). `screen_ad` returns the flagged lines, each with its CAP rules, sources, evidence and any register wording, a shorter flagged phrase on the same evidence folded under the line that contains it, and the register's authorised entries for each flagged substance. A draft can be just a script, voiceover and on-screen text with no picture, which `fix_ad` renders on a plain card. There is no approve or publish tool. A person records approval with `preflight approve <log> --by <name>`.

@@ -9,7 +9,7 @@ import openai
 import pytest
 from dotenv import load_dotenv
 
-from preflight.models import CacheMiss, Sam, Spark, Store, VoiceTranscribe, from_env
+from preflight.models import CacheMiss, Sam, Spark, Store, VoiceTranscribe, clients, from_env
 from preflight.models.clients import parse_sam
 from preflight.models.store import check_model
 
@@ -199,6 +199,15 @@ def test_replay_miss_raises(tmp_path):
     with pytest.raises(CacheMiss, match="muse-spark-1.3"):
         spark.ask("hello", prompt_version=PV, effort="low")
     assert api.requests == 0
+
+
+def test_replay_needs_no_key(replay, monkeypatch):
+    monkeypatch.setattr(clients, "load_dotenv", lambda: None)
+    monkeypatch.delenv("META_API_KEY")
+    models = from_env(Store(FIXTURES, "replay"))
+    assert models.transcribe.transcribe(WAV)[0].text
+    with pytest.raises(KeyError, match="META_API_KEY"):
+        from_env(Store(FIXTURES))
 
 
 def test_contributor_model_refused(tmp_path):

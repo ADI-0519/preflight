@@ -337,7 +337,8 @@ class Models:
 def from_env(store: Store | None = None, sleep: Callable[[float], None] = time.sleep) -> Models:
     load_dotenv()
     store = store or Store()
-    key = os.environ["META_API_KEY"]
+    # a replay never reaches the API, so someone without a key can still play a recording
+    key = (os.environ.get("META_API_KEY") or "replay-only") if store.mode == "replay" else os.environ["META_API_KEY"]
     meta = OpenAI(base_url=BASE_URL, api_key=key, max_retries=0)
     glimmer = None
     if os.environ.get("GLIMMER_MODEL") and os.environ.get("BASETEN_API_KEY"):

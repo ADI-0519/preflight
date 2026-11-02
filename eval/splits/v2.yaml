@@ -2,10 +2,10 @@
 # Item IDs are ASA ruling IDs (positives), T-numbers (team-written negatives) or N-numbers (near-miss positives: a
 # team-written negative with one breaching line put in, P65).
 version: v2
-frozen: false
+frozen: true
 created: '2026-11-01'
-status: 'open: T16-T25 and N01-N10 (dev) and T26-T35 and N11-N20 (test) await a founder check; false-alarm pass mark to
-  agree'
+status: 'frozen 2 Nov 2026: every item checked (docs/notes/split-v2-test-items.md), false-alarm pass mark agreed
+  (docs/notes/decisions.md)'
 sources:
   rulings: '2026-10-31'
   register: '2026-05-19'

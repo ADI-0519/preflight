@@ -70,7 +70,7 @@ Claims are out of 250. `check-20261101T210914` is a second v5 run that replayed 
 - **v5 keeps most of v4's gain over v3** (194 and 190 against 166 claims with a matching rule) without v4's item-specific wording. The 14 to 18 claims between v4 and v5 are partly noise and partly guidance v5 deleted (beauty claims under 12.1).
 - **Run-to-run noise is larger than the totals suggest.** The two v5 runs differ by 4 claims net, but 15 claims changed between them, because one call judges all of an ad's claims and a change in how it reads one ad moves several claims together. Take differences under about 8 claims as noise.
 - **Extraction is the ceiling.** 39 of the 250 claims never reach the judge.
-- **The judge flags 23 to 25 claims per positive ad** against 10 ground-truth claims, since P26 lists overlapping phrases and the claims inside them. On the 5 register-worded team ads, which no version flags, that is not a false-alarm rate; split v2's negatives are below.
+- **The judge flags 23 to 25 claims per positive ad** against 10 ground-truth claims, since P26 lists overlapping phrases and the claims inside them. Those extra flags fall on positive ads, so they are not false alarms; no version flags any of the 5 register-worded team ads, and split v2's negatives are below.
 
 ### Negatives that read like real ads (split v2)
 

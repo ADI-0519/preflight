@@ -35,7 +35,7 @@ def default_id(done: Ingested) -> str:
 def attempt[T](stage: str, model: str, prompt: str | None, empty: T, call: Callable[[], tuple[T, StageRun]]):
     try:
         return call()
-    # a replay with a missing recording is a broken replay, not a stage that failed on the ad
+    # a missing recording breaks the whole replay, so it stops the screening
     except CacheMiss:
         raise
     except Exception as e:

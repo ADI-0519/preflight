@@ -55,6 +55,9 @@ class PrecedentIndex:
         item_id: str | None = None,
         before: date | None = None,
     ):
+        if item_id and RULING_ID.match(item_id) and before is None:
+            # rule 5: an item on a ruling needs its ruling's date, or later rulings from its sweep slip in
+            raise ValueError(f"an index for {item_id} needs the date of its ruling")
         if split_advertisers is None:
             split_advertisers = {m.ruling_id: m.advertiser for m in load_ruling_index(version)}
         barred = _barred(split, item_id)

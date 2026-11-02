@@ -98,11 +98,15 @@ def test_leave_one_out_keeps_the_other_dev_rulings():
 def test_index_for_an_item_refuses_its_own_ruling_and_advertiser():
     by_id = {r.ruling_id: r for r in LOO_RULINGS}
     advertisers = {i: r.advertiser for i, r in by_id.items()}
+    own = by_id["A26-000001"].date
     for refused in ("A26-000001", "A24-000009", "G26-000002", "A23-000008"):
         with pytest.raises(ValueError, match=refused):
-            PrecedentIndex([by_id[refused]], LOO_SPLIT, "v", advertisers, item_id="A26-000001")
-    kept = PrecedentIndex([by_id["A26-000003"]], LOO_SPLIT, "v", advertisers, item_id="A26-000001")
+            PrecedentIndex([by_id[refused]], LOO_SPLIT, "v", advertisers, item_id="A26-000001", before=own)
+    kept = PrecedentIndex([by_id["A26-000003"]], LOO_SPLIT, "v", advertisers, item_id="A26-000001", before=own)
     assert [r.ruling_id for r in kept.rulings] == ["A26-000003"]
+    with pytest.raises(ValueError, match="needs the date"):
+        PrecedentIndex([by_id["A26-000003"]], LOO_SPLIT, "v", advertisers, item_id="A26-000001")
+    assert PrecedentIndex([by_id["A26-000003"]], LOO_SPLIT, "v", advertisers, item_id="team-01").rulings
 
 
 def test_an_item_sees_only_rulings_published_before_its_own():

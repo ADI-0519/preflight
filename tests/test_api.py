@@ -74,7 +74,13 @@ def replay_ingest(path, out_root):
     return done.model_copy(update={"video": MEDIA / "captions.mp4", "audio": MEDIA / "speech.wav"})
 
 
+# the folders the service hands the draft screener, where its renders go
+SCREENER_DIRS: list[Path] = []
+
+
 def recorded_screener(models, precedents, directory, align=None):
+    SCREENER_DIRS.append(directory)
+
     def replay(draft, screening_id, previous_id):
         number = 0 if previous_id is None else 1
         return Screening.model_validate_json((AGENT / f"round{number}.json").read_text(encoding="utf-8")).model_copy(
@@ -101,7 +107,8 @@ def test_replayed_upload_screening_progress_and_reconnect(app):
         assert response.status_code == 200
         result = Screening.model_validate(response.json())
         assert len(result.claims) == 3
-        assert {flag.claim_id for flag in result.flags} == {"claim-1", "claim-2"}
+        # the judge reads "Supports your immune system" as a general claim beside the authorised one (CAP 15.2)
+        assert {flag.claim_id for flag in result.flags} == {"claim-2"}
         assert all(flag.sources for flag in result.flags)
         assert result.notice == NOTICE
         report = client.get(f"/screenings/{job_id}/report")
@@ -144,6 +151,8 @@ def test_fix_and_explicit_human_approval_use_the_existing_loop(app):
         still_url = result.json()["draft"]["scenes"][0]["still_url"]
         assert client.get(still_url).content == (AGENT / "still.png").read_bytes()
         directory = app.state.service.storage.job_dir(app.state.service.storage.jobs[job_id])
+        # rule 6: renders go in the job's folder, so they expire with it
+        assert SCREENER_DIRS[-1] == directory
         log = directory / "audit.jsonl"
         before = log.read_text(encoding="utf-8")
         assert '"event": "approved"' not in before

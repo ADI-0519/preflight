@@ -169,11 +169,16 @@ def test_prompt_holds_no_split_item(path):
     text = normalised(prompt)
     split = load_split("v1")
     assert len(list((EVAL_DIR / "ground_truth" / "v1").glob("*.json"))) == len(split.items)
-    for item_id in split.items:
-        for c in load_ground_truth("v1", item_id).claims:
-            # single words such as "energy" are ordinary vocabulary; a phrase of three or more is a quote
-            if len(normalised(c.claim).split()) >= 3:
-                assert f" {normalised(c.claim)} " not in f" {text} ", item_id
+    quoted = sorted({
+        item_id
+        for item_id in split.items
+        for c in load_ground_truth("v1", item_id).claims
+        # single words such as "energy" are ordinary vocabulary; a phrase of three or more is a quote
+        if len(normalised(c.claim).split()) >= 3 and f" {normalised(c.claim)} " in f" {text} "
+    })  # fmt: skip
+    # item IDs only: pytest would print a failing assert's operands, showing a test claim to the prompt's author
+    if quoted:
+        pytest.fail(f"{path.name} quotes a ground-truth claim of {', '.join(quoted)}", pytrace=False)
 
 
 def test_second_pass_is_shown_the_first_and_adds_what_it_missed(tmp_path):
@@ -189,9 +194,10 @@ def test_second_pass_is_shown_the_first_and_adds_what_it_missed(tmp_path):
     claims, stage = extract_claims(ingested(tmp_path, "video"), spark, [SEGMENT], [TEXT], [TRACK], second_pass=True)
     assert [c.text for c in claims] == ["100% natural", "Feel calmer"]
     assert stage.prompt == "claims_v3+claims_missed_v1"
-    (asked, _), (second, kwargs) = spark.calls
+    (asked, first_kwargs), (second, kwargs) = spark.calls
     assert second.startswith(asked) and '"text": "100% natural"' in second
-    assert kwargs["prompt_version"] == "claims_v3+claims_missed_v1"
+    # the first call is keyed as a single-pass call, so its cached answer is shared
+    assert (first_kwargs["prompt_version"], kwargs["prompt_version"]) == ("claims_v3", "claims_v3+claims_missed_v1")
 
 
 def test_a_quote_covering_much_more_than_the_claim_scores_only_loosely():

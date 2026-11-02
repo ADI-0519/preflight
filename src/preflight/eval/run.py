@@ -11,6 +11,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Literal
 
+from preflight import check as judge
 from preflight.check.precedents import PrecedentIndex, load_precedents
 from preflight.eval.check_reconstructions import carried, lines, words
 from preflight.eval.claim_recall import WORK, Metered, cost, media_of
@@ -75,11 +76,13 @@ def kept(truth: GroundTruth) -> list[bool] | None:
 
 def screen_item(
     truth: GroundTruth, models: Models, precedents: PrecedentIndex, run_id: str, align: Literal["mms"] | None,
+    judge_prompt: str = judge.PROMPT_VERSION,
 ) -> tuple[ItemScore, list[Screening], float]:
     item_models, bill = metered(models)
     screenings = []
     for path in media(truth.item_id):
-        s = screen(ingest(path), item_models, precedents, f"{run_id}-{truth.item_id}-{path.stem}", align=align)
+        screening_id = f"{run_id}-{truth.item_id}-{path.stem}"
+        s = screen(ingest(path), item_models, precedents, screening_id, judge_prompt=judge_prompt, align=align)
         (WORK / run_id / f"{s.screening_id}.json").write_text(s.model_dump_json(indent=1), encoding="utf-8")
         screenings.append(s)
     return score_item(truth, screenings, kept(truth)), screenings, bill()
@@ -92,6 +95,7 @@ def joined(screenings: list[Screening], value) -> str:
 def citation_spread(screenings: list[Screening]) -> list[Metric]:
     cited = Counter(s.ruling_id for sc in screenings for f in sc.flags for s in f.sources if s.kind == "ruling")
     total = sum(cited.values())
+    # both counts are over citations, so the rulings count reads as distinct rulings among that many citations
     return [
         Metric("precedent_citations_top6", sum(n for _, n in cited.most_common(6)), total),
         Metric("precedent_rulings_cited", len(cited), total),
@@ -106,13 +110,24 @@ def rescore(run_id: str) -> None:
     if row["part"] == "test":
         # rule 5: the test part is scored once, by the run that screened it
         raise SystemExit("a test run is not rescored")
+    if reason := void_runs().get(run_id):
+        raise SystemExit(f"{run_id} is void ({reason}) and is not rescored")
+    scored = RESULTS / "runs" / f"{run_id}.csv"
+    if "-rescored-" in run_id or not scored.exists():
+        raise SystemExit(f"{run_id} has no saved screenings; rescore the run that screened the ads")
+    with scored.open(newline="", encoding="utf-8") as f:
+        expected = {r["item_id"]: int(r["media"]) for r in csv.DictReader(f)}
     screenings: dict[str, list[Screening]] = {}
     for path in sorted((WORK / run_id).glob(f"{run_id}-*.json")):
-        # files are named <run_id>-<item_id>-<media stem>, and neither stem holds a hyphen
+        # files are named <run_id>-<item_id>-<media stem>; the media stem holds no hyphen, so the last one splits them
         item_id = path.stem.removeprefix(f"{run_id}-").rsplit("-", 1)[0]
         screenings.setdefault(item_id, []).append(Screening.model_validate_json(path.read_text(encoding="utf-8")))
+    short = sorted(i for i, n in expected.items() if len(screenings.get(i, [])) != n)
+    if short:
+        # rule 11: a rescore on fewer ads would register under the same split and part as the whole run
+        raise SystemExit(f"{run_id}: saved screenings missing for {', '.join(short)}")
     # in the split's order, as the run scored them, so the bootstrap draws the same resamples
-    order = [i for i in getattr(load_split(row["split"]), row["part"]) if i in screenings]
+    order = [i for i in getattr(load_split(row["split"]), row["part"]) if i in expected]
     truths = [load_ground_truth(row["split"], i) for i in order]
     scores = [score_item(t, screenings[t.item_id], kept(t)) for t in truths]
     created = datetime.now(UTC)
@@ -125,6 +140,15 @@ def rescore(run_id: str) -> None:
     show(new_id, run_metrics)
 
 
+def void_runs() -> dict[str, str]:
+    # registered runs that must not be quoted, with the reason; rows in runs.csv are never edited
+    path = RESULTS / "void.csv"
+    if not path.exists():
+        return {}
+    with path.open(newline="", encoding="utf-8") as f:
+        return {r["run_id"]: r["reason"] for r in csv.DictReader(f)}
+
+
 def show(run_id: str, run_metrics: list[Metric]) -> None:
     for m in run_metrics:
         print(f"{run_id} {m.name}: {m.hits} / {m.total}" + (f" [{m.low}, {m.high}]" if m.low is not None else ""))
@@ -132,14 +156,19 @@ def show(run_id: str, run_metrics: list[Metric]) -> None:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Screen every item of a split part end to end and register the run.")
-    parser.add_argument("--split", default="v1")
-    parser.add_argument("--part", choices=["dev", "test"], default="dev")
+    parser.add_argument("--split", help="split version (default: v1)")
+    parser.add_argument("--part", choices=["dev", "test"], help="split part (default: dev)")
     parser.add_argument("--only", nargs="*", help="item IDs to run (default: the whole part)")
     parser.add_argument("--no-align", action="store_true", help="keep each transcription turn's timing")
+    parser.add_argument("--judge-prompt", default=judge.PROMPT_VERSION, help="a candidate judge prompt to measure")
     parser.add_argument("--rescore", metavar="RUN_ID", help="score a registered dev run again; no model calls")
     args = parser.parse_args()
     if args.rescore:
+        if args.split or args.part or args.only:
+            # a rescore takes its split, part and items from the registered run
+            parser.error("--rescore takes no --split, --part or --only")
         return rescore(args.rescore)
+    args.split, args.part = args.split or "v1", args.part or "dev"
     if args.part == "test" and args.only:
         raise SystemExit("the test part runs whole")
     sha = revision(args.part)
@@ -157,7 +186,9 @@ def main() -> None:
     began = time.monotonic()
     align = None if args.no_align else "mms"
     with ThreadPoolExecutor(max_workers=WORKERS) as pool:
-        done = list(pool.map(lambda t: screen_item(t, models, precedents[t.item_id], run_id, align), truths))
+        done = list(pool.map(
+            lambda t: screen_item(t, models, precedents[t.item_id], run_id, align, args.judge_prompt), truths
+        ))
     seconds = time.monotonic() - began
 
     rows = []

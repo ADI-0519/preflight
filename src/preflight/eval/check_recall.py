@@ -78,7 +78,7 @@ def scored(judged: dict[str, list[Screening]], truths: dict[str, GroundTruth]) -
     def ads(name: str, hits: int, n: int) -> tuple:
         return name, hits, n, *exact(hits, n)
 
-    return rows, [
+    found = [
         ads("ad_recall", sum(r["caught_with_rule"] > 0 for r in positives), len(positives)),
         ("claim_recall", total(positives, "caught_with_rule"), total(positives, "claims")),
         ("claim_recall_any_rule", total(positives, "caught"), total(positives, "claims")),
@@ -93,10 +93,11 @@ def scored(judged: dict[str, list[Screening]], truths: dict[str, GroundTruth]) -
         ads("negative_ads_flagged_judge_only", sum(r["flags"] > 0 for r in negatives), len(negatives)),
         ("flags_per_negative_ad_judge_only", total(negatives, "flags"), len(negatives)),
     ]
+    # a run on negatives alone has no positive to divide by, and a 0 of 0 row says nothing
+    return rows, [m for m in found if m[2]]
 
 
 def rescore(run_id: str, claims_run: str, split: str) -> None:
-    """Score a saved check run again under the current scoring, with no model calls, as a new run."""
     items = {}
     for path in (WORK / claims_run).glob("*.json"):
         if path.name == "details.json":

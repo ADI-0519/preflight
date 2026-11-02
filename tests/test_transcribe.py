@@ -102,8 +102,8 @@ def test_unalignable_words_take_neighbour_span(tmp_path):
     voice = Stub([Turn(1000, 5000, "1000 Daily 1000 users 100%", "A")])
     spans = [None, (0.5, 0.9), None, (1.2, 1.5), None]
     segments, _ = transcribe(ingested(silent(tmp_path / "a.wav", 10)), voice, align=fake(spans))
-    # the whole turn is one phrase; its edges are the turn edges where the neighbours are missing
-    assert [(s.start, s.end) for s in segments] == [(1.0, 5.15)]
+    # the whole turn is one phrase; its edges are the turn edges where the neighbours are missing, with no tail
+    assert [(s.start, s.end) for s in segments] == [(1.0, 5.0)]
 
 
 def test_unalignable_word_between_phrases(tmp_path):

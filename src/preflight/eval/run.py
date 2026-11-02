@@ -1,5 +1,4 @@
 import argparse
-import csv
 import io
 import time
 import wave
@@ -14,7 +13,7 @@ from preflight.check.precedents import PrecedentIndex, load_precedents
 from preflight.eval.check_reconstructions import carried, lines, words
 from preflight.eval.claim_recall import WORK, Metered, cost, media_of
 from preflight.eval.reconstruct import OUT_DIR, ShotList
-from preflight.eval.registry import RESULTS, Metric, register, revision, snapshot_text
+from preflight.eval.registry import RESULTS, Metric, register, revision, snapshot_text, write_rows
 from preflight.eval.score import ItemScore, metrics, score_item
 from preflight.eval.split import RULING_ID, GroundTruth, load_ground_truth, load_split
 from preflight.eval.team_media import TEAM_DIR
@@ -126,11 +125,7 @@ def main() -> None:
         })
         print(f"{score.item_id} ({score.label}): {score.caught} of {score.claims} caught, {score.flags} flags"
               + (f", FAILED {' '.join(failed)}" if failed else ""), flush=True)  # fmt: skip
-    (RESULTS / "runs").mkdir(parents=True, exist_ok=True)
-    with (RESULTS / "runs" / f"{run_id}.csv").open("w", newline="", encoding="utf-8") as f:
-        writer = csv.DictWriter(f, fieldnames=list(rows[0]))
-        writer.writeheader()
-        writer.writerows(rows)
+    write_rows(RESULTS / "runs" / f"{run_id}.csv", rows)
     if any(r["failed"] or r["incomplete_check"] for r in rows):
         # a failed stage would be scored as a miss or as a clean ad; rerun, and cached stages cost nothing
         raise SystemExit(f"{run_id}: stages failed or checks did not finish, so the run is not registered")

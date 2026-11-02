@@ -1,5 +1,4 @@
 import argparse
-import csv
 import hashlib
 import json
 import re
@@ -9,7 +8,7 @@ from datetime import UTC, datetime
 from preflight.check import EFFORT, PROMPT_VERSION, check
 from preflight.check.precedents import load_precedents
 from preflight.eval.claim_recall import PART, WORK, Metered, cost
-from preflight.eval.registry import RESULTS, register, revision, snapshot_text
+from preflight.eval.registry import RESULTS, register, revision, snapshot_text, write_rows
 from preflight.eval.score import caught
 from preflight.eval.split import GroundTruth, load_ground_truth, load_split, load_team_ad
 from preflight.models import from_env
@@ -93,14 +92,6 @@ def scored(judged: dict[str, list[Screening]], truths: dict[str, GroundTruth]) -
     ]
 
 
-def write_rows(run_id: str, rows: list[dict]) -> None:
-    (RESULTS / "runs").mkdir(parents=True, exist_ok=True)
-    with (RESULTS / "runs" / f"{run_id}.csv").open("w", newline="", encoding="utf-8") as f:
-        writer = csv.DictWriter(f, fieldnames=list(rows[0]))
-        writer.writeheader()
-        writer.writerows(rows)
-
-
 def rescore(run_id: str, claims_run: str, split: str) -> None:
     """Score a saved check run again under the current scoring, with no model calls, as a new run."""
     items = {}
@@ -121,7 +112,7 @@ def rescore(run_id: str, claims_run: str, split: str) -> None:
     stage = next(st for s in next(iter(judged.values())) for st in s.stages if st.stage == "check")
     # stamped, so a run rescored again after a later scoring change is registered apart from the first rescore
     new_id = f"{run_id}-rescored-{datetime.now(UTC):%Y%m%dT%H%M%S}"
-    write_rows(new_id, rows)
+    write_rows(RESULTS / "runs" / f"{new_id}.csv", rows)
     common = {
         "run_id": new_id,
         "created_at": datetime.now(UTC).isoformat(timespec="seconds"),
@@ -191,7 +182,7 @@ def main() -> None:
     with ThreadPoolExecutor(max_workers=4) as pool:
         judged = dict(zip(items, pool.map(judge, items), strict=True))
     rows, metrics = scored(judged, truths)
-    write_rows(run_id, rows)
+    write_rows(RESULTS / "runs" / f"{run_id}.csv", rows)
     (work / "details.json").write_text(
         json.dumps(
             [

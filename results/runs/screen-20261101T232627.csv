@@ -1,0 +1,11 @@
+item_id,label,claims,carried,caught,caught_carried,caught_any_rule,flags,caught_exact_rules,rules_cited,rules_related,media,failed,cost_usd
+T16,negative,0,0,0,0,0,0,0,0,0,1,,0.08349
+T17,negative,0,0,0,0,0,0,0,0,0,1,,0.12706
+T18,negative,0,0,0,0,0,0,0,0,0,1,,0.05486
+T19,negative,0,0,0,0,0,0,0,0,0,1,,0.12727
+T20,negative,0,0,0,0,0,0,0,0,0,1,,0.05172
+T21,negative,0,0,0,0,0,0,0,0,0,1,,0.10721
+T22,negative,0,0,0,0,0,0,0,0,0,1,,0.0678
+T23,negative,0,0,0,0,0,0,0,0,0,1,,0.11625
+T24,negative,0,0,0,0,0,0,0,0,0,1,,0.0566
+T25,negative,0,0,0,0,0,0,0,0,0,1,,0.11401

@@ -1,0 +1,150 @@
+{
+  "item_id": "A25-1274162",
+  "kind": "ruling",
+  "label": "positive",
+  "outcome": "upheld",
+  "claims": [
+    {
+      "claim": "boost your serotonin levels through the roof",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "increases the amount of melatonin that we have in our system",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "Saffron is also known as an anti-inflammatory",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "stimulant ADHD medicine will increase dopamine, but so will saffron",
+      "rules": [
+        "15.6",
+        "15.6.2",
+        "1.3"
+      ],
+      "points": [
+        1,
+        3
+      ]
+    },
+    {
+      "claim": "Why would we choose a nutraceutical over a pharmaceutical?",
+      "rules": [
+        "15.6",
+        "15.6.2",
+        "1.3"
+      ],
+      "points": [
+        1,
+        3
+      ]
+    },
+    {
+      "claim": "There are people who will respond to certain pharmaceutical medications, but there will always be people who do not respond to them",
+      "rules": [
+        "1.3"
+      ],
+      "points": [
+        3
+      ]
+    },
+    {
+      "claim": "there are hundreds of thousands, if not millions of people out there who do not choose to put pharmaceutical drugs in their body",
+      "rules": [
+        "1.3"
+      ],
+      "points": [
+        3
+      ]
+    },
+    {
+      "claim": "another reason for this is the incredible withdrawals and side effects that can come with them",
+      "rules": [
+        "1.3"
+      ],
+      "points": [
+        3
+      ]
+    },
+    {
+      "claim": "These powerful gummies and pops combine the best of nutrition and medicine",
+      "rules": [
+        "15.6",
+        "15.6.2",
+        "15.1",
+        "15.1.1",
+        "15.7"
+      ],
+      "points": [
+        1,
+        2
+      ]
+    },
+    {
+      "claim": "helping you stay strong, focused and energised every day",
+      "rules": [
+        "15.6",
+        "15.6.2",
+        "15.1",
+        "15.1.1",
+        "15.7"
+      ],
+      "points": [
+        1,
+        2
+      ]
+    },
+    {
+      "claim": "your sleep will be at ease",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "increased mood stability",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "it comes with powerful antioxidant",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.7"
+      ],
+      "points": [
+        2
+      ]
+    }
+  ],
+  "written_by": "draft: scripts/draft_split_v1.py",
+  "checked_by": "NEESAY"
+}

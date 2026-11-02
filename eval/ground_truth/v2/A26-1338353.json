@@ -1,0 +1,100 @@
+{
+  "item_id": "A26-1338353",
+  "kind": "ruling",
+  "label": "positive",
+  "outcome": "upheld",
+  "claims": [
+    {
+      "claim": "Low energy, brain fog, and mood swings holding you back?",
+      "rules": [
+        "3.1",
+        "3.7"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "Dopamine Patch",
+      "rules": [
+        "3.1",
+        "3.7"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "your daily boost for better mood, focus and motivation",
+      "rules": [
+        "3.1",
+        "3.7"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "Increase dopamine and serotonin levels",
+      "rules": [
+        "3.1",
+        "3.7"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "Stay motivated and clear-headed",
+      "rules": [
+        "3.1",
+        "3.7"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "Support emotional balance all day long",
+      "rules": [
+        "3.1",
+        "3.7"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "Clinically-backed ingredients",
+      "rules": [
+        "3.1",
+        "3.7"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "doesn't know I put a dopamine patch on him",
+      "rules": [
+        "1.3",
+        "4.4"
+      ],
+      "points": [
+        2
+      ]
+    },
+    {
+      "claim": "he wonders why the road trip is going so well",
+      "rules": [
+        "1.3",
+        "4.4"
+      ],
+      "points": [
+        2
+      ]
+    }
+  ],
+  "written_by": "draft: scripts/draft_split_v1.py",
+  "checked_by": "NEESAY"
+}

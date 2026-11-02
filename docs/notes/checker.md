@@ -66,7 +66,11 @@ Claims are out of 250. `check-20261101T210914` is a second v5 run that replayed 
 - **v5 keeps most of v4's gain over v3** (194 and 190 against 166 claims with a matching rule) without v4's item-specific wording. The 14 to 18 claims between v4 and v5 are partly noise and partly guidance v5 deleted (beauty claims under 12.1).
 - **Run-to-run noise is larger than the totals suggest.** The two v5 runs differ by 4 claims net, but 15 claims changed between them, because one call judges all of an ad's claims and a change in how it reads one ad moves several claims together. Take differences under about 8 claims as noise.
 - **Extraction is the ceiling.** 39 of the 250 claims never reach the judge.
-- **The judge flags 23 to 25 claims per positive ad** against 10 ground-truth claims, since P26 lists overlapping phrases and the claims inside them. False alarms are measured only on 5 register-worded team ads, which no version flags; that is not a false-alarm rate.
+- **The judge flags 23 to 25 claims per positive ad** against 10 ground-truth claims, since P26 lists overlapping phrases and the claims inside them. On the 5 register-worded team ads, which no version flags, that is not a false-alarm rate; split v2's negatives are below.
+
+### Negatives that read like real ads (split v2)
+
+Split v2 adds ten dev negatives (T16-T25): flavours, dosing, an offer and general well-being lines beside an authorised claim, every health claim in exact register wording. judge_v5 flags none of them, judged line by line (`check-20261101T232557`) or end to end, with the rendered ads screened through every stage (`screen-20261101T232627`, $0.91 for the ten). Ten ads the team wrote are not a false-alarm rate on real ads.
 
 ### Earlier runs (`claims-20261101T023641`, 209 of 250 extracted; CAP pack 2026-10-31; scored before the renumbering)
 

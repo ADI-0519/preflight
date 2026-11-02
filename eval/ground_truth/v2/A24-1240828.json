@@ -1,0 +1,68 @@
+{
+  "item_id": "A24-1240828",
+  "kind": "ruling",
+  "label": "positive",
+  "outcome": "upheld",
+  "claims": [
+    {
+      "claim": "I was hard hit with COVID. Now my hair’s growing back & the brain fog started to lift",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "Focus",
+      "rules": [
+        "15.6",
+        "15.6.2",
+        "15.1",
+        "15.7",
+        "15.1.1"
+      ],
+      "points": [
+        1,
+        2
+      ]
+    },
+    {
+      "claim": "Joint Relief",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "Energy",
+      "rules": [
+        "15.6",
+        "15.6.2",
+        "15.1",
+        "15.7",
+        "15.1.1"
+      ],
+      "points": [
+        1,
+        2
+      ]
+    },
+    {
+      "claim": "Mental Health",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "points": [
+        1
+      ]
+    }
+  ],
+  "written_by": "draft: scripts/draft_split_v1.py",
+  "checked_by": "NEESAY"
+}

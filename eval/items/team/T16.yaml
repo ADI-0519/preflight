@@ -1,0 +1,15 @@
+# Team-written negative for split v2 dev: realistic marketing copy whose only health claims are authorised
+# GB register wording, copied exactly (register 2026-05-19). Written on 1 Nov 2026, after the v1 dev positives were read.
+item_id: T16
+format: image
+product: vitamin C effervescent tablets
+register_ids:
+- gbhc-222b3bfc340d
+on_screen_text:
+- Vitamin C effervescent tablets
+- Zesty orange flavour
+- Vitamin C contributes to the normal function of the immune system
+- Just drop one in a glass of water
+- 20 tablets
+- Food supplements should not be used as a substitute for a varied and balanced diet and a healthy lifestyle.
+voiceover: ''

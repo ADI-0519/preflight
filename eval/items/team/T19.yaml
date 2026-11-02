@@ -1,0 +1,15 @@
+# Team-written negative for split v2 dev: realistic marketing copy whose only health claims are authorised
+# GB register wording, copied exactly (register 2026-05-19). Written on 1 Nov 2026, after the v1 dev positives were read.
+item_id: T19
+format: video
+product: iron and vitamin C tablets
+register_ids:
+- gbhc-03363fc179f2
+- gbhc-5481e7f148ce
+on_screen_text:
+- Iron and vitamin C tablets
+- Made in the UK
+- One small tablet a day
+- Food supplements should not be used as a substitute for a varied and balanced diet and a healthy lifestyle.
+voiceover: Iron contributes to the reduction of tiredness and fatigue. Vitamin C increases iron absorption. One small tablet
+  a day, with water.

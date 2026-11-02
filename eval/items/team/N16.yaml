@@ -1,0 +1,18 @@
+# Near-miss item (P65): team ad T31 with one breaching line put in by scripts/near_miss.py from eval/near_miss/test.yaml.
+item_id: N16
+format: video
+product: omega-3 fish oil capsules
+register_ids:
+- gbhc-8920a066d6df
+on_screen_text:
+- Omega-3 fish oil capsules
+- 500 mg EPA and DHA per capsule
+- Lemon flavour
+- One capsule a day
+- Food supplements should not be used as a substitute for a varied and balanced diet and a healthy lifestyle.
+voiceover: Omega-3 fish oil, in one capsule a day. EPA and DHA contribute to the normal function of the heart. The beneficial
+  effect is obtained with a daily intake of 250 mg of EPA and DHA. Each capsule provides 500 mg. EPA and DHA protect you against
+  heart disease.
+base: T31
+inserted: EPA and DHA protect you against heart disease.
+substance: Eicosapentaenoic acid and docosahexaenoic acid (EPA/DHA)

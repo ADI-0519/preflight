@@ -1,0 +1,19 @@
+{
+  "item_id": "N13",
+  "kind": "team",
+  "label": "positive",
+  "outcome": null,
+  "claims": [
+    {
+      "claim": "Potassium builds stronger muscles in just two weeks.",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.7"
+      ],
+      "points": []
+    }
+  ],
+  "written_by": "assistant: breach line in compliant team ad T28",
+  "checked_by": null
+}

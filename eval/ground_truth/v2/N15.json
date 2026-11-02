@@ -1,0 +1,19 @@
+{
+  "item_id": "N15",
+  "kind": "team",
+  "label": "positive",
+  "outcome": null,
+  "claims": [
+    {
+      "claim": "Glucomannan dramatically lowers your cholesterol within a month.",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.7"
+      ],
+      "points": []
+    }
+  ],
+  "written_by": "assistant: breach line in compliant team ad T30",
+  "checked_by": null
+}

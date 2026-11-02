@@ -1,0 +1,19 @@
+{
+  "item_id": "N19",
+  "kind": "team",
+  "label": "positive",
+  "outcome": null,
+  "claims": [
+    {
+      "claim": "Chromium speeds up your metabolism so you burn fat faster.",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.7"
+      ],
+      "points": []
+    }
+  ],
+  "written_by": "assistant: breach line in compliant team ad T34",
+  "checked_by": null
+}

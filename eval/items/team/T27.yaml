@@ -1,0 +1,17 @@
+# Team-written negative for split v2 test: realistic marketing copy whose only health claims are authorised
+# GB register wording, copied exactly (register 2026-05-19). Written on 2 Nov 2026 by an independent author.
+# fictional product: 75 µg vitamin K2 (menaquinone-7) per capsule (100% nrv), one capsule a day: at least a source of vitamin K
+# fictional product: 60 capsules a pot, vegetarian capsule shell
+item_id: T27
+format: video
+product: vitamin K2 capsules
+register_ids:
+- gbhc-2a3b13ace074
+on_screen_text:
+- Vitamin K2 capsules
+- 75 µg vitamin K2 per capsule
+- One capsule a day
+- Suitable for vegetarians
+- Food supplements should not be used as a substitute for a varied and balanced diet and a healthy lifestyle.
+voiceover: One capsule, once a day, alongside your usual routine. Vitamin K contributes to the maintenance of normal bones.
+  Each pot holds sixty capsules, so you're set for two months.

@@ -1,0 +1,18 @@
+{
+  "item_id": "N12",
+  "kind": "team",
+  "label": "positive",
+  "outcome": null,
+  "claims": [
+    {
+      "claim": "Vitamin K2 helps prevent osteoporosis as you get older.",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "points": []
+    }
+  ],
+  "written_by": "assistant: breach line in compliant team ad T27",
+  "checked_by": null
+}

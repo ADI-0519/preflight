@@ -1,0 +1,18 @@
+# Team-written negative for split v2 test: realistic marketing copy whose only health claims are authorised
+# GB register wording, copied exactly (register 2026-05-19). Written on 2 Nov 2026 by an independent author.
+# fictional product: 400 mg potassium per tablet (20% nrv), one tablet a day: at least a source of potassium
+# fictional product: no animal-derived ingredients; the buy-two saving is 20% off the price of two pots
+item_id: T28
+format: image
+product: potassium tablets
+register_ids:
+- gbhc-032472367e8f
+on_screen_text:
+- Potassium tablets
+- 400 mg potassium per tablet
+- Potassium contributes to normal muscle function
+- Take one tablet a day with food
+- Suitable for vegans
+- Save 20% when you buy two
+- Food supplements should not be used as a substitute for a varied and balanced diet and a healthy lifestyle.
+voiceover: ''

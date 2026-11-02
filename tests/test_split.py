@@ -93,7 +93,7 @@ def test_manifest_counts_match_lists(version):
 
 def test_v2_keeps_every_v1_item_and_its_ground_truth():
     v1, v2 = load_split("v1"), load_split("v2")
-    assert set(v1.dev) <= set(v2.dev) and v1.test == v2.test
+    assert set(v1.dev) <= set(v2.dev) and v2.test[: len(v1.test)] == v1.test
     for item in v1.items:
         assert load_ground_truth("v2", item) == load_ground_truth("v1", item)
 

@@ -1,0 +1,16 @@
+# Team-written negative for split v2 test: realistic marketing copy whose only health claims are authorised
+# GB register wording, copied exactly (register 2026-05-19). Written on 2 Nov 2026 by an independent author.
+# fictional product: per tablet all eight b vitamins, including 1.4 mg riboflavin (100% nrv) and 6 mg pantothenic acid (100% nrv), one tablet a day: at least a source of both
+item_id: T29
+format: video
+product: vitamin B complex tablets
+register_ids:
+- gbhc-7f3997f095fd
+- gbhc-2457010ade07
+on_screen_text:
+- Vitamin B complex
+- All eight B vitamins
+- One tablet a day
+- Food supplements should not be used as a substitute for a varied and balanced diet and a healthy lifestyle.
+voiceover: Eight B vitamins in one small tablet. Riboflavin contributes to normal energy-yielding metabolism. Pantothenic
+  acid contributes to normal mental performance. Take one a day with breakfast.

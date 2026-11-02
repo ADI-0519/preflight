@@ -1,0 +1,17 @@
+# Team-written negative for split v2 test: realistic marketing copy whose only health claims are authorised
+# GB register wording, copied exactly (register 2026-05-19). Written on 2 Nov 2026 by an independent author.
+# fictional product: 500 mg epa and dha per capsule, one capsule a day: a source of omega-3 fatty acids
+# fictional product: the ad states the 250 mg daily intake of epa and dha; capsule has a lemon-flavoured coating
+item_id: T31
+format: video
+product: omega-3 fish oil capsules
+register_ids:
+- gbhc-8920a066d6df
+on_screen_text:
+- Omega-3 fish oil capsules
+- 500 mg EPA and DHA per capsule
+- Lemon flavour
+- One capsule a day
+- Food supplements should not be used as a substitute for a varied and balanced diet and a healthy lifestyle.
+voiceover: Omega-3 fish oil, in one capsule a day. EPA and DHA contribute to the normal function of the heart. The beneficial
+  effect is obtained with a daily intake of 250 mg of EPA and DHA. Each capsule provides 500 mg.

@@ -4,7 +4,8 @@
 version: v2
 frozen: false
 created: '2026-11-01'
-status: 'open: dev negatives T16-T25 and dev near-miss items N01-N10 await a founder check; test negatives to come'
+status: 'open: T16-T25 and N01-N10 (dev) and T26-T35 and N11-N20 (test) await a founder check; false-alarm pass mark to
+  agree'
 sources:
   rulings: '2026-10-31'
   register: '2026-05-19'
@@ -14,10 +15,10 @@ counts:
     positive: 35
     negative: 15
   test:
-    positive: 49
-    negative: 10
-shortfall: 'test negatives 10 of 20: no in-scope ruling in the window was not upheld, so negatives are team-written only until
-  partner ads arrive (P06)'
+    positive: 59
+    negative: 20
+shortfall: 'every negative is team-written: no in-scope ruling in the window was not upheld, and no partner ads have arrived
+  (P06)'
 dev:
 - A24-1243213
 - A24-1240828
@@ -129,3 +130,23 @@ test:
 - T11
 - T13
 - T14
+- T26
+- T27
+- T28
+- T29
+- T30
+- T31
+- T32
+- T33
+- T34
+- T35
+- N11
+- N12
+- N13
+- N14
+- N15
+- N16
+- N17
+- N18
+- N19
+- N20

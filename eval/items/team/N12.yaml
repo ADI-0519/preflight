@@ -1,0 +1,17 @@
+# Near-miss item (P65): team ad T27 with one breaching line put in by scripts/near_miss.py from eval/near_miss/test.yaml.
+item_id: N12
+format: video
+product: vitamin K2 capsules
+register_ids:
+- gbhc-2a3b13ace074
+on_screen_text:
+- Vitamin K2 capsules
+- 75 µg vitamin K2 per capsule
+- One capsule a day
+- Suitable for vegetarians
+- Food supplements should not be used as a substitute for a varied and balanced diet and a healthy lifestyle.
+voiceover: One capsule, once a day, alongside your usual routine. Vitamin K contributes to the maintenance of normal bones.
+  Each pot holds sixty capsules, so you're set for two months. Vitamin K2 helps prevent osteoporosis as you get older.
+base: T27
+inserted: Vitamin K2 helps prevent osteoporosis as you get older.
+substance: Vitamin K

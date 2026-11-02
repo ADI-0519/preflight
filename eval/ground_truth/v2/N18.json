@@ -1,0 +1,18 @@
+{
+  "item_id": "N18",
+  "kind": "team",
+  "label": "positive",
+  "outcome": null,
+  "claims": [
+    {
+      "claim": "Iodine helps prevent thyroid disease.",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "points": []
+    }
+  ],
+  "written_by": "assistant: breach line in compliant team ad T33",
+  "checked_by": null
+}

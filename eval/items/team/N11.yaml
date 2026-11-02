@@ -1,0 +1,21 @@
+# Near-miss item (P65): team ad T26 with one breaching line put in by scripts/near_miss.py from eval/near_miss/test.yaml.
+item_id: N11
+format: image
+product: folic acid tablets
+register_ids:
+- gbhc-6c10232277d5
+- gbhc-855506d034cc
+on_screen_text:
+- Folic acid tablets
+- 400 µg folic acid in every tablet
+- Folate contributes to normal blood formation
+- Folate contributes to the reduction of tiredness and fatigue
+- One small tablet a day with water
+- '90 tablets: a three-month supply'
+- Suitable for vegans
+- Folic acid banishes tiredness and fatigue for good.
+- Food supplements should not be used as a substitute for a varied and balanced diet and a healthy lifestyle.
+voiceover: ''
+base: T26
+inserted: Folic acid banishes tiredness and fatigue for good.
+substance: Folate

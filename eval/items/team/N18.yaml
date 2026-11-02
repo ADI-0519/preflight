@@ -1,0 +1,16 @@
+# Near-miss item (P65): team ad T33 with one breaching line put in by scripts/near_miss.py from eval/near_miss/test.yaml.
+item_id: N18
+format: video
+product: iodine tablets
+register_ids:
+- gbhc-bc8de1f4efc8
+on_screen_text:
+- Iodine tablets
+- 150 µg iodine per tablet
+- Suitable for vegans
+- Food supplements should not be used as a substitute for a varied and balanced diet and a healthy lifestyle.
+voiceover: One small tablet a day, made for vegans. Iodine contributes to normal cognitive function. Each tablet provides
+  150 micrograms of iodine. Order today and get your first month half price. Iodine helps prevent thyroid disease.
+base: T33
+inserted: Iodine helps prevent thyroid disease.
+substance: Iodine

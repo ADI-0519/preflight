@@ -1,0 +1,18 @@
+{
+  "item_id": "N16",
+  "kind": "team",
+  "label": "positive",
+  "outcome": null,
+  "claims": [
+    {
+      "claim": "EPA and DHA protect you against heart disease.",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "points": []
+    }
+  ],
+  "written_by": "assistant: breach line in compliant team ad T31",
+  "checked_by": null
+}

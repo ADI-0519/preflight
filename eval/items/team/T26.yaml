@@ -1,0 +1,20 @@
+# Team-written negative for split v2 test: realistic marketing copy whose only health claims are authorised
+# GB register wording, copied exactly (register 2026-05-19). Written on 2 Nov 2026 by an independent author.
+# fictional product: 400 µg folic acid per tablet (200% nrv), one tablet a day: at least a source of folate
+# fictional product: 90 tablets a pot, no animal-derived ingredients
+item_id: T26
+format: image
+product: folic acid tablets
+register_ids:
+- gbhc-6c10232277d5
+- gbhc-855506d034cc
+on_screen_text:
+- Folic acid tablets
+- 400 µg folic acid in every tablet
+- Folate contributes to normal blood formation
+- Folate contributes to the reduction of tiredness and fatigue
+- One small tablet a day with water
+- '90 tablets: a three-month supply'
+- Suitable for vegans
+- Food supplements should not be used as a substitute for a varied and balanced diet and a healthy lifestyle.
+voiceover: ''

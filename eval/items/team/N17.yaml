@@ -1,0 +1,19 @@
+# Near-miss item (P65): team ad T32 with one breaching line put in by scripts/near_miss.py from eval/near_miss/test.yaml.
+item_id: N17
+format: image
+product: vitamin E softgels
+register_ids:
+- gbhc-56e74825152a
+on_screen_text:
+- Vitamin E softgels
+- 12 mg vitamin E per softgel
+- Vitamin E contributes to the protection of cells from oxidative stress
+- One softgel a day with a meal
+- 60 softgels
+- Free UK delivery on orders over £20
+- Vitamin E stops your cells from ageing.
+- Food supplements should not be used as a substitute for a varied and balanced diet and a healthy lifestyle.
+voiceover: ''
+base: T32
+inserted: Vitamin E stops your cells from ageing.
+substance: Vitamin E

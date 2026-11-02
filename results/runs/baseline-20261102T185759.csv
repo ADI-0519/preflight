@@ -1,0 +1,11 @@
+item_id,label,claims,carried,caught,caught_carried,caught_any_rule,flags,caught_exact_rules,caught_all_rules,rules_cited,rules_related,rules_wanted,rules_found,lines,unmatched_lines,chance_carried,weighted_carried,near_miss,near_miss_caught,clean_lines,clean_lines_flagged,wording_eligible,wording_suggested
+N01,positive,1,1,1,1,1,1,1,0,2,2,3,2,1,0,0.136,1.0,True,True,6,0,True,False
+N02,positive,1,1,1,1,1,1,1,1,2,2,2,2,1,0,0.302,1.0,True,True,8,0,True,False
+N03,positive,1,1,1,1,1,1,0,0,4,2,2,2,1,0,0.523,0.5,True,True,6,0,True,False
+N04,positive,1,1,1,1,1,1,1,0,2,2,3,2,1,0,0.136,1.0,True,True,7,0,True,False
+N05,positive,1,1,1,1,1,1,1,0,2,2,3,2,1,0,0.136,1.0,True,True,6,0,True,False
+N06,positive,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0.0,0.0,True,False,8,0,True,False
+N07,positive,1,1,1,1,1,1,0,0,4,2,2,2,1,0,0.523,0.5,True,True,6,0,True,False
+N08,positive,1,1,1,1,1,1,0,0,4,2,2,2,1,0,0.523,0.5,True,True,8,0,True,False
+N09,positive,1,1,1,1,1,1,1,0,2,2,3,2,1,0,0.136,1.0,True,True,5,0,True,False
+N10,positive,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0.0,0.0,True,False,6,0,True,False

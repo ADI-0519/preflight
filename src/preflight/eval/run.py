@@ -17,7 +17,7 @@ from preflight.eval.check_reconstructions import carried, lines, words
 from preflight.eval.claim_recall import WORK, Metered, cost, media_of
 from preflight.eval.reconstruct import IMAGE_EACH, OUT_DIR, ShotList
 from preflight.eval.registry import RESULTS, RUNS, Metric, register, revision, snapshot_text, write_rows
-from preflight.eval.score import ItemScore, metrics, score_item
+from preflight.eval.score import ItemScore, caught, metrics, score_item
 from preflight.eval.split import RULING_ID, GroundTruth, load_ground_truth, load_split
 from preflight.eval.team_media import TEAM_DIR
 from preflight.ingest import ingest
@@ -122,16 +122,16 @@ def citation_spread(screenings: list[Screening]) -> list[Metric]:
     ]
 
 
-def rescore(run_id: str) -> None:
+def saved(run_id: str) -> tuple[dict, dict[str, list[Screening]], list[GroundTruth]]:
     with RUNS.open(newline="", encoding="utf-8") as f:
         row = next((r for r in csv.DictReader(f) if r["run_id"] == run_id), None)
     if row is None:
         raise SystemExit(f"{run_id} is not a registered run")
     if row["part"] == "test":
         # rule 5: the test part is scored once, by the run that screened it
-        raise SystemExit("a test run is not rescored")
+        raise SystemExit("a test run is not scored again")
     if reason := void_runs().get(run_id):
-        raise SystemExit(f"{run_id} is void ({reason}) and is not rescored")
+        raise SystemExit(f"{run_id} is void ({reason}) and is not scored again")
     scored = RESULTS / "runs" / f"{run_id}.csv"
     if "-rescored-" in run_id or not scored.exists():
         raise SystemExit(f"{run_id} has no saved screenings; rescore the run that screened the ads")
@@ -148,7 +148,11 @@ def rescore(run_id: str) -> None:
         raise SystemExit(f"{run_id}: saved screenings missing for {', '.join(short)}")
     # in the split's order, as the run scored them, so the bootstrap draws the same resamples
     order = [i for i in getattr(load_split(row["split"]), row["part"]) if i in expected]
-    truths = [load_ground_truth(row["split"], i) for i in order]
+    return row, screenings, [load_ground_truth(row["split"], i) for i in order]
+
+
+def rescore(run_id: str) -> None:
+    row, screenings, truths = saved(run_id)
     scores = [score_item(t, screenings[t.item_id], kept(t)) for t in truths]
     created = datetime.now(UTC)
     # stamped, so a run rescored again after a later scoring change is registered apart from the first rescore
@@ -158,6 +162,40 @@ def rescore(run_id: str) -> None:
     register(row | {"run_id": new_id, "created_at": created.isoformat(timespec="seconds"),
                     "git_sha": revision(row["part"])}, run_metrics)  # fmt: skip
     show(new_id, run_metrics)
+
+
+def flagged_claims(screenings: list[Screening]) -> set[str]:
+    # claims are matched by text, so two runs compare even where extraction numbered them apart
+    return {" ".join(words(c.text)) for s in screenings for f in s.flags for c in s.claims if c.claim_id == f.claim_id}
+
+
+def compare(first: str, second: str) -> None:
+    row, a, truths = saved(first)
+    row_b, b, _ = saved(second)
+    if (row["split"], row["part"]) != (row_b["split"], row_b["part"]):
+        raise SystemExit(f"{first} and {second} screened different split parts")
+    # a cohort run compares on the items both runs screened; the item count goes with the figure
+    truths = [t for t in truths if t.item_id in b]
+    positives = [t for t in truths if t.label == "positive"]
+    # for the P66 gate, a ground-truth claim changes when one run catches it with a matching rule and the other does not
+    changed = sum(
+        x != y
+        for t in positives
+        for x, y in zip(caught(t.claims, a[t.item_id], t.item_id).with_rule,
+                        caught(t.claims, b[t.item_id], t.item_id).with_rule, strict=True)
+    )  # fmt: skip
+    flipped = [len(flagged_claims(a[t.item_id]) ^ flagged_claims(b[t.item_id])) for t in truths]
+    run_metrics = [
+        Metric("claims_changed", changed, sum(len(t.claims) for t in positives)),
+        Metric("flagged_claims_changed", sum(flipped), len(truths)),
+    ]
+    created = datetime.now(UTC)
+    run_id = f"compare-{created:%Y%m%dT%H%M%S}"
+    register(row | {
+        "run_id": run_id, "created_at": created.isoformat(timespec="seconds"), "git_sha": revision(row["part"]),
+        "stage": "compare", "prompt": f"{first} vs {second}",
+    }, run_metrics)  # fmt: skip
+    show(run_id, run_metrics)
 
 
 def void_runs() -> dict[str, str]:
@@ -185,7 +223,10 @@ def main() -> None:
     parser.add_argument("--samples", type=int, choices=[1, judge.VOTE_SAMPLES], default=judge.SAMPLES)
     parser.add_argument("--first-sample", type=int, default=0, help="a repeat run starts later, so it calls afresh")
     parser.add_argument("--rescore", metavar="RUN_ID", help="score a registered dev run again; no model calls")
+    parser.add_argument("--compare", nargs=2, metavar="RUN_ID", help="count the claims two dev runs differ on")
     args = parser.parse_args()
+    if args.compare:
+        return compare(*args.compare)
     if args.rescore:
         if args.split or args.part or args.only:
             # a rescore takes its split, part and items from the registered run

@@ -465,12 +465,41 @@ def test_a_single_sample_run_registers_no_vote_metrics():
     assert "unanimous_flags_matched" not in by_name()
 
 
+def test_compare_counts_claims_two_runs_differ_on(tmp_path, monkeypatch):
+    runs, work = saved_run(tmp_path, monkeypatch)
+    register({"run_id": "screen-2", "split": "v2", "part": "dev", "prompt": "judge_v5"}, [("ad_recall", 0, 1)])
+    registry.write_rows(tmp_path / "runs" / "screen-2.csv", [{"item_id": i, "media": 1} for i in ("T16", "A24-1")])
+    (work / "screen-2").mkdir()
+    for name, s in [("screen-2-A24-1-reconstruction", screening("a", ["Cures anxiety fast"], {})),
+                    ("screen-2-T16-ad", screening("b", ["Tasty"], {0: ["15.1"]}))]:  # fmt: skip
+        (work / "screen-2" / f"{name}.json").write_text(s.model_dump_json(), encoding="utf-8")
+    run.compare("screen-1", "screen-2")
+    with runs.open(newline="", encoding="utf-8") as f:
+        rows = {r["metric"]: r for r in csv.DictReader(f) if r["run_id"].startswith("compare-")}
+    assert (rows["claims_changed"]["hits"], rows["claims_changed"]["total"]) == ("1", "1")
+    assert (rows["flagged_claims_changed"]["hits"], rows["flagged_claims_changed"]["total"]) == ("2", "2")
+    assert rows["claims_changed"]["stage"] == "compare"
+
+
+def test_vote_tag_names_a_voting_run():
+    assert (run.vote_tag(1, 0), run.vote_tag(3, 0), run.vote_tag(3, 3)) == ("", "+vote3", "+vote3-from3")
+
+
+def test_compare_keeps_to_the_items_both_runs_screened(tmp_path, monkeypatch):
+    runs, work = saved_run(tmp_path, monkeypatch)
+    register({"run_id": "screen-2", "split": "v2", "part": "dev", "prompt": "judge_v5"}, [("ad_recall", 0, 1)])
+    registry.write_rows(tmp_path / "runs" / "screen-2.csv", [{"item_id": "A24-1", "media": 1}])
+    (work / "screen-2").mkdir()
+    s = screening("a", ["Cures anxiety fast"], {0: ["15.6"]})
+    (work / "screen-2" / "screen-2-A24-1-reconstruction.json").write_text(s.model_dump_json(), encoding="utf-8")
+    run.compare("screen-1", "screen-2")
+    with runs.open(newline="", encoding="utf-8") as f:
+        rows = {r["metric"]: r for r in csv.DictReader(f) if r["run_id"].startswith("compare-")}
+    assert (rows["claims_changed"]["hits"], rows["flagged_claims_changed"]["total"]) == ("0", "1")
+
+
 def test_a_flag_every_answering_sample_gave_is_unanimous():
     s = voted(screening("s1", ["Cures anxiety fast"], {0: ["15.6"]}), {0: 2})
     s = s.model_copy(update={"stages": (StageRun(stage="check", status="done", samples=2),)})
     item = score_item(truth("A1", [("cures anxiety fast", ["15.6.2"])]), [s])
     assert (item.unanimous_flags, item.split_flags) == (1, 0)
-
-
-def test_vote_tag_names_a_voting_run():
-    assert (run.vote_tag(1, 0), run.vote_tag(3, 0), run.vote_tag(3, 3)) == ("", "+vote3", "+vote3-from3")

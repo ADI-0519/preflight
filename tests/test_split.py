@@ -44,6 +44,9 @@ def test_every_item_has_ground_truth(split):
         assert truth.item_id == item
         if truth.kind == "ruling":
             assert truth.label == "positive" and truth.claims
+        elif item.startswith("N"):
+            # a near-miss item (P65): one breaching line, the one put into the team ad
+            assert truth.label == "positive" and [c.claim for c in truth.claims] == [load_team_ad(item).inserted]
         else:
             assert truth.label == "negative" and not truth.claims
     files = {p.stem for p in (EVAL_DIR / "ground_truth" / split.version).glob("*.json")}
@@ -59,8 +62,8 @@ def test_ground_truth_cites_cap_rule_numbers(split):
 
 def test_excluded_ids_are_the_rulings_only(split):
     excluded = split.excluded_ruling_ids()
-    assert not any(i.startswith("T") for i in excluded)
-    assert excluded == {i for i in split.items if not i.startswith("T")}
+    assert not any(i.startswith(("T", "N")) for i in excluded)
+    assert excluded == {i for i in split.items if not i.startswith(("T", "N"))}
 
 
 def test_team_ads_use_only_authorised_register_wording(split):
@@ -73,6 +76,15 @@ def test_team_ads_use_only_authorised_register_wording(split):
         for e in entries:
             assert e.wording in claims, (item, e.register_id)
         assert DISCLAIMER in ad.on_screen_text
+
+
+def test_near_miss_items_add_one_line_to_a_team_ad(split):
+    for item in (i for i in split.items if i.startswith("N")):
+        ad, base = load_team_ad(item), load_team_ad(load_team_ad(item).base)
+        assert not base.inserted and ad.inserted and ad.substance
+        # the base ad's lines are all kept, and the inserted line is the only new one
+        assert [line for line in ad.lines if line != ad.inserted] == base.lines
+        assert ad.register_ids == base.register_ids and ad.format == base.format
 
 
 @pytest.mark.parametrize("version", ["v1", "v2"])

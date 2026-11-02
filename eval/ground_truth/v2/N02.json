@@ -1,0 +1,18 @@
+{
+  "item_id": "N02",
+  "kind": "team",
+  "label": "positive",
+  "outcome": null,
+  "claims": [
+    {
+      "claim": "Vitamin D keeps winter colds and flu away.",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "points": []
+    }
+  ],
+  "written_by": "Neesay: breach line in compliant team ad T17",
+  "checked_by": null
+}

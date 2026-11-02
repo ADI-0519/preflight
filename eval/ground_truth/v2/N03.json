@@ -1,0 +1,18 @@
+{
+  "item_id": "N03",
+  "kind": "team",
+  "label": "positive",
+  "outcome": null,
+  "claims": [
+    {
+      "claim": "Magnesium stops muscle cramps for good",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "points": []
+    }
+  ],
+  "written_by": "Neesay: breach line in compliant team ad T18",
+  "checked_by": null
+}

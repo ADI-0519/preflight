@@ -1,0 +1,19 @@
+# Near-miss item (P65): team ad T22 with one breaching line put in by scripts/near_miss.py from eval/near_miss/dev.yaml.
+item_id: N07
+format: image
+product: calcium and vitamin D chewable tablets
+register_ids:
+- gbhc-6e9ced5f8edb
+- gbhc-99fee7203c79
+on_screen_text:
+- Calcium and vitamin D chewable tablets
+- Lemon flavour
+- Calcium is needed for the maintenance of normal bones
+- Vitamin D contributes to normal absorption/utilisation of calcium and phosphorus
+- Chew one tablet a day
+- Calcium and vitamin D prevent osteoporosis
+- Food supplements should not be used as a substitute for a varied and balanced diet and a healthy lifestyle.
+voiceover: ''
+base: T22
+inserted: Calcium and vitamin D prevent osteoporosis
+substance: Calcium

@@ -1,0 +1,18 @@
+# Near-miss item (P65): team ad T16 with one breaching line put in by scripts/near_miss.py from eval/near_miss/dev.yaml.
+item_id: N01
+format: image
+product: vitamin C effervescent tablets
+register_ids:
+- gbhc-222b3bfc340d
+on_screen_text:
+- Vitamin C effervescent tablets
+- Zesty orange flavour
+- Vitamin C contributes to the normal function of the immune system
+- Just drop one in a glass of water
+- 20 tablets
+- Vitamin C supercharges your immune system
+- Food supplements should not be used as a substitute for a varied and balanced diet and a healthy lifestyle.
+voiceover: ''
+base: T16
+inserted: Vitamin C supercharges your immune system
+substance: Vitamin C

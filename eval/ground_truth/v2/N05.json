@@ -1,0 +1,19 @@
+{
+  "item_id": "N05",
+  "kind": "team",
+  "label": "positive",
+  "outcome": null,
+  "claims": [
+    {
+      "claim": "Vitamin B12 gives you boundless energy all day",
+      "rules": [
+        "15.1",
+        "15.1.1",
+        "15.7"
+      ],
+      "points": []
+    }
+  ],
+  "written_by": "Neesay: breach line in compliant team ad T20",
+  "checked_by": null
+}

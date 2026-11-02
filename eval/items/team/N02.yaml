@@ -1,0 +1,17 @@
+# Near-miss item (P65): team ad T17 with one breaching line put in by scripts/near_miss.py from eval/near_miss/dev.yaml.
+item_id: N02
+format: video
+product: vitamin D gummies
+register_ids:
+- gbhc-8ed4428d48ae
+on_screen_text:
+- Vitamin D gummies
+- Strawberry flavour
+- Suitable for vegetarians
+- Take one gummy a day. Do not exceed the stated dose.
+- Food supplements should not be used as a substitute for a varied and balanced diet and a healthy lifestyle.
+voiceover: Shorter days don't have to mean a new routine. One small gummy a day, for your everyday well-being. Vitamin D contributes
+  to the normal function of the immune system. Vitamin D keeps winter colds and flu away.
+base: T17
+inserted: Vitamin D keeps winter colds and flu away.
+substance: Vitamin D

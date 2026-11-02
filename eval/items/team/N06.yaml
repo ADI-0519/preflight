@@ -1,0 +1,16 @@
+# Near-miss item (P65): team ad T21 with one breaching line put in by scripts/near_miss.py from eval/near_miss/dev.yaml.
+item_id: N06
+format: video
+product: zinc and selenium capsules
+register_ids:
+- gbhc-fd77082f50da
+- gbhc-7bd6ad7ddfef
+on_screen_text:
+- Zinc and selenium capsules
+- One capsule a day
+- Food supplements should not be used as a substitute for a varied and balanced diet and a healthy lifestyle.
+voiceover: Busy week? Keep it simple. Zinc contributes to the normal function of the immune system. Selenium contributes to
+  the maintenance of normal hair. One capsule a day with water. Zinc doubles your body's natural defences.
+base: T21
+inserted: Zinc doubles your body's natural defences.
+substance: Zinc

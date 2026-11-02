@@ -1,0 +1,18 @@
+# Near-miss item (P65): team ad T20 with one breaching line put in by scripts/near_miss.py from eval/near_miss/dev.yaml.
+item_id: N05
+format: image
+product: vitamin B12 oral spray
+register_ids:
+- gbhc-a932b42fea05
+on_screen_text:
+- Vitamin B12 oral spray
+- Fresh mint flavour
+- Suitable for vegans
+- Vitamin B12 contributes to normal energy-yielding metabolism
+- Two sprays a day
+- Vitamin B12 gives you boundless energy all day
+- Food supplements should not be used as a substitute for a varied and balanced diet and a healthy lifestyle.
+voiceover: ''
+base: T20
+inserted: Vitamin B12 gives you boundless energy all day
+substance: Vitamin B12

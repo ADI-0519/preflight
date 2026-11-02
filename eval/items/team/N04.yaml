@@ -1,0 +1,17 @@
+# Near-miss item (P65): team ad T19 with one breaching line put in by scripts/near_miss.py from eval/near_miss/dev.yaml.
+item_id: N04
+format: video
+product: iron and vitamin C tablets
+register_ids:
+- gbhc-03363fc179f2
+- gbhc-5481e7f148ce
+on_screen_text:
+- Iron and vitamin C tablets
+- Made in the UK
+- One small tablet a day
+- Food supplements should not be used as a substitute for a varied and balanced diet and a healthy lifestyle.
+voiceover: Iron contributes to the reduction of tiredness and fatigue. Vitamin C increases iron absorption. One small tablet
+  a day, with water. Iron banishes tiredness and fatigue for good.
+base: T19
+inserted: Iron banishes tiredness and fatigue for good.
+substance: Iron

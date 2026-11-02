@@ -1,0 +1,18 @@
+{
+  "item_id": "N10",
+  "kind": "team",
+  "label": "positive",
+  "outcome": null,
+  "claims": [
+    {
+      "claim": "DHA repairs damaged eyesight.",
+      "rules": [
+        "15.6",
+        "15.6.2"
+      ],
+      "points": []
+    }
+  ],
+  "written_by": "Neesay: breach line in compliant team ad T25",
+  "checked_by": null
+}

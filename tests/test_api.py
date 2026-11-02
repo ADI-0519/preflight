@@ -107,7 +107,8 @@ def test_replayed_upload_screening_progress_and_reconnect(app):
         assert response.status_code == 200
         result = Screening.model_validate(response.json())
         assert len(result.claims) == 3
-        assert {flag.claim_id for flag in result.flags} == {"claim-1", "claim-2"}
+        # the judge reads "Supports your immune system" as a general claim beside the authorised one (CAP 15.2)
+        assert {flag.claim_id for flag in result.flags} == {"claim-2"}
         assert all(flag.sources for flag in result.flags)
         assert result.notice == NOTICE
         report = client.get(f"/screenings/{job_id}/report")

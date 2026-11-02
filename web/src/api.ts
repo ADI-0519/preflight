@@ -12,10 +12,19 @@ export interface Evidence {
 export type FlagView = Screening['flags'][number] & {
   source_details: { label: string; text: string; url: string | null }[];
 };
+export type Tier = 'high' | 'medium' | 'low' | 'unchecked';
+export const TIER_LABEL: Record<Tier, string> = {
+  high: 'High',
+  medium: 'Medium',
+  low: 'Low',
+  unchecked: "Couldn't check",
+};
+export type TierCounts = Record<Tier, number>;
 export interface ClaimView {
   claim_id: string;
   text: string;
   start: number | null;
+  tier: Tier | null;
   substance: string | null;
   evidence: Evidence[];
   flags: FlagView[];
@@ -31,6 +40,7 @@ export interface Result {
   claims: ClaimView[];
   may_say: MaySay[];
   incomplete_stages: string[];
+  tiers: TierCounts;
   media_url?: string;
   title?: string;
   kind?: string;

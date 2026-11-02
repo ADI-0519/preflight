@@ -56,6 +56,9 @@ def test_screen_summary_returns_lines_with_sources_and_register_wording(box):
     assert found and found.items() <= wordings.items()
     assert all(e["wording"] for m in summary["may_say"] for e in m["entries"])
     assert "15.1.1" in lines[0]["primary_rules"]
+    assert all(line["tier"] in ("high", "medium", "low") for line in lines)
+    counted = {t: sum(line["tier"] == t for line in lines) for t in ("high", "medium", "low")}
+    assert {t: summary["tiers"][t] for t in counted} == counted
 
 
 def fixed(state, open_=(), screening=CLEAN):

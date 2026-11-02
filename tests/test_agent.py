@@ -1,3 +1,4 @@
+import importlib
 import json
 import logging
 import shutil
@@ -7,7 +8,7 @@ from pathlib import Path
 
 import pytest
 
-from preflight.agent import Draft, DraftScene, approve, digest, fix, is_clean, load_draft
+from preflight.agent import Draft, DraftScene, DraftScreener, approve, digest, fix, is_clean, load_draft
 from preflight.agent import draft as draft_module
 from preflight.agent.draft import Address, lines, render_draft, with_line
 from preflight.agent.fix import ALREADY_WORDING
@@ -315,6 +316,8 @@ def test_no_ad_text_in_logging(tmp_path, caplog):
     assert SECRET not in caplog.text
 
 
+# the package exports a function named fix, which hides the module of the same name
+fix_module = importlib.import_module("preflight.agent.fix")
 needs_ffmpeg = pytest.mark.skipif(shutil.which("ffmpeg") is None, reason="needs ffmpeg")
 
 
@@ -354,6 +357,18 @@ def test_partial_render_is_not_reused(tmp_path, renders):
     assert len(renders) == 2
     assert again.media.stat().st_size > 4
     assert [p.name for p in tmp_path.iterdir()] == [again.media.parent.name]
+
+
+@needs_ffmpeg
+def test_screener_keeps_renders_in_its_work_folder(tmp_path, monkeypatch):
+    # rule 6: the API deletes a job by deleting its folder, so its renders must be inside it
+    monkeypatch.setattr(fix_module, "ingest", lambda media, out: media)
+    monkeypatch.setattr(fix_module, "screen", lambda media, *args, **kwargs: media)
+    job = tmp_path / "job"
+    media = DraftScreener(None, None, job)(script_only("Magnesium tablets"), "s0", None)
+    assert media.is_relative_to(job / "renders")
+    shared = DraftScreener(None, None, job, renders=tmp_path / "renders")(script_only("Magnesium tablets"), "s1", None)
+    assert shared.is_relative_to(tmp_path / "renders")
 
 
 @needs_ffmpeg

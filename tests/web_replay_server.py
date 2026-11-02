@@ -20,7 +20,7 @@ def rendered_recordings(models, precedents, directory, align=None):
     recorded = recorded_screener(models, precedents, directory, align)
 
     def screen(draft, screening_id, previous_id):
-        render_draft(draft, directory / "renders" / screening_id)
+        render_draft(draft, directory / "renders")
         return recorded(draft, screening_id, previous_id)
 
     return screen

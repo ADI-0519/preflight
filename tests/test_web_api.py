@@ -116,8 +116,11 @@ def test_round_history_is_source_checked_and_does_not_return_paths(replay_app):
         assert '"still"' not in response.text and str(AGENT) not in response.text
         assert client.get(f"/ui/fixes/{identifier}/rounds/99/media").status_code == 404
         directory = app.state.service.storage.job_dir(app.state.service.storage.jobs[identifier])
+        log = [json.loads(line) for line in (directory / "audit.jsonl").read_text(encoding="utf-8").splitlines()]
+        digests = {r["round"]: r["digest"] for r in log if r["event"] == "round"}
         for row in rows:
-            render = directory / "renders" / row["screening"]["screening_id"] / "draft.png"
+            # where render_draft puts a draft: named by its digest, inside the job folder
+            render = directory / "renders" / digests[row["round"]][:16] / "draft.png"
             render.parent.mkdir(parents=True)
             render.write_bytes(b"render-%d" % row["round"])
         for row in rows:

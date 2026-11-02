@@ -502,16 +502,28 @@ def test_public_mode_allows_three_screenings_per_client_an_hour(tmp_path, replay
         assert client.post("/screenings", json={"upload_id": upload_id}).status_code == 202
 
 
-def test_public_mode_allows_one_fix_per_client_an_hour_and_one_round():
+def test_public_mode_allows_one_fix_per_client_an_hour():
     from preflight.api.public import Public
 
     public = Public(Settings(public=True))
-    public.admit("203.0.113.1", "fix")
-    with pytest.raises(APIError) as error:
-        public.admit("203.0.113.1", "fix")
+    with pytest.raises(APIError), public.admit("203.0.113.1", "fix"):
+        raise APIError(404, "screening_not_found")
+    with public.admit("203.0.113.1", "fix"):
+        pass
+    with pytest.raises(APIError) as error, public.admit("203.0.113.1", "fix"):
+        pass
     assert (error.value.status, error.value.code) == (429, "rate_limited")
     # another client has its own allowance
-    public.admit("203.0.113.2", "fix")
+    with public.admit("203.0.113.2", "fix"):
+        pass
+
+
+def test_refused_screenings_leave_the_hourly_allowance(tmp_path, replay_models, monkeypatch):
+    app = public_app(tmp_path, replay_models, monkeypatch)
+    with TestClient(app) as client:
+        for _ in range(3):
+            assert client.post("/screenings", json={"upload_id": "0" * 32}).status_code == 404
+        assert client.post("/screenings", json={"upload_id": upload(client)}).status_code == 202
 
 
 def test_public_mode_limits_upload_size_and_video_length(tmp_path, replay_models, monkeypatch):

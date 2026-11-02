@@ -9,7 +9,8 @@ import json
 import os
 import threading
 import time
-from collections.abc import Callable
+from collections.abc import Callable, Iterator
+from contextlib import contextmanager
 from datetime import UTC, datetime
 from typing import Literal
 
@@ -129,8 +130,10 @@ class Public:
         if reason := self.closed():
             raise APIError(503, reason)
 
-    def admit(self, client: str, kind: Literal["screening", "fix"]) -> None:
+    @contextmanager
+    def admit(self, client: str, kind: Literal["screening", "fix"]) -> Iterator[None]:
         if self.mode == "off":
+            yield
             return
         self.admit_upload()
         s = self.settings
@@ -141,3 +144,10 @@ class Public:
             if len(recent) >= allowed:
                 raise APIError(429, "rate_limited")
             self.starts[(client, kind)] = [*recent, now]
+        try:
+            yield
+        except APIError:
+            # a refused start (unknown upload, full queue) does not use up the visitor's allowance
+            with self.lock:
+                self.starts[(client, kind)].remove(now)
+            raise

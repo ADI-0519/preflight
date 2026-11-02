@@ -174,8 +174,8 @@ def create_app(
 
     @app.post("/screenings", status_code=202, response_model=JobView)
     def start_screening(fields: StartScreening, request: Request):
-        public.admit(client(request), "screening")
-        return view(service.start_screening(fields.upload_id, fields.align))
+        with public.admit(client(request), "screening"):
+            return view(service.start_screening(fields.upload_id, fields.align))
 
     @app.get("/jobs/{job_id}", response_model=JobView)
     def job(job_id: str):
@@ -231,8 +231,8 @@ def create_app(
 
     @app.post("/fixes", status_code=202, response_model=JobView)
     def start_fix(fields: StartFix, request: Request):
-        public.admit(client(request), "fix")
-        return view(service.start_fix(fields.screening_id, fields.model_dump()))
+        with public.admit(client(request), "fix"):
+            return view(service.start_fix(fields.screening_id, fields.model_dump()))
 
     @app.get("/fixes/{job_id}", response_model=FixView)
     def fixing(job_id: str):

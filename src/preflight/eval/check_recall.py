@@ -57,8 +57,11 @@ def scored(judged: dict[str, list[Screening]], truths: dict[str, GroundTruth]) -
                 "caught": sum(c.any_rule),
                 "caught_with_rule": sum(c.with_rule),
                 "caught_exact_rules": sum(c.exact_rules),
+                "caught_all_rules": sum(c.all_rules),
                 "rules_cited": c.rules_cited,
                 "rules_related": c.rules_related,
+                "rules_wanted": c.rules_wanted,
+                "rules_found": c.rules_found,
                 "judged": sum(len(s.claims) for s in screenings),
                 "flags": len(flags),
                 "on_hold": sum(f.kind == "on_hold" for f in flags),
@@ -77,9 +80,13 @@ def scored(judged: dict[str, list[Screening]], truths: dict[str, GroundTruth]) -
         ("ad_recall", sum(r["caught_with_rule"] > 0 for r in positives), len(positives)),
         ("claim_recall", total(positives, "caught_with_rule"), total(positives, "claims")),
         ("claim_recall_any_rule", total(positives, "caught"), total(positives, "claims")),
-        # a flag counts here only if every rule it cites belongs to the claim, so citing extra rules earns nothing
+        # a flag counts here only if every rule it cites belongs to the claims it matches, so extra rules earn nothing
         ("claim_recall_exact_rules", total(positives, "caught_exact_rules"), total(positives, "claims")),
+        # ... and also cites every rule the ruling gave the claim
+        ("claim_recall_all_rules", total(positives, "caught_all_rules"), total(positives, "claims")),
         ("rule_precision", total(positives, "rules_related"), total(positives, "rules_cited")),
+        # of the rules the ruling gave the flagged claims, the share the judge cited, so leaving rules out costs
+        ("rule_recall", total(positives, "rules_found"), total(positives, "rules_wanted")),
         ("flags_per_positive_ad", total(positives, "flags"), len(positives)),
         ("negative_ads_flagged_judge_only", sum(r["flags"] > 0 for r in negatives), len(negatives)),
         ("flags_per_negative_ad_judge_only", total(negatives, "flags"), len(negatives)),
@@ -95,7 +102,7 @@ def write_rows(run_id: str, rows: list[dict]) -> None:
 
 
 def rescore(run_id: str, claims_run: str) -> None:
-    """Score a saved check run again under the current scoring, with no model calls, as run <run_id>-rescored."""
+    """Score a saved check run again under the current scoring, with no model calls, as a new run."""
     items = {}
     for path in (WORK / claims_run).glob("*.json"):
         if path.name == "details.json":
@@ -112,7 +119,8 @@ def rescore(run_id: str, claims_run: str) -> None:
     truths = {i: load_ground_truth("v1", i) for i in judged}
     rows, metrics = scored(judged, truths)
     stage = next(st for s in next(iter(judged.values())) for st in s.stages if st.stage == "check")
-    new_id = f"{run_id}-rescored"
+    # stamped, so a run rescored again after a later scoring change is registered apart from the first rescore
+    new_id = f"{run_id}-rescored-{datetime.now(UTC):%Y%m%dT%H%M%S}"
     write_rows(new_id, rows)
     common = {
         "run_id": new_id,

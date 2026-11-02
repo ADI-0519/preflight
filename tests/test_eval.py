@@ -86,6 +86,29 @@ def test_former_rule_numbers_are_read_in_current_numbering():
     after = truth("A99-0000001", [("Half the price of the leading brand", ["3.40"])])
     assert score_item(before, flags).caught == 1  # this ruling cites the earlier 3.40, now 3.39
     assert score_item(after, flags).caught == 0  # elsewhere 3.40 is the current rule on who made the product
+    approved = [screening("s7", ["FSA approved"], {0: ["3.52"]})]
+    assert score_item(truth("A24-1241017", [("FSA approved", ["3.50"])]), approved).caught == 1  # 3.50 is now 3.52
+    assert score_item(truth("A23-1216841", [("FSA approved", ["3.50"])]), approved).caught == 0  # renumbered per ruling
+
+
+def test_a_flag_carrying_two_claims_is_judged_against_both_claims_rules():
+    item = score_item(
+        truth("A4", [("strengthen muscles", ["15.1", "15.1.1"]), ("combat stress", ["15.6", "15.6.2"])]),
+        [screening("s8", ["Strengthen muscles and combat stress"], {0: ["15.1.1", "15.6.2"]})],
+    )
+    assert (item.caught, item.caught_exact_rules, item.caught_all_rules) == (2, 2, 2)
+    # the flag's two rules are counted once, each related to one of the claims it carries
+    assert (item.rules_related, item.rules_cited) == (2, 2)
+    assert (item.rules_found, item.rules_wanted) == (4, 4)
+
+
+def test_leaving_rules_out_costs_rule_recall_but_not_exact_rules():
+    item = score_item(
+        truth("A5", [("supports vitality", ["15.2", "15.7"])]),
+        [screening("s9", ["Supports vitality"], {0: ["15.2"]})],
+    )
+    assert (item.caught_exact_rules, item.caught_all_rules) == (1, 0)
+    assert (item.rules_related, item.rules_cited, item.rules_found, item.rules_wanted) == (1, 1, 1, 2)
 
 
 def test_toy_split_scores():

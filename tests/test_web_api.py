@@ -247,7 +247,11 @@ def test_presentation_folds_nested_flags_and_shows_each_flag_once():
     assert sorted(f["flag_id"] for f in shown) == sorted(f.flag_id for f in screening.flags)
     assert all(f["source_details"] for f in shown)
     assert len(rows) < len(screening.claims) and any(r["folded"] for r in rows)
-    starts = [r["start"] for r in rows]
-    assert starts == sorted(starts, key=lambda t: (t is None, t or 0))
+    order = ("high", "medium", "low", "unchecked")
+    keys = [(order.index(r["tier"]) if r["tier"] else len(order), r["start"] is None, r["start"] or 0) for r in rows]
+    assert keys == sorted(keys)
     assert all(r["start"] is None for r in rows if not any(e["timed"] for e in r["evidence"]))
     assert result["may_say"] and result["incomplete_stages"] == []
+    ranks = [("high", "medium", "low").index(r["tier"]) for r in rows if r["flags"]]
+    assert ranks == sorted(ranks) and all(r["tier"] is None for r in rows if not r["flags"])
+    assert sum(result["tiers"].values()) == sum(r["tier"] is not None for r in rows)

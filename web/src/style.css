@@ -1087,3 +1087,36 @@ footer {
       color 120ms ease;
   }
 }
+.tier {
+  display: inline-block;
+  margin-right: 8px;
+  padding: 0 6px;
+  border: 1px solid var(--control);
+  border-radius: 4px;
+  font-size: 12px;
+  line-height: 16px;
+  white-space: nowrap;
+}
+.tier.high {
+  border-color: var(--ink);
+  background: var(--ink);
+  color: var(--on-ink);
+  font-weight: 600;
+}
+.tier.medium {
+  border-color: var(--ink);
+  font-weight: 600;
+}
+.tier.low {
+  color: var(--graphite);
+}
+.tier.unchecked {
+  border-style: dashed;
+  color: var(--graphite);
+}
+.tier-summary {
+  margin-bottom: 12px;
+}
+.tier-summary p {
+  margin: 0;
+}

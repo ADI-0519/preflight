@@ -1,5 +1,5 @@
-import type { ClaimView, Evidence, FlagView, MaySay } from './api';
-import { allFlags, timestamp } from './api';
+import type { ClaimView, Evidence, FlagView, MaySay, Tier, TierCounts } from './api';
+import { allFlags, TIER_LABEL, timestamp } from './api';
 import { MAY_SAY, MaySayList, Preview } from './workspace';
 
 type Mark = 'none' | 'breach' | 'hold';
@@ -15,6 +15,31 @@ function flagState(claim: ClaimView) {
   if (mark === 'none') return 'no flag';
   const n = allFlags(claim).length;
   return `${n} flag${n === 1 ? '' : 's'}, ${mark === 'breach' ? 'possible breach' : 'on hold'}`;
+}
+
+export const TIER_CAPTION =
+  'Tiers order the review by the CAP rules cited: disease and medicinal claims (CAP 12 and 15.6) first, then other section 15 and section 3 rules. A tier is not a finding of breach.';
+
+export function TierChip({ tier }: { tier: Tier }) {
+  return <span className={`tier ${tier}`}>{TIER_LABEL[tier]}</span>;
+}
+
+// rule 1: an order for review, not a verdict
+export function TierSummary({ tiers }: { tiers: TierCounts }) {
+  const flagged = tiers.high + tiers.medium + tiers.low;
+  if (flagged + tiers.unchecked === 0) return null;
+  const order = `Review order: ${tiers.high} high · ${tiers.medium} medium · ${tiers.low} low`;
+  const unchecked = `Couldn't check: ${tiers.unchecked}`;
+  return (
+    <div className="tier-summary">
+      <p>
+        {flagged > 0 && order}
+        {flagged > 0 && tiers.unchecked > 0 && ' · '}
+        {tiers.unchecked > 0 && unchecked}
+      </p>
+      <p className="muted">{TIER_CAPTION}</p>
+    </div>
+  );
 }
 
 // a still has no time axis, and an untimed caption must not read as 0:00.0
@@ -65,11 +90,14 @@ export function ClaimTrack({
             key={c.claim_id}
             className="claim-row"
             aria-pressed={selected === c.claim_id}
-            aria-label={`${c.text}, ${at}, ${flagState(c)}`}
+            aria-label={`${c.text}, ${at}, ${flagState(c)}${c.tier ? `, ${TIER_LABEL[c.tier]}` : ''}`}
             onClick={() => onSelect(c.claim_id, c.start)}
           >
             {c.start === null ? <span className="untimed">{at}</span> : <time>{at}</time>}
-            <span className="words">{c.text}</span>
+            <span className="words">
+              {c.tier && <TierChip tier={c.tier} />}
+              {c.text}
+            </span>
             {lanes && (
               <span className="lane" aria-hidden="true">
                 {c.evidence
@@ -244,6 +272,7 @@ export function Inspector({
           <div className="pair">
             <div className="pair-said">
               <p className="pair-label">The ad says</p>
+              {claim.tier && <TierChip tier={claim.tier} />}
               <h3 className="said">
                 {flagged ? <span className="hl">“{claim.text}”</span> : <>“{claim.text}”</>}
               </h3>

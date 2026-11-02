@@ -3,7 +3,7 @@ import { createRoot } from 'react-dom/client';
 import { canApprove, complete, NOTICE, post, progressMessage, request, upload } from './api';
 import type { Config, Demo, Fix, Job, Result, Reveal, Round, Scoreboard } from './api';
 import './style.css';
-import { ClaimTrack, Inspector } from './evidence';
+import { ClaimTrack, Inspector, TierSummary } from './evidence';
 import { FlagCount, FlaggedList, RoundComparison, StageList, StillStage } from './workspace';
 
 function Metrics({ board }: { board: Scoreboard }) {
@@ -656,6 +656,7 @@ function App() {
                     <p>The ad preview is not kept after a reload. Its evidence is below.</p>
                   )}
                 </div>
+                <TierSummary tiers={result.tiers} />
                 <ClaimTrack
                   claims={result.claims}
                   duration={lanes ? (result.screening.ad.duration ?? 0) : 0}

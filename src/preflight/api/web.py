@@ -20,7 +20,7 @@ from preflight.schema import NOTICE, Screening, register_entries, verify_sources
 from preflight.sources.cap import CapRule, load_cap_rules
 from preflight.sources.on_hold import OnHoldClaim, load_on_hold
 from preflight.sources.rulings import RulingMeta, load_ruling_index
-from preflight.view import build_view, first_time
+from preflight.view import TIERS, build_view, first_time
 
 ROOT = Path(__file__).resolve().parents[3]
 
@@ -111,9 +111,9 @@ def presentation(screening: Screening, crop_base: str) -> dict:
         f = flags[flag_id]
         return f.model_dump(mode="json") | {"source_details": [source(s) for s in f.sources]}
 
-    def row(claim_id: str, text: str, shown: list[dict], line: dict | None) -> dict:
+    def row(claim_id: str, text: str, shown: list[dict], line: dict | None, tier: str | None) -> dict:
         return {
-            "claim_id": claim_id, "text": text, "start": first_time(shown),
+            "claim_id": claim_id, "text": text, "start": first_time(shown), "tier": tier,
             "substance": line["substance"] if line else None,
             "evidence": [evidence(e) for e in shown],
             "flags": [flag(i) for i in line["flags"]["flag_ids"]] if line else [],
@@ -124,11 +124,11 @@ def presentation(screening: Screening, crop_base: str) -> dict:
 
     view = build_view(screening)
     # one row per flagged line, with its nested phrases folded in, and one per unflagged claim
-    rows = [row(line["claim_id"], line["text"], line["evidence"], line) for line in view["lines"]]
-    rows += [row(c["claim_id"], c["text"], c["evidence"], None) for c in view["quiet_claims"]]
-    rows.sort(key=lambda r: (r["start"] is None, r["start"] or 0))
+    rows = [row(line["claim_id"], line["text"], line["evidence"], line, line["tier"]) for line in view["lines"]]
+    rows += [row(c["claim_id"], c["text"], c["evidence"], None, c["tier"]) for c in view["quiet_claims"]]
+    rows.sort(key=lambda r: (TIERS.index(r["tier"]) if r["tier"] else len(TIERS), r["start"] is None, r["start"] or 0))
     return {"screening": screening.model_dump(mode="json"), "claims": rows, "may_say": view["may_say"],
-            "incomplete_stages": view["incomplete_stages"]}
+            "incomplete_stages": view["incomplete_stages"], "tiers": view["tiers"]}
 
 
 def crop_path(screening: Screening, root: Path, track: int, region: int) -> Path:

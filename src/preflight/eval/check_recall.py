@@ -9,7 +9,7 @@ from preflight.check import EFFORT, PROMPT_VERSION, check
 from preflight.check.precedents import load_precedents
 from preflight.eval.claim_recall import PART, WORK, Metered, cost
 from preflight.eval.registry import RESULTS, register, revision, snapshot_text, write_rows
-from preflight.eval.score import caught
+from preflight.eval.score import caught, exact
 from preflight.eval.split import GroundTruth, load_ground_truth, load_split, load_team_ad
 from preflight.models import from_env
 from preflight.models.clients import SPARK
@@ -75,8 +75,11 @@ def scored(judged: dict[str, list[Screening]], truths: dict[str, GroundTruth]) -
     def total(group: list[dict], column: str) -> int:
         return sum(r[column] for r in group)
 
+    def ads(name: str, hits: int, n: int) -> tuple:
+        return name, hits, n, *exact(hits, n)
+
     return rows, [
-        ("ad_recall", sum(r["caught_with_rule"] > 0 for r in positives), len(positives)),
+        ads("ad_recall", sum(r["caught_with_rule"] > 0 for r in positives), len(positives)),
         ("claim_recall", total(positives, "caught_with_rule"), total(positives, "claims")),
         ("claim_recall_any_rule", total(positives, "caught"), total(positives, "claims")),
         # a flag counts here only if every rule it cites belongs to the claims it matches, so extra rules earn nothing
@@ -87,7 +90,7 @@ def scored(judged: dict[str, list[Screening]], truths: dict[str, GroundTruth]) -
         # of the rules the ruling gave the flagged claims, the share the judge cited, so leaving rules out costs
         ("rule_recall", total(positives, "rules_found"), total(positives, "rules_wanted")),
         ("flags_per_positive_ad", total(positives, "flags"), len(positives)),
-        ("negative_ads_flagged_judge_only", sum(r["flags"] > 0 for r in negatives), len(negatives)),
+        ads("negative_ads_flagged_judge_only", sum(r["flags"] > 0 for r in negatives), len(negatives)),
         ("flags_per_negative_ad_judge_only", total(negatives, "flags"), len(negatives)),
     ]
 
@@ -126,7 +129,7 @@ def rescore(run_id: str, claims_run: str, split: str) -> None:
         "snapshots": snapshot_text(next(iter(judged.values()))[0].snapshots),
     }
     register(common, metrics)
-    for metric, hits, out_of in metrics:
+    for metric, hits, out_of, *_ in metrics:
         print(f"{new_id} {metric}: {hits} / {out_of}")
 
 
@@ -212,7 +215,7 @@ def main() -> None:
         "snapshots": snapshot_text(snapshots),
     }
     register(common, metrics)
-    for metric, hits, out_of in metrics:
+    for metric, hits, out_of, *_ in metrics:
         print(f"{run_id} {metric}: {hits} / {out_of}")
 
 

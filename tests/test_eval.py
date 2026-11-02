@@ -5,11 +5,11 @@ from datetime import UTC, datetime
 
 import pytest
 
-from preflight.eval import registry
+from preflight.eval import check_recall, registry
 from preflight.eval.reconstruct import LABEL, overlay_filter
 from preflight.eval.registry import Metric, register, revision
 from preflight.eval.run import MeteredSam, MeteredTranscribe
-from preflight.eval.score import interval, metrics, score_item
+from preflight.eval.score import exact, interval, metrics, score_item
 from preflight.eval.split import BreachingClaim, GroundTruth
 from preflight.eval.team_media import LABEL as TEAM_LABEL
 from preflight.models.clients import SamResult
@@ -155,6 +155,27 @@ def test_intervals_hold_the_point_estimate_and_repeat():
             assert m.low <= m.hits / m.total <= m.high
     assert metrics(TOY) == metrics(TOY)
     assert interval(TOY[:1], lambda i: 1, lambda i: 1) == (1.0, 1.0)
+
+
+def test_exact_upper_bounds_for_no_false_alarms():
+    assert exact(0, 10) == (0.0, 0.308)
+    assert exact(0, 15) == (0.0, 0.218)
+    assert exact(5, 10) == (0.187, 0.813)
+    assert exact(25, 25) == (0.863, 1.0)
+
+
+def test_ad_counts_get_exact_intervals():
+    m = by_name()
+    assert (m["ad_recall"].low, m["ad_recall"].high) == exact(1, 2)
+    assert (m["negative_ads_flagged"].low, m["negative_ads_flagged"].high) == exact(1, 2)
+
+
+def test_judge_only_false_alarms_get_an_exact_interval():
+    negatives = {f"T{n}": [screening(f"s{n}", ["Iron contributes"], {})] for n in range(10)}
+    _, found = check_recall.scored(negatives, {i: truth(i, []) for i in negatives})
+    assert next(m for m in found if m[0] == "negative_ads_flagged_judge_only") == (
+        "negative_ads_flagged_judge_only", 0, 10, 0.0, 0.308,
+    )
 
 
 def test_only_negatives_give_no_recall():

@@ -18,7 +18,7 @@ class Metric(NamedTuple):
     name: str
     hits: float
     total: float
-    # 95% bootstrap interval of hits / total, resampled over items
+    # 95% interval of hits / total: exact for a count of ads, else a bootstrap over ads
     low: float | None = None
     high: float | None = None
 

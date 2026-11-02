@@ -119,9 +119,13 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Screen a split part with the keyword baseline and register it.")
     parser.add_argument("--split", default="v2")
     parser.add_argument("--part", choices=["dev", "test"], default="dev")
+    parser.add_argument("--only", nargs="*", help="item IDs to run (default: the whole part)")
     args = parser.parse_args()
+    if args.part == "test" and args.only:
+        raise SystemExit("the test part runs whole")
     sha = revision(args.part)
-    truths = [load_ground_truth(args.split, i) for i in getattr(load_split(args.split), args.part)]
+    items = [i for i in getattr(load_split(args.split), args.part) if not args.only or i in args.only]
+    truths = [load_ground_truth(args.split, i) for i in items]
     scores = [score_item(t, [screen_item(t.item_id)], kept(t)) for t in truths]
     created = datetime.now(UTC)
     run_id = f"baseline-{created:%Y%m%dT%H%M%S}"

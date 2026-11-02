@@ -1,4 +1,7 @@
+import logging
+import random
 from collections import Counter
+from concurrent.futures import ThreadPoolExecutor
 from functools import cache
 from typing import Literal
 
@@ -9,6 +12,7 @@ from preflight.check.shortlist import Shortlist, shortlist
 from preflight.claims import PROMPTS, listing
 from preflight.models import Spark
 from preflight.schema import (
+    SCHEMA_VERSION,
     CapRuleRef,
     Claim,
     Flag,
@@ -26,8 +30,13 @@ from preflight.sources.on_hold import OnHoldClaim, load_on_hold
 from preflight.sources.register import load_register
 from preflight.sources.rulings import Ruling
 
+log = logging.getLogger(__name__)
+
 PROMPT_VERSION = "judge_v7"
 EFFORT = "high"
+# judge samples per ad; when the check votes, a claim is flagged when two of three agree
+VOTE_SAMPLES = 3
+SAMPLES = VOTE_SAMPLES
 PRECEDENTS = 3
 # per-claim retrieval: each claim's closest ruling, the most shared first, up to this many in the call
 PRECEDENTS_PER_CLAIM_MAX = 5
@@ -203,6 +212,40 @@ def parse(
     return flags
 
 
+def voters(screening: Screening) -> int:
+    # a flag is unanimous when every sample that answered flagged it; runs saved before StageRun.samples had all three
+    done = (r.samples for r in screening.stages if r.stage == "check" and r.status == "done")
+    return next(done, None) or VOTE_SAMPLES
+
+
+def vote(claims: list[Claim], samples: list[list[Flag] | None]) -> list[Flag]:
+    majority = len(samples) // 2 + 1
+    answered = [s for s in samples if s is not None]
+    # with fewer answers than a majority nothing could be flagged, which would read as no issues found
+    if len(answered) < majority:
+        raise ValueError(f"only {len(answered)} of {len(samples)} judge samples kept to the contract")
+    flags = []
+    for claim in claims:
+        found = [f for sample in answered for f in sample if f.claim_id == claim.claim_id]
+        if len(found) < majority:
+            continue
+        kinds = Counter(f.kind for f in found)
+        kind = "on_hold" if kinds["on_hold"] > kinds["possible_breach"] else "possible_breach"
+        first = next(f for f in found if f.kind == kind)
+        # counted from the reason's own sample first, so a tie for the most-cited rule keeps one that sample gives
+        ordered = [first, *(f for f in found if f is not first)]
+        cited = Counter(s.rule for f in ordered for s in f.sources if s.kind == "cap_rule")
+        rules = [r for r, n in cited.items() if n >= majority] or [r for r, _ in cited.most_common(1)]
+        sources = [CapRuleRef(rule=r) for r in rules] + [s for s in first.sources if s.kind != "cap_rule"]
+        # rule 2: wording only on a health claim, as in parse
+        health = kind == "on_hold" or any(r.startswith("15.") for r in rules)
+        flags.append(Flag(
+            flag_id=f"flag-{len(flags)}", claim_id=claim.claim_id, kind=kind, reason=first.reason,
+            sources=tuple(sources), suggested_wording=first.suggested_wording if health else None, votes=len(found),
+        ))  # fmt: skip
+    return flags
+
+
 def precedents_for(claims: list[Claim], precedents: PrecedentIndex, per_claim: bool):
     if not per_claim:
         return precedents.top(" ".join(c.text for c in claims), k=PRECEDENTS), None
@@ -218,7 +261,7 @@ def precedents_for(claims: list[Claim], precedents: PrecedentIndex, per_claim: b
 
 def check(
     screening: Screening, spark: Spark, precedents: PrecedentIndex, *, prompt: str = PROMPT_VERSION,
-    effort: str = EFFORT, per_claim: bool = True,
+    effort: str = EFFORT, per_claim: bool = True, samples: int = SAMPLES, first_sample: int = 0,
 ) -> Screening:
     if screening.flags or any(r.stage == "check" for r in screening.stages):
         raise ValueError("screening already contains flags or a check stage")
@@ -233,13 +276,31 @@ def check(
         found = shortlist(claims, _register(s.gb_register), _on_hold(s.on_hold))
         rules = list(_rules(s.cap_rules))
         rulings, closest = precedents_for(claims, precedents, per_claim)
-        r = spark.ask(
-            question(screening, found, rules, rulings, prompt, closest), prompt_version=prompt, effort=effort,
-            schema=output_schema(claims, found, rules, rulings),
+        schema = output_schema(claims, found, rules, rulings)
+
+        def judge(sample: int):
+            # the same wording with the rules in another fixed order; sample 0 keeps the pack's order
+            order = random.Random(sample).sample(rules, len(rules)) if sample else rules
+            text = question(screening, found, order, rulings, prompt, closest)
+            r = spark.ask(text, prompt_version=prompt, effort=effort, schema=schema, sample=sample)
+            try:
+                return r, parse(r.data, claims, found, rulings, rules)
+            except ValueError as e:
+                if samples == 1:
+                    raise
+                # an answer that breaks the contract abstains from the vote; the samples left decide
+                log.warning("judge sample %d abstains: %s", sample, e)
+                return r, None
+
+        with ThreadPoolExecutor(max_workers=samples) as pool:
+            judged = list(pool.map(judge, range(first_sample, first_sample + samples)))
+        flags = judged[0][1] if samples == 1 else vote(claims, [f for _, f in judged])
+        answered = sum(f is not None for _, f in judged) if samples > 1 else None
+        run = StageRun(
+            stage="check", status="done", model=judged[0][0].model, prompt=prompt, effort=effort, samples=answered
         )
-        flags = parse(r.data, claims, found, rulings, rules)
-        run = StageRun(stage="check", status="done", model=r.model, prompt=prompt, effort=effort)
-    checked = screening.model_copy(update={"flags": flags, "stages": (*screening.stages, run)})
+    update = {"flags": flags, "stages": (*screening.stages, run), "schema_version": SCHEMA_VERSION}
+    checked = screening.model_copy(update=update)
     # rules 2 and 3: every reference and suggested wording exists in the snapshots the screening names
     verify_sources(checked)
     return checked

@@ -526,6 +526,30 @@ def test_refused_screenings_leave_the_hourly_allowance(tmp_path, replay_models, 
         assert client.post("/screenings", json={"upload_id": upload(client)}).status_code == 202
 
 
+def test_public_fix_runs_one_round(tmp_path, replay_models, monkeypatch):
+    import preflight.api.service as service
+
+    rounds = []
+
+    def counted(draft, **kwargs):
+        rounds.append(kwargs["rounds"])
+        return fix(draft, **kwargs)
+
+    fix = service.fix
+    monkeypatch.setattr(service, "fix", counted)
+    app = public_app(tmp_path, replay_models, monkeypatch)
+    with TestClient(app) as client:
+        still = upload(client)
+        source = start(client, upload(client, (MEDIA / "captions.mp4").read_bytes(), "video/mp4"))
+        assert wait_for(client, source) == "completed"
+        draft = yaml.safe_load((AGENT / "draft.yaml").read_text(encoding="utf-8"))
+        draft["scenes"][0].pop("still")
+        draft["scenes"][0]["upload_id"] = still
+        job_id = client.post("/fixes", json={"screening_id": source, **draft, "rounds": 3}).json()["job_id"]
+        assert wait_for(client, job_id) == "completed"
+    assert rounds == [1]
+
+
 def test_public_mode_limits_upload_size_and_video_length(tmp_path, replay_models, monkeypatch):
     small = public_app(tmp_path / "a", replay_models, monkeypatch, public_max_upload_bytes=3)
     with TestClient(small) as client:
@@ -588,10 +612,6 @@ def test_public_approval_is_recorded_as_a_demo_approval(tmp_path, replay_models,
         job_id = response.json()["job_id"]
         assert wait_for(client, job_id) == "completed"
         directory = app.state.service.storage.job_dir(app.state.service.storage.jobs[job_id])
-        records = map(json.loads, (directory / "audit.jsonl").read_text().splitlines())
-        rounds = [r for r in records if r["event"] == "round"]
-        # three rounds were asked for; public mode allows one fix round after the first screening
-        assert max(r["round"] for r in rounds) <= 1
         response = client.post(f"/fixes/{job_id}/approve", json={"by": "Visitor"})
         assert response.status_code == 200, response.text
         assert response.json()["decision"]["public_demo"] is True

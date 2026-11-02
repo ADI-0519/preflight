@@ -1,6 +1,15 @@
 import { StrictMode, useEffect, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
-import { canApprove, complete, NOTICE, post, progressMessage, request, upload } from './api';
+import {
+  canApprove,
+  complete,
+  NOTICE,
+  post,
+  progressMessage,
+  PUBLIC_ERRORS,
+  request,
+  upload,
+} from './api';
 import type { Config, Demo, Fix, Job, Result, Reveal, Round, Scoreboard } from './api';
 import './style.css';
 import { ClaimTrack, Inspector, TierSummary } from './evidence';
@@ -496,11 +505,7 @@ function App() {
               <div className="slot">
                 <p className="upload-notice">{config?.upload_notice ?? 'Loading upload terms…'}</p>
                 {config?.uploads_closed && (
-                  <p role="status">
-                    {config.uploads_closed === 'daily_cap_reached'
-                      ? 'Uploads are closed for today. The labelled demos still run.'
-                      : 'Uploads are paused. The labelled demos still run.'}
-                  </p>
+                  <p role="status">{PUBLIC_ERRORS[config.uploads_closed]}</p>
                 )}
                 <span>Nothing uploaded yet.</span>
                 <label className="file-button primary">

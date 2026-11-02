@@ -270,6 +270,12 @@ def test_rescore_refuses_a_run_missing_a_saved_screening(tmp_path, monkeypatch):
         run.rescore("screen-1")
 
 
+def test_rescore_refuses_a_test_run(tmp_path, monkeypatch):
+    saved_run(tmp_path, monkeypatch, part="test")
+    with pytest.raises(SystemExit, match="test run"):
+        run.rescore("screen-1")
+
+
 @pytest.mark.parametrize(("status", "part", "expected"), [("", "test", "abc"), (" M x.py", "dev", "abc-dirty")])
 def test_revision(monkeypatch, status, part, expected):
     monkeypatch.setattr(registry, "git", lambda *a: "abc\n" if a[0] == "rev-parse" else status)

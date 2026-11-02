@@ -22,8 +22,9 @@ td, th { border: 1px solid #ccc; padding: 0.2rem 0.6rem; text-align: left; }
 .flag { border-top: 1px solid #ddd; margin-top: 0.8rem; padding-top: 0.4rem; }
 .kind { font-weight: 600; }
 .tier { border: 1px solid #888; border-radius: 3px; padding: 0 0.4rem; font-size: 0.8rem; font-weight: 600; }
-.tier.high { background: #1b1b1b; color: #fff; }
-.tier.low { font-weight: 400; }
+.tier.high { background: #b42318; border-color: #b42318; color: #fff; }
+.tier.medium { background: #f79009; border-color: #f79009; color: #16181b; }
+.tier.low { background: #e8eaec; border-color: #e8eaec; }
 .tier.unchecked { border-style: dashed; font-weight: 400; }
 img { max-width: min(100%, 480px); display: block; border: 1px solid #ccc; }
 """

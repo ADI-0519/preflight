@@ -10,9 +10,10 @@ from pathlib import Path
 
 from preflight.agent import Draft, DraftScene, DraftScreener, approve, fix, is_clean
 from preflight.agent.fix import read_log
-from preflight.api.public import Public, metered
+from preflight.api.public import Public
 from preflight.api.storage import APIError, Retention, Settings, write_json
 from preflight.check.precedents import load_precedents
+from preflight.eval.run import metered
 from preflight.ingest import ingest
 from preflight.models import Store, from_env
 from preflight.pipeline import SNAPSHOTS, screen

@@ -15,9 +15,6 @@ from datetime import UTC, datetime
 from typing import Literal
 
 from preflight.api.storage import APIError, Settings, write_json
-from preflight.eval.reconstruct import IMAGE_EACH, SPARK_IN, SPARK_OUT
-from preflight.eval.run import MeteredSam, MeteredTranscribe
-from preflight.models.clients import Models
 
 MODE_ENV = "PREFLIGHT_PUBLIC_MODE"
 HOUR = 3600
@@ -34,52 +31,6 @@ def mode(settings: Settings) -> Mode:
     if value == "replay":
         return "replay"
     return "on" if value == "on" or settings.public else "off"
-
-
-def spark_cost(usage: dict) -> float:
-    return (usage.get("input_tokens", 0) * SPARK_IN + usage.get("output_tokens", 0) * SPARK_OUT) / 1e6
-
-
-class _Spark:
-    def __init__(self, client, usd: list[float]):
-        self.client, self.usd = client, usd
-
-    def ask(self, *args, **kwargs):
-        r = self.client.ask(*args, **kwargs)
-        self.usd.append(spark_cost(r.usage))
-        return r
-
-    def respond(self, *args, **kwargs):
-        r = self.client.respond(*args, **kwargs)
-        self.usd.append(spark_cost(r.usage))
-        return r
-
-    def __getattr__(self, name):
-        return getattr(self.client, name)
-
-
-class _Image:
-    def __init__(self, client, usd: list[float]):
-        self.client, self.usd = client, usd
-
-    def generate(self, *args, **kwargs):
-        self.usd.append(IMAGE_EACH)
-        return self.client.generate(*args, **kwargs)
-
-    def edit(self, *args, **kwargs):
-        self.usd.append(IMAGE_EACH)
-        return self.client.edit(*args, **kwargs)
-
-    def __getattr__(self, name):
-        return getattr(self.client, name)
-
-
-def metered(models: Models) -> tuple[Models, Callable[[], float]]:
-    """The models with every call priced; a cached answer is priced as if called, so the count errs high."""
-    usd: list[float] = []
-    sam, heard = MeteredSam(models.sam), MeteredTranscribe(models.transcribe)
-    spark, image = _Spark(models.spark, usd), _Image(models.image, usd) if models.image else None
-    return Models(spark, heard, sam, image, models.glimmer), lambda: sum(usd) + sum(sam.usd) + sum(heard.usd)
 
 
 class Public:

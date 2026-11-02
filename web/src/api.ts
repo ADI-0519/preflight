@@ -140,7 +140,8 @@ export const NOTICE =
   'PreFlight screens ads against the dated sources named in this report. It is not legal advice, and it does not decide whether an ad may run: a person makes that call.';
 
 export const PUBLIC_ERRORS: Record<string, string> = {
-  rate_limited: 'This workspace allows a few screenings and fixes an hour. Try again later.',
+  rate_limited:
+    'This workspace allows a few uploads, screenings and fixes an hour. Try again later.',
   daily_cap_reached: 'Uploads are closed for today. The labelled demos still run.',
   uploads_paused: 'Uploads are paused. The labelled demos still run.',
   media_too_long: 'The video is too long. Choose a shorter one.',

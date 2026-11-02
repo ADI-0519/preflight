@@ -145,32 +145,33 @@ def create_app(
         media_type = request.headers.get("content-type", "").split(";")[0].strip().lower()
         if media_type not in MEDIA:
             raise APIError(415, "unsupported_media_type")
-        public.admit_upload()
-        limit = public.max_upload_bytes()
-        fields = storage.begin(media_type, MEDIA[media_type])
-        saved, size = False, 0
-        try:
-            path = storage.upload_dir(fields["upload_id"]) / ("media" + fields["suffix"])
-            with path.open("xb") as stream:
-                async for chunk in request.stream():
-                    size += len(chunk)
-                    if size > limit:
-                        raise APIError(413, "body_too_large")
-                    stream.write(chunk)
-            if not size:
-                raise APIError(422, "empty_upload")
+        with public.admit(client(request), "upload"):
+            limit = public.max_upload_bytes()
+            fields = storage.begin(media_type, MEDIA[media_type])
+            saved, size = False, 0
             try:
-                info = await asyncio.to_thread(validate_media, path, public.max_seconds(MAX_SECONDS))
-            except (ValueError, RuntimeError):
-                raise APIError(415, "unreadable_media") from None
-            if info["still"] != media_type.startswith("image/"):
-                raise APIError(415, "media_type_mismatch")
-            fields = storage.finish(fields, size)
-            saved = True
-            return {key: fields[key] for key in ("upload_id", "media_type", "bytes", "expires_at")} | {"notice": NOTICE}
-        finally:
-            if not saved:
-                storage.discard(fields["upload_id"])
+                path = storage.upload_dir(fields["upload_id"]) / ("media" + fields["suffix"])
+                with path.open("xb") as stream:
+                    async for chunk in request.stream():
+                        size += len(chunk)
+                        if size > limit:
+                            raise APIError(413, "body_too_large")
+                        stream.write(chunk)
+                if not size:
+                    raise APIError(422, "empty_upload")
+                try:
+                    info = await asyncio.to_thread(validate_media, path, public.max_seconds(MAX_SECONDS))
+                except (ValueError, RuntimeError):
+                    raise APIError(415, "unreadable_media") from None
+                if info["still"] != media_type.startswith("image/"):
+                    raise APIError(415, "media_type_mismatch")
+                fields = storage.finish(fields, size)
+                saved = True
+                keys = ("upload_id", "media_type", "bytes", "expires_at")
+                return {key: fields[key] for key in keys} | {"notice": NOTICE}
+            finally:
+                if not saved:
+                    storage.discard(fields["upload_id"])
 
     @app.post("/screenings", status_code=202, response_model=JobView)
     def start_screening(fields: StartScreening, request: Request):

@@ -65,7 +65,9 @@ describe('refused requests', () => {
     const refused = (status: number, error: string) =>
       vi.fn(async () => new Response(JSON.stringify({ error }), { status }));
     vi.stubGlobal('fetch', refused(429, 'rate_limited'));
-    await expect(request('/screenings')).rejects.toThrow('a few screenings and fixes an hour');
+    await expect(request('/screenings')).rejects.toThrow(
+      'a few uploads, screenings and fixes an hour',
+    );
     vi.stubGlobal('fetch', refused(429, 'job_queue_full'));
     await expect(request('/screenings')).rejects.toThrow('Every job slot is busy');
     vi.stubGlobal('fetch', refused(503, 'daily_cap_reached'));

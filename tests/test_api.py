@@ -526,6 +526,19 @@ def test_refused_screenings_leave_the_hourly_allowance(tmp_path, replay_models, 
         assert client.post("/screenings", json={"upload_id": upload(client)}).status_code == 202
 
 
+def test_public_mode_limits_uploads_per_client_an_hour(tmp_path, replay_models, monkeypatch):
+    app = public_app(tmp_path, replay_models, monkeypatch, public_uploads_per_hour=2)
+    with TestClient(app) as client:
+        # a refused upload is deleted, so it leaves the allowance
+        refused = client.post("/uploads", content=SECRET.encode(), headers={"Content-Type": "image/png"})
+        assert refused.status_code == 415
+        upload(client)
+        upload(client)
+        response = client.post("/uploads", content=(AGENT / "still.png").read_bytes(),
+                               headers={"Content-Type": "image/png"})
+        assert response.status_code == 429 and response.json()["error"] == "rate_limited"
+
+
 def test_public_fix_runs_one_round(tmp_path, replay_models, monkeypatch):
     import preflight.api.service as service
 

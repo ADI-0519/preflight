@@ -126,18 +126,16 @@ class Public:
             return "daily_cap_reached"
         return None
 
-    def admit_upload(self) -> None:
-        if reason := self.closed():
-            raise APIError(503, reason)
-
     @contextmanager
-    def admit(self, client: str, kind: Literal["screening", "fix"]) -> Iterator[None]:
+    def admit(self, client: str, kind: Literal["upload", "screening", "fix"]) -> Iterator[None]:
         if self.mode == "off":
             yield
             return
-        self.admit_upload()
+        if reason := self.closed():
+            raise APIError(503, reason)
         s = self.settings
-        allowed = s.public_screenings_per_hour if kind == "screening" else s.public_fixes_per_hour
+        allowed = {"upload": s.public_uploads_per_hour, "screening": s.public_screenings_per_hour,
+                   "fix": s.public_fixes_per_hour}[kind]
         with self.lock:
             now = self.clock()
             recent = [t for t in self.starts.get((client, kind), []) if t > now - HOUR]

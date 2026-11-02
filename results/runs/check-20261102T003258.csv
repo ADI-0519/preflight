@@ -1,0 +1,11 @@
+item_id,label,claims,caught,caught_with_rule,caught_exact_rules,caught_all_rules,rules_cited,rules_related,rules_wanted,rules_found,judged,flags,on_hold,suggested
+T16,negative,0,0,0,0,0,0,0,0,0,6,0,0,0
+T17,negative,0,0,0,0,0,0,0,0,0,8,0,0,0
+T18,negative,0,0,0,0,0,0,0,0,0,6,0,0,0
+T19,negative,0,0,0,0,0,0,0,0,0,7,0,0,0
+T20,negative,0,0,0,0,0,0,0,0,0,6,0,0,0
+T21,negative,0,0,0,0,0,0,0,0,0,8,0,0,0
+T22,negative,0,0,0,0,0,0,0,0,0,6,0,0,0
+T23,negative,0,0,0,0,0,0,0,0,0,8,0,0,0
+T24,negative,0,0,0,0,0,0,0,0,0,5,0,0,0
+T25,negative,0,0,0,0,0,0,0,0,0,6,0,0,0

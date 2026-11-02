@@ -23,8 +23,9 @@ TOOLS = [
         "name": "screen_ad",
         "description": (
             "Screens a draft ad against the GB nutrition and health claims register, the CAP Code and past ASA "
-            "rulings before it is published. Returns flagged lines with their CAP rules, sources, evidence and "
-            "any authorised register wording. This is screening, not legal advice."
+            "rulings before it is published. Returns flagged lines, highest tier first, with their CAP rules, "
+            "sources, evidence and any authorised register wording. A tier orders the review; it is not a finding. "
+            "This is screening, not legal advice."
         ),
         "parameters": {
             "type": "object",
@@ -157,6 +158,7 @@ class Toolbox:
             "headline": screening.headline,
             "incomplete_stages": view["incomplete_stages"],
             "lines": view["lines"],
+            "tiers": view["tiers"],
             "may_say": view["may_say"],
             "report": str(html_path),
             "json": str(json_path),

@@ -208,6 +208,12 @@ def test_rule_precision_and_recall_get_intervals():
     assert m["rule_precision"].low is not None and m["rule_recall"].low is not None
 
 
+def test_no_denominator_gives_no_interval():
+    unflagged = score_item(truth("A7", [("boosts immunity", ["15.1.1"])]), [screening("s", ["Boosts immunity"], {})])
+    m = {x.name: x for x in metrics([unflagged])}
+    assert (m["rule_precision"].hits, m["rule_precision"].total, m["rule_precision"].low) == (0, 0, None)
+
+
 def test_judge_only_false_alarms_get_an_exact_interval():
     negatives = {f"T{n}": [screening(f"s{n}", ["Iron contributes"], {})] for n in range(10)}
     _, found = check_recall.scored(negatives, {i: truth(i, []) for i in negatives})

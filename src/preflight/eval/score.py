@@ -198,7 +198,7 @@ def interval(
     out_of: Callable[[ItemScore], float],
     draws: int = DRAWS,
     seed: int = SEED,
-) -> tuple[float, float]:
+) -> tuple[float, float] | tuple[None, None]:
     rng = random.Random(seed)
     stats = []
     for _ in range(draws):
@@ -207,6 +207,9 @@ def interval(
         # a resample with nothing to divide by says nothing about the ratio
         if total:
             stats.append(sum(map(hit, sample)) / total)
+    if len(stats) < 2:
+        # no ad has anything to divide by, as on an --only run whose flags cite no rule
+        return None, None
     cuts = statistics.quantiles(stats, n=40, method="inclusive")
     return round(cuts[0], 3), round(cuts[-1], 3)
 

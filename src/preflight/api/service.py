@@ -10,6 +10,7 @@ from pathlib import Path
 
 from preflight.agent import Draft, DraftScene, DraftScreener, approve, fix, is_clean
 from preflight.agent.fix import read_log
+from preflight.api.public import Public, metered
 from preflight.api.storage import APIError, Retention, Settings, write_json
 from preflight.check.precedents import load_precedents
 from preflight.ingest import ingest
@@ -42,6 +43,7 @@ class Service:
         ingester=ingest, draft_screener=DraftScreener,
     ):
         self.storage = Retention(settings, **({"clock": clock} if clock else {}))
+        self.public = Public(settings, **({"clock": clock} if clock else {}))
         self.models_factory, self.ingester, self.draft_screener = models_factory, ingester, draft_screener
         self.precedents_factory = precedents_factory or cache(lambda: load_precedents(SNAPSHOTS.rulings))
         self.executor = ThreadPoolExecutor(max_workers=settings.workers, thread_name_prefix="preflight-api")
@@ -83,10 +85,14 @@ class Service:
             done = self.ingester(path, directory / "ingest")
             # one upload per screening, so its cache can sit with the upload: a rescreen reuses it, expiry deletes it
             with self.models_factory(self.storage.upload_dir(upload_id)) as models:
-                return screen(
-                    done, models, self.precedents_factory(), job["job_id"], align="mms" if align else None,
-                    on_stage=lambda stage: self.stage(job["job_id"], stage),
-                )
+                models, bill = metered(models)
+                try:
+                    return screen(
+                        done, models, self.precedents_factory(), job["job_id"], align="mms" if align else None,
+                        on_stage=lambda stage: self.stage(job["job_id"], stage),
+                    )
+                finally:
+                    self.public.spend(bill())
 
         return self.submit("screening", [upload_id], call)
 
@@ -120,15 +126,24 @@ class Service:
                 }))
             draft = Draft(format=fields["format"], scenes=tuple(scenes))
 
+            rounds = fields["rounds"]
+            if self.public.mode != "off":
+                # public mode: one fix round per job
+                rounds = min(rounds, self.storage.settings.public_fix_rounds)
+
             def call(job, directory):
                 with self.models_factory(directory) as models:
-                    screener = self.draft_screener(
-                        models, self.precedents_factory(), directory, align="mms" if fields["align"] else None,
-                    )
-                    result = fix(
-                        draft, screen_draft=screener, image=models.image, rounds=fields["rounds"],
-                        log=directory / "audit.jsonl", work_dir=directory,
-                    )
+                    models, bill = metered(models)
+                    try:
+                        screener = self.draft_screener(
+                            models, self.precedents_factory(), directory, align="mms" if fields["align"] else None,
+                        )
+                        result = fix(
+                            draft, screen_draft=screener, image=models.image, rounds=rounds,
+                            log=directory / "audit.jsonl", work_dir=directory,
+                        )
+                    finally:
+                        self.public.spend(bill())
                     verify_sources(result.screening)
                     write_json(directory / "fix.json", {
                         "state": result.state, "draft": result.draft.model_dump(mode="json"), "open": result.open,
@@ -180,7 +195,9 @@ class Service:
             if not completed(result) or not is_clean(result):
                 raise APIError(409, "human_review_required")
             try:
-                record = approve(self.storage.job_dir(job) / "audit.jsonl", by, note)
+                # public mode: an anonymous visitor's approval is recorded as a demonstration, not a sign-off
+                record = approve(self.storage.job_dir(job) / "audit.jsonl", by, note,
+                                 public_demo=self.public.mode != "off")
             except ValueError:
                 raise APIError(409, "approval_not_available") from None
             self.storage.event(job_id, human_approval_recorded=True)

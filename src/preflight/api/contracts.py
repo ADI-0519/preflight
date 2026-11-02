@@ -78,6 +78,7 @@ class HumanDecision(Input):
     at: AwareDatetime
     screening_id: str
     note: str
+    public_demo: bool = False
 
 
 class ApprovalView(Input):

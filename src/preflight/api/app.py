@@ -11,6 +11,7 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 from starlette.middleware.trustedhost import TrustedHostMiddleware
 
 from preflight.api.contracts import Approval, ApprovalView, FixView, JobView, StartFix, StartScreening, UploadView
+from preflight.api.public import Public
 from preflight.api.service import Service
 from preflight.api.storage import TERMINAL, APIError, Settings
 from preflight.api.web import ROOT, install_web
@@ -29,13 +30,13 @@ MEDIA_INPUT_OPTIONS = (
 )
 
 
-def validate_media(path):
+def validate_media(path, max_seconds: float = MAX_SECONDS):
     options = MEDIA_INPUT_OPTIONS
     if path.suffix == ".jpg":
         # JPEG auto-detection can select image2, which also supports file sequences.
         options += ("-f", "jpeg_pipe")
     info = probe(path, input_options=options)
-    if info["duration"] > MAX_SECONDS:
+    if info["duration"] > max_seconds:
         raise APIError(422, "media_too_long")
     # ffprobe can identify a container from its extension even when no frame decodes.
     run("ffmpeg", "-nostdin", "-hide_banner", "-loglevel", "error", *options, "-i", str(path),
@@ -44,13 +45,13 @@ def validate_media(path):
 
 
 class BodyLimit:
-    def __init__(self, app, settings: Settings):
-        self.app, self.settings = app, settings
+    def __init__(self, app, settings: Settings, public: Public):
+        self.app, self.settings, self.public = app, settings, public
 
     async def __call__(self, scope, receive, send):
         if scope["type"] != "http":
             return await self.app(scope, receive, send)
-        limit = self.settings.max_upload_bytes if scope["path"] == "/uploads" else self.settings.max_json_bytes
+        limit = self.public.max_upload_bytes() if scope["path"] == "/uploads" else self.settings.max_json_bytes
         size = 0
 
         async def limited_receive():
@@ -71,7 +72,7 @@ def create_app(
     """Local single-process app; production authentication/deployment are out of scope."""
     settings = settings or Settings()
     service = Service(settings, **dependencies)
-    storage = service.storage
+    storage, public = service.storage, service.public
 
     async def reap():
         while True:
@@ -98,7 +99,7 @@ def create_app(
 
     app = FastAPI(title="PreFlight API", version="0.1.0", lifespan=lifespan)
     app.state.service = service
-    app.add_middleware(BodyLimit, settings=settings)
+    app.add_middleware(BodyLimit, settings=settings, public=public)
     app.add_middleware(TrustedHostMiddleware, allowed_hosts=["localhost", "127.0.0.1", "testserver"])
 
     @app.middleware("http")
@@ -124,6 +125,10 @@ def create_app(
     async def http_error(request, error):
         return JSONResponse({"error": "request_rejected", "notice": NOTICE}, status_code=error.status_code)
 
+    def client(request: Request) -> str:
+        # behind a proxy, run uvicorn with --proxy-headers so this is the visitor's address
+        return request.client.host if request.client else "unknown"
+
     def view(job):
         return {"job_id": job["job_id"], "kind": job["kind"], "status": job["status"], "notice": NOTICE}
 
@@ -140,6 +145,8 @@ def create_app(
         media_type = request.headers.get("content-type", "").split(";")[0].strip().lower()
         if media_type not in MEDIA:
             raise APIError(415, "unsupported_media_type")
+        public.admit_upload()
+        limit = public.max_upload_bytes()
         fields = storage.begin(media_type, MEDIA[media_type])
         saved, size = False, 0
         try:
@@ -147,13 +154,13 @@ def create_app(
             with path.open("xb") as stream:
                 async for chunk in request.stream():
                     size += len(chunk)
-                    if size > settings.max_upload_bytes:
+                    if size > limit:
                         raise APIError(413, "body_too_large")
                     stream.write(chunk)
             if not size:
                 raise APIError(422, "empty_upload")
             try:
-                info = await asyncio.to_thread(validate_media, path)
+                info = await asyncio.to_thread(validate_media, path, public.max_seconds(MAX_SECONDS))
             except (ValueError, RuntimeError):
                 raise APIError(415, "unreadable_media") from None
             if info["still"] != media_type.startswith("image/"):
@@ -166,7 +173,8 @@ def create_app(
                 storage.discard(fields["upload_id"])
 
     @app.post("/screenings", status_code=202, response_model=JobView)
-    def start_screening(fields: StartScreening):
+    def start_screening(fields: StartScreening, request: Request):
+        public.admit(client(request), "screening")
         return view(service.start_screening(fields.upload_id, fields.align))
 
     @app.get("/jobs/{job_id}", response_model=JobView)
@@ -222,7 +230,8 @@ def create_app(
         return StreamingResponse(stream(), media_type="text/event-stream", headers={"X-Accel-Buffering": "no"})
 
     @app.post("/fixes", status_code=202, response_model=JobView)
-    def start_fix(fields: StartFix):
+    def start_fix(fields: StartFix, request: Request):
+        public.admit(client(request), "fix")
         return view(service.start_fix(fields.screening_id, fields.model_dump()))
 
     @app.get("/fixes/{job_id}", response_model=FixView)

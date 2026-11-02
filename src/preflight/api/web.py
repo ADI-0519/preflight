@@ -15,7 +15,9 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field, model_validator
 
 from preflight.agent.fix import read_log
+from preflight.api.public import UPLOAD_NOTICE
 from preflight.api.storage import APIError
+from preflight.ingest import MAX_SECONDS
 from preflight.schema import NOTICE, Screening, register_entries, verify_sources
 from preflight.sources.cap import CapRule, load_cap_rules
 from preflight.sources.on_hold import OnHoldClaim, load_on_hold
@@ -251,7 +253,10 @@ def install_web(app, service, *, web_root: Path, demo_root: Path, results_root: 
 
     @app.get("/ui/config")
     def configuration():
-        return {"notice": NOTICE, "max_upload_bytes": storage.settings.max_upload_bytes,
+        public = service.public
+        return {"notice": NOTICE, "max_upload_bytes": public.max_upload_bytes(),
+                "max_seconds": public.max_seconds(MAX_SECONDS), "public_mode": public.mode,
+                "upload_notice": UPLOAD_NOTICE, "uploads_closed": public.closed(),
                 "retention_seconds": storage.settings.retention_seconds, "scoreboard": scoreboard(results_root),
                 "verification_label": getattr(app.state, "verification_label", None)}
 

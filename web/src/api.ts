@@ -129,6 +129,10 @@ export interface Config {
   verification_label: string | null;
   retention_seconds: number;
   max_upload_bytes: number;
+  max_seconds: number;
+  public_mode: 'off' | 'on' | 'replay';
+  upload_notice: string;
+  uploads_closed: 'uploads_paused' | 'daily_cap_reached' | null;
   scoreboard: Scoreboard;
 }
 

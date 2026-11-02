@@ -475,3 +475,113 @@ def test_derived_job_deletion_retries_after_its_expired_input_is_gone(tmp_path, 
         storage.sweep()
         assert not directory.exists()
         assert SECRET not in (storage.root / "retention.jsonl").read_text()
+
+
+def public_app(tmp_path, replay_models, monkeypatch, clock=None, **limits):
+    monkeypatch.delenv("PREFLIGHT_PUBLIC_MODE", raising=False)
+    return create_app(
+        Settings(root=tmp_path / "uploads", public=True, **limits),
+        models_factory=lambda directory: nullcontext(replay_models), precedents_factory=NoPrecedents,
+        ingester=replay_ingest, draft_screener=recorded_screener, **({"clock": clock} if clock else {}),
+    )
+
+
+def test_public_mode_allows_three_screenings_per_client_an_hour(tmp_path, replay_models, monkeypatch):
+    clock = [1_800_000_000.0]
+    app = public_app(tmp_path, replay_models, monkeypatch, clock=lambda: clock[0])
+    with TestClient(app) as client:
+        upload_id = upload(client, (MEDIA / "captions.mp4").read_bytes(), "video/mp4")
+        jobs = [start(client, upload_id) for _ in range(3)]
+        response = client.post("/screenings", json={"upload_id": upload_id})
+        assert response.status_code == 429 and response.json()["error"] == "rate_limited"
+        for job_id in jobs:
+            wait_for(client, job_id)
+        # each job's model usage is counted towards the day's spend, priced from its recorded usage
+        assert app.state.service.public.spent() > 0
+        clock[0] += 3601
+        assert client.post("/screenings", json={"upload_id": upload_id}).status_code == 202
+
+
+def test_public_mode_allows_one_fix_per_client_an_hour_and_one_round():
+    from preflight.api.public import Public
+
+    public = Public(Settings(public=True))
+    public.admit("203.0.113.1", "fix")
+    with pytest.raises(APIError) as error:
+        public.admit("203.0.113.1", "fix")
+    assert (error.value.status, error.value.code) == (429, "rate_limited")
+    # another client has its own allowance
+    public.admit("203.0.113.2", "fix")
+
+
+def test_public_mode_limits_upload_size_and_video_length(tmp_path, replay_models, monkeypatch):
+    small = public_app(tmp_path / "a", replay_models, monkeypatch, public_max_upload_bytes=3)
+    with TestClient(small) as client:
+        response = client.post("/uploads", content=SECRET.encode(), headers={"Content-Type": "image/png"})
+        assert response.status_code == 413
+        assert client.get("/ui/config").json()["max_upload_bytes"] == 3
+    short = public_app(tmp_path / "b", replay_models, monkeypatch, public_max_seconds=0.5)
+    with TestClient(short) as client:
+        response = client.post("/uploads", content=(MEDIA / "captions.mp4").read_bytes(),
+                               headers={"Content-Type": "video/mp4"})
+        assert response.status_code == 422 and response.json()["error"] == "media_too_long"
+        assert list((tmp_path / "b" / "uploads").glob("*/media*")) == []
+
+
+def test_daily_spend_cap_refuses_uploads_until_the_next_day(tmp_path, replay_models, monkeypatch):
+    clock = [1_800_000_000.0]
+    app = public_app(tmp_path, replay_models, monkeypatch, clock=lambda: clock[0], daily_cap_usd=1.0)
+    with TestClient(app) as client:
+        upload_id = upload(client)
+        app.state.service.public.spend(1.0)
+        response = client.post("/uploads", content=(AGENT / "still.png").read_bytes(),
+                               headers={"Content-Type": "image/png"})
+        assert response.status_code == 503 and response.json()["error"] == "daily_cap_reached"
+        assert client.post("/screenings", json={"upload_id": upload_id}).status_code == 503
+        assert client.get("/ui/config").json()["uploads_closed"] == "daily_cap_reached"
+        # the preloaded demos still run, from replay
+        assert client.get("/ui/demos").status_code == 200
+        clock[0] += 86400
+        assert client.get("/ui/config").json()["uploads_closed"] is None
+        upload(client)
+
+
+def test_replay_switch_turns_uploads_off_without_public_settings(tmp_path, monkeypatch):
+    monkeypatch.setenv("PREFLIGHT_PUBLIC_MODE", "replay")
+    app = create_app(Settings(root=tmp_path / "uploads"))
+    with TestClient(app) as client:
+        response = client.post("/uploads", content=(AGENT / "still.png").read_bytes(),
+                               headers={"Content-Type": "image/png"})
+        assert response.status_code == 503 and response.json()["error"] == "uploads_paused"
+        config = client.get("/ui/config").json()
+        assert (config["public_mode"], config["uploads_closed"]) == ("replay", "uploads_paused")
+        assert "Do not upload confidential ads" in config["upload_notice"]
+        assert client.get("/ui/demos").status_code == 200
+    monkeypatch.setenv("PREFLIGHT_PUBLIC_MODE", "off")
+    with TestClient(app) as client:
+        assert client.get("/ui/config").json()["uploads_closed"] is None
+
+
+def test_public_approval_is_recorded_as_a_demo_approval(tmp_path, replay_models, monkeypatch):
+    app = public_app(tmp_path, replay_models, monkeypatch)
+    with TestClient(app) as client:
+        still = upload(client)
+        source = start(client, upload(client, (MEDIA / "captions.mp4").read_bytes(), "video/mp4"))
+        assert wait_for(client, source) == "completed"
+        draft = yaml.safe_load((AGENT / "draft.yaml").read_text(encoding="utf-8"))
+        draft["scenes"][0].pop("still")
+        draft["scenes"][0]["upload_id"] = still
+        response = client.post("/fixes", json={"screening_id": source, **draft, "rounds": 3})
+        assert response.status_code == 202, response.text
+        job_id = response.json()["job_id"]
+        assert wait_for(client, job_id) == "completed"
+        directory = app.state.service.storage.job_dir(app.state.service.storage.jobs[job_id])
+        records = map(json.loads, (directory / "audit.jsonl").read_text().splitlines())
+        rounds = [r for r in records if r["event"] == "round"]
+        # three rounds were asked for; public mode allows one fix round after the first screening
+        assert max(r["round"] for r in rounds) <= 1
+        response = client.post(f"/fixes/{job_id}/approve", json={"by": "Visitor"})
+        assert response.status_code == 200, response.text
+        assert response.json()["decision"]["public_demo"] is True
+        log = (directory / "audit.jsonl").read_text(encoding="utf-8").splitlines()
+        assert json.loads(log[-1]) | {"at": None} == json.loads(log[-1]) | {"at": None, "public_demo": True}

@@ -6,6 +6,10 @@ import './style.css';
 import { ClaimTrack, Inspector, TierSummary } from './evidence';
 import { FlagCount, FlaggedList, RoundComparison, StageList, StillStage } from './workspace';
 
+function mebibytes(bytes: number): number {
+  return Math.round((bytes / 1024 / 1024) * 10) / 10;
+}
+
 function Metrics({ board }: { board: Scoreboard }) {
   return (
     <section className="score" aria-labelledby="score-title">
@@ -251,7 +255,9 @@ function App() {
       if (!config)
         throw new Error('The page has not loaded its settings yet. Reload and try again.');
       if (file.size > config.max_upload_bytes)
-        throw new Error('The upload limit is 100 MiB. Choose a smaller file.');
+        throw new Error(
+          `The upload limit is ${mebibytes(config.max_upload_bytes)} MiB. Choose a smaller file.`,
+        );
       const saved = await upload(file);
       const queued = await post<Job>('/screenings', { upload_id: saved.upload_id, align: false });
       if (current !== generation.current) return;
@@ -488,6 +494,14 @@ function App() {
             </div>
             <div className="work">
               <div className="slot">
+                <p className="upload-notice">{config?.upload_notice ?? 'Loading upload terms…'}</p>
+                {config?.uploads_closed && (
+                  <p role="status">
+                    {config.uploads_closed === 'daily_cap_reached'
+                      ? 'Uploads are closed for today. The labelled demos still run.'
+                      : 'Uploads are paused. The labelled demos still run.'}
+                  </p>
+                )}
                 <span>Nothing uploaded yet.</span>
                 <label className="file-button primary">
                   Choose image or video
@@ -495,7 +509,7 @@ function App() {
                     aria-label="Upload ad"
                     type="file"
                     accept="image/png,image/jpeg,image/webp,video/mp4,video/webm,video/quicktime"
-                    disabled={active || !config}
+                    disabled={active || !config || Boolean(config.uploads_closed)}
                     onChange={(e) => {
                       const file = e.target.files?.[0];
                       e.target.value = '';
@@ -506,7 +520,11 @@ function App() {
               </div>
               <div className="facts">
                 <h2>Formats</h2>
-                <p>PNG, JPEG, WebP, MP4, WebM or QuickTime, up to 100 MiB.</p>
+                <p>
+                  PNG, JPEG, WebP, MP4, WebM or QuickTime, up to{' '}
+                  {config ? mebibytes(config.max_upload_bytes) : 100} MiB
+                  {config ? `, and video up to ${config.max_seconds} seconds` : ''}.
+                </p>
                 <h2>Retention</h2>
                 <p>
                   Uploads are deleted after {config ? config.retention_seconds / 3600 : 24} hours,

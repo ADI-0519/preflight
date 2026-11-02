@@ -136,6 +136,8 @@ class Spark:
                 model=SPARK,
                 input=[{"type": "message", "role": "user", "content": content}],
                 reasoning={"effort": effort},
+                # the API keeps no copy of the request or answer (checked 2 Nov 2026: a stored-off response is 404)
+                store=False,
                 **kwargs,
             )
             # a truncated or malformed answer must fail here, before the store caches it
@@ -172,7 +174,7 @@ class Spark:
         def call() -> dict:
             began = time.monotonic()
             r = self.api.responses.create(
-                model=SPARK, input=input, tools=tools, reasoning={"effort": effort},
+                model=SPARK, input=input, tools=tools, reasoning={"effort": effort}, store=False,
                 **({"instructions": instructions} if instructions else {}),
             )
             if r.status != "completed":

@@ -3,6 +3,7 @@ import csv
 import io
 import time
 import wave
+from collections import Counter
 from collections.abc import Callable
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import asdict, dataclass, field
@@ -88,6 +89,15 @@ def joined(screenings: list[Screening], value) -> str:
     return "+".join(dict.fromkeys(v for s in screenings for r in s.stages if (v := value(r))))
 
 
+def citation_spread(screenings: list[Screening]) -> list[Metric]:
+    cited = Counter(s.ruling_id for sc in screenings for f in sc.flags for s in f.sources if s.kind == "ruling")
+    total = sum(cited.values())
+    return [
+        Metric("precedent_citations_top6", sum(n for _, n in cited.most_common(6)), total),
+        Metric("precedent_rulings_cited", len(cited), total),
+    ]
+
+
 def rescore(run_id: str) -> None:
     with RUNS.open(newline="", encoding="utf-8") as f:
         row = next((r for r in csv.DictReader(f) if r["run_id"] == run_id), None)
@@ -109,7 +119,7 @@ def rescore(run_id: str) -> None:
     # stamped, so a run rescored again after a later scoring change is registered apart from the first rescore
     new_id = f"{run_id}-rescored-{created:%Y%m%dT%H%M%S}"
     write_rows(RESULTS / "runs" / f"{new_id}.csv", [asdict(s) for s in scores])
-    run_metrics = metrics(scores)
+    run_metrics = [*metrics(scores), *citation_spread([s for ss in screenings.values() for s in ss])]
     register(row | {"run_id": new_id, "created_at": created.isoformat(timespec="seconds"),
                     "git_sha": revision(row["part"])}, run_metrics)  # fmt: skip
     show(new_id, run_metrics)
@@ -138,7 +148,8 @@ def main() -> None:
     if missing:
         raise SystemExit(f"no rendered media for {', '.join(missing)}; build reconstructions and team ads first")
     truths = [load_ground_truth(args.split, i) for i in items]
-    precedents = load_precedents(SNAPSHOTS.rulings, args.split)
+    # each item gets its own index, so an item's ruling never stands as its own precedent
+    precedents = {t.item_id: load_precedents(SNAPSHOTS.rulings, args.split, t.item_id) for t in truths}
     models = from_env()
     created = datetime.now(UTC)
     run_id = f"screen-{created:%Y%m%dT%H%M%S}"
@@ -146,7 +157,7 @@ def main() -> None:
     began = time.monotonic()
     align = None if args.no_align else "mms"
     with ThreadPoolExecutor(max_workers=WORKERS) as pool:
-        done = list(pool.map(lambda t: screen_item(t, models, precedents, run_id, align), truths))
+        done = list(pool.map(lambda t: screen_item(t, models, precedents[t.item_id], run_id, align), truths))
     seconds = time.monotonic() - began
 
     rows = []
@@ -171,6 +182,7 @@ def main() -> None:
         *metrics([score for score, _, _ in done]),
         Metric("screen_cost_usd", round(sum(r["cost_usd"] for r in rows), 4), len(rows)),
         Metric("screen_wall_seconds", round(seconds, 1), len(rows)),
+        *citation_spread(screenings),
     ]
     register({
         "run_id": run_id, "created_at": created.isoformat(timespec="seconds"), "git_sha": sha, "split": args.split,

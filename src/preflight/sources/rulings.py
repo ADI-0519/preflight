@@ -3,8 +3,8 @@
 Full ruling text stays in git-ignored data/raw/rulings/ (docs/source-terms.md). The committed snapshot
 holds metadata only: ID, date, advertiser, media, outcome, rules cited, URL.
 
-    uv run python -m preflight.sources.rulings fetch --from 31/10/2023 --to 31/10/2026
-    uv run python -m preflight.sources.rulings build --version 2026-10-31
+    uv run python -m preflight.sources.rulings fetch --from 01/01/2015 --to 02/11/2026
+    uv run python -m preflight.sources.rulings build --version 2026-11-02
 """
 
 import argparse
@@ -29,8 +29,16 @@ USER_AGENT = "PreFlight research crawler (+https://github.com/ADI-0519/preflight
 DELAY_SECONDS = 10  # docs/source-terms.md: at least 10 s between requests
 
 FOOD_TOPIC = "3706465E-E1B2-4E6A-ABCB7AB8E256827E"  # "Food, drink and supplements"
-# The searches whose union makes the candidate list: the topic filter, plus P02's two phrases.
-SEARCHES = [{"topic": FOOD_TOPIC}, {"q": "food supplement"}, {"q": "health claims"}]
+# The searches whose union makes the candidate list: the topic filter, P02's two phrases, then P71's wider terms.
+SEARCHES = [
+    {"topic": FOOD_TOPIC},
+    {"q": "food supplement"},
+    {"q": "health claims"},
+    *({"q": q} for q in (
+        "vitamin", "weight loss", "slimming", "immune", "CBD", "probiotic", "collagen",
+        "magnesium", "menopause", "ADHD", "nutrition claim", "supplement",
+    )),
+]  # fmt: skip
 
 # Rules that only a health or nutrition claim for a food can breach.
 CLAIM_RULES = ("15.1", "15.1.1", "15.2", "15.6", "15.7", "15.8", "15.9", "15.17")
@@ -38,6 +46,9 @@ CLAIM_RULES = ("15.1", "15.1.1", "15.2", "15.6", "15.7", "15.8", "15.9", "15.17"
 # Rulings the scope test gets wrong, with the reason. Checked by hand.
 NOT_IN_SCOPE = {
     "G26-1332433": "less healthy food placement (rule 15.19); the page's rule link mislabels it 15.9",
+    "A24-1245579": "discount email from a sports supplement company; a price promotion, no health or nutrition claim",
+    "A23-1199222": "hyperbaric oxygen clinic; 'supplements' is a verb there (long COVID treatment claims)",
+    "A22-1153049": "men's health blood-test service; 'supplement use' is a questionnaire item",
 }
 
 Outcome = Literal["upheld", "upheld in part", "not upheld"]

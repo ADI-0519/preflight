@@ -151,7 +151,7 @@ def main() -> None:
     # rule 5: dev only; the test part runs once, in P33
     items = [i for i in load_split(args.split).dev if not args.only or i in args.only]
     truths = {i: load_ground_truth(args.split, i) for i in items}
-    precedents = load_precedents(args.rulings)
+    precedents = {i: load_precedents(args.rulings, args.split, i) for i in items}
     sha = revision(PART)
     created = datetime.now(UTC)
     run_id = f"check-{created:%Y%m%dT%H%M%S}"
@@ -173,7 +173,7 @@ def main() -> None:
             checked = check(
                 s.model_copy(update={"snapshots": snapshots}),
                 spark,
-                precedents,
+                precedents[item_id],
                 prompt=args.prompt,
                 effort=args.effort,
                 per_claim=not args.per_ad_precedents,

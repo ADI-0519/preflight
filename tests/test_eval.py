@@ -6,15 +6,26 @@ from types import SimpleNamespace
 
 import pytest
 
-from preflight.eval import check_recall, registry, run
+from preflight.eval import check_recall, registry, run, score
 from preflight.eval.reconstruct import LABEL, overlay_filter
 from preflight.eval.registry import Metric, register, revision
-from preflight.eval.run import MeteredSam, MeteredTranscribe
+from preflight.eval.run import MeteredSam, MeteredTranscribe, citation_spread
 from preflight.eval.score import exact, interval, metrics, score_item
 from preflight.eval.split import BreachingClaim, GroundTruth
 from preflight.eval.team_media import LABEL as TEAM_LABEL
 from preflight.models.clients import SamResult
-from preflight.schema import Ad, CapRuleRef, Claim, Flag, OnScreenEvidence, OnScreenText, Screening, Snapshots, StageRun
+from preflight.schema import (
+    Ad,
+    CapRuleRef,
+    Claim,
+    Flag,
+    OnScreenEvidence,
+    OnScreenText,
+    RulingRef,
+    Screening,
+    Snapshots,
+    StageRun,
+)
 
 SNAPSHOTS = Snapshots(gb_register="2026-05-19", on_hold="2021-01-12", cap_rules="2026-10-31", rulings="2026-11-01")
 
@@ -79,6 +90,27 @@ def test_extra_rules_count_for_with_rule_but_not_exact_rules():
     assert (item.caught, item.caught_exact_rules) == (2, 1)
     # 15.6 and 15.1.1 relate to their claims' rules; 3.7 and 15.7 do not
     assert (item.rules_related, item.rules_cited) == (2, 4)
+
+
+def test_extra_rules_dilute_the_weighted_catch():
+    item = score_item(
+        truth("A3", [("cures anxiety fast", ["15.6.2"]), ("sleep deeper", ["15.1"])]),
+        [screening("s5", ["Cures anxiety fast", "Sleep deeper"], {0: ["15.6", "3.7", "15.7"], 1: ["15.1.1"]})],
+    )
+    # one right rule of three, then one of one
+    assert item.weighted_carried == pytest.approx(1 / 3 + 1, abs=0.001)
+
+
+def test_citing_every_rule_catches_by_chance():
+    pack = score._screenable(SNAPSHOTS.cap_rules)
+    one, every = (
+        score_item(truth("A6", [("cures anxiety fast", ["15.6.2"])]), [screening("s", ["Cures anxiety fast"], {0: r})])
+        for r in (["3.7"], list(pack))
+    )
+    fitting = sum(score.fits(r, ["15.6.2"]) for r in pack)
+    assert one.chance_carried == pytest.approx(fitting / len(pack), abs=0.001)
+    assert every.chance_carried == 1.0 and every.caught_carried == 1
+    assert every.weighted_carried == pytest.approx(fitting / len(pack), abs=0.001)
 
 
 def test_former_rule_numbers_are_read_in_current_numbering():
@@ -268,3 +300,15 @@ def test_meters_price_sam_frames_and_transcribed_audio():
     heard = MeteredTranscribe(FakeTranscribe())
     heard.transcribe(buffer.getvalue())
     assert heard.usd == pytest.approx([36 / 3600 * 0.18])
+
+
+def test_citation_spread_counts_the_six_most_cited():
+    cited = {f"A25-00000{n}": 8 - n for n in range(1, 8)}  # seven rulings cited 7, 6, ... 1 times
+    flags = [
+        Flag(flag_id=f"flag-{ruling_id}-{i}", claim_id="claim-0", kind="possible_breach", reason="r",
+             sources=(CapRuleRef(rule="15.1"), RulingRef(ruling_id=ruling_id, date="2026-01-01")))
+        for ruling_id, times in cited.items() for i in range(times)
+    ]  # fmt: skip
+    spread = {m.name: m for m in citation_spread([screening("s", ["a claim"], {}).model_copy(update={"flags": flags})])}
+    assert spread["precedent_citations_top6"] == Metric("precedent_citations_top6", 27, 28)
+    assert spread["precedent_rulings_cited"] == Metric("precedent_rulings_cited", 7, 28)

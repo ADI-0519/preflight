@@ -106,13 +106,22 @@ def rescore(run_id: str) -> None:
     if row["part"] == "test":
         # rule 5: the test part is scored once, by the run that screened it
         raise SystemExit("a test run is not rescored")
+    scored = RESULTS / "runs" / f"{run_id}.csv"
+    if "-rescored-" in run_id or not scored.exists():
+        raise SystemExit(f"{run_id} has no saved screenings; rescore the run that screened the ads")
+    with scored.open(newline="", encoding="utf-8") as f:
+        expected = {r["item_id"]: int(r["media"]) for r in csv.DictReader(f)}
     screenings: dict[str, list[Screening]] = {}
     for path in sorted((WORK / run_id).glob(f"{run_id}-*.json")):
-        # files are named <run_id>-<item_id>-<media stem>, and neither stem holds a hyphen
+        # files are named <run_id>-<item_id>-<media stem>; the media stem holds no hyphen, so the last one splits them
         item_id = path.stem.removeprefix(f"{run_id}-").rsplit("-", 1)[0]
         screenings.setdefault(item_id, []).append(Screening.model_validate_json(path.read_text(encoding="utf-8")))
+    short = sorted(i for i, n in expected.items() if len(screenings.get(i, [])) != n)
+    if short:
+        # rule 11: a rescore on fewer ads would register under the same split and part as the whole run
+        raise SystemExit(f"{run_id}: saved screenings missing for {', '.join(short)}")
     # in the split's order, as the run scored them, so the bootstrap draws the same resamples
-    order = [i for i in getattr(load_split(row["split"]), row["part"]) if i in screenings]
+    order = [i for i in getattr(load_split(row["split"]), row["part"]) if i in expected]
     truths = [load_ground_truth(row["split"], i) for i in order]
     scores = [score_item(t, screenings[t.item_id], kept(t)) for t in truths]
     created = datetime.now(UTC)

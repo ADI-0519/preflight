@@ -233,7 +233,7 @@ def test_register_adds_new_columns_to_old_rows(tmp_path, monkeypatch):
     ]
 
 
-def test_rescore_registers_a_saved_run_again(tmp_path, monkeypatch):
+def saved_run(tmp_path, monkeypatch, part="dev"):
     runs, work = tmp_path / "runs.csv", tmp_path / "work"
     monkeypatch.setattr(registry, "RUNS", runs)
     monkeypatch.setattr(run, "RUNS", runs)
@@ -244,17 +244,30 @@ def test_rescore_registers_a_saved_run_again(tmp_path, monkeypatch):
     truths = {"A24-1": truth("A24-1", [("cures anxiety fast", ["15.6.2"])]), "T16": truth("T16", [])}
     monkeypatch.setattr(run, "load_ground_truth", lambda split, i: truths[i])
     monkeypatch.setattr(run, "load_split", lambda split: SimpleNamespace(dev=["T16", "A24-1"]))
-    register({"run_id": "screen-1", "split": "v2", "part": "dev", "prompt": "judge_v5"}, [("ad_recall", 0, 1)])
+    register({"run_id": "screen-1", "split": "v2", "part": part, "prompt": "judge_v5"}, [("ad_recall", 0, 1)])
+    registry.write_rows(tmp_path / "runs" / "screen-1.csv", [{"item_id": i, "media": 1} for i in ("T16", "A24-1")])
     (work / "screen-1").mkdir(parents=True)
     for name, s in [("screen-1-A24-1-reconstruction", screening("a", ["Cures anxiety fast"], {0: ["15.6"]})),
                     ("screen-1-T16-ad", screening("b", ["Tasty"], {}))]:  # fmt: skip
         (work / "screen-1" / f"{name}.json").write_text(s.model_dump_json(), encoding="utf-8")
+    return runs, work
+
+
+def test_rescore_registers_a_saved_run_again(tmp_path, monkeypatch):
+    runs, _ = saved_run(tmp_path, monkeypatch)
     run.rescore("screen-1")
     with runs.open(newline="", encoding="utf-8") as f:
         rows = {r["metric"]: r for r in csv.DictReader(f) if r["run_id"].startswith("screen-1-rescored-")}
     ad = rows["ad_recall"]
     assert (ad["hits"], ad["high"], ad["prompt"]) == ("1", "1.0", "judge_v5")
     assert (rows["negative_ads_flagged"]["total"], rows["negative_ads_flagged"]["high"]) == ("1", "0.975")
+
+
+def test_rescore_refuses_a_run_missing_a_saved_screening(tmp_path, monkeypatch):
+    _, work = saved_run(tmp_path, monkeypatch)
+    (work / "screen-1" / "screen-1-T16-ad.json").unlink()
+    with pytest.raises(SystemExit, match="missing for T16"):
+        run.rescore("screen-1")
 
 
 @pytest.mark.parametrize(("status", "part", "expected"), [("", "test", "abc"), (" M x.py", "dev", "abc-dirty")])

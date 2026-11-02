@@ -5,6 +5,7 @@ import json
 import math
 import mimetypes
 import re
+from functools import cache
 from pathlib import Path
 from typing import Literal
 
@@ -15,11 +16,10 @@ from pydantic import BaseModel, Field, model_validator
 
 from preflight.agent.fix import read_log
 from preflight.api.storage import APIError
-from preflight.schema import NOTICE, Screening, verify_sources
-from preflight.sources.cap import load_cap_rules
-from preflight.sources.on_hold import load_on_hold
-from preflight.sources.register import load_register
-from preflight.sources.rulings import load_ruling_index
+from preflight.schema import NOTICE, Screening, register_entries, verify_sources
+from preflight.sources.cap import CapRule, load_cap_rules
+from preflight.sources.on_hold import OnHoldClaim, load_on_hold
+from preflight.sources.rulings import RulingMeta, load_ruling_index
 
 ROOT = Path(__file__).resolve().parents[3]
 
@@ -55,13 +55,28 @@ def media_response(path: Path, request: Request) -> Response:
     return Response(body, status_code=status, headers=headers, media_type=media_type)
 
 
+@cache
+def ruling_lookup(version: str) -> dict[str, RulingMeta]:
+    return {e.ruling_id: e for e in load_ruling_index(version)}
+
+
+@cache
+def cap_rule_lookup(version: str) -> dict[str, CapRule]:
+    return load_cap_rules(version).rules
+
+
+@cache
+def on_hold_lookup(version: str) -> dict[str, OnHoldClaim]:
+    return {e.on_hold_id: e for e in load_on_hold(version)}
+
+
 def presentation(screening: Screening, crop_base: str) -> dict:
     verify_sources(screening)
     snapshots = screening.snapshots
-    caps = load_cap_rules(snapshots.cap_rules).rules
-    register = {e.register_id: e for e in load_register(snapshots.gb_register)}
-    held = {e.on_hold_id: e for e in load_on_hold(snapshots.on_hold)}
-    rulings = {e.ruling_id: e for e in load_ruling_index(snapshots.rulings)}
+    caps = cap_rule_lookup(snapshots.cap_rules)
+    register = register_entries(snapshots.gb_register)
+    held = on_hold_lookup(snapshots.on_hold)
+    rulings = ruling_lookup(snapshots.rulings)
 
     def source(ref):
         if ref.kind == "cap_rule":
@@ -313,8 +328,7 @@ def install_web(app, service, *, web_root: Path, demo_root: Path, results_root: 
         if entry["kind"] == "synthetic":
             return {"kind": "synthetic", "message": "Team-made synthetic fixture. No ASA outcome exists."}
         result = demos.result(entry)
-        ruling = next((r for r in load_ruling_index(result.snapshots.rulings)
-                       if r.ruling_id == entry.get("ruling_id")), None)
+        ruling = ruling_lookup(result.snapshots.rulings).get(entry.get("ruling_id"))
         if ruling is None:
             raise APIError(409, "ruling_not_available")
         return {"kind": "reconstruction", "ruling_id": ruling.ruling_id, "date": str(ruling.date),

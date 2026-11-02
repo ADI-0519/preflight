@@ -152,14 +152,18 @@ def show(run_id: str, run_metrics: list[Metric]) -> None:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Screen every item of a split part end to end and register the run.")
-    parser.add_argument("--split", default="v1")
-    parser.add_argument("--part", choices=["dev", "test"], default="dev")
+    parser.add_argument("--split", help="split version (default: v1)")
+    parser.add_argument("--part", choices=["dev", "test"], help="split part (default: dev)")
     parser.add_argument("--only", nargs="*", help="item IDs to run (default: the whole part)")
     parser.add_argument("--no-align", action="store_true", help="keep each transcription turn's timing")
     parser.add_argument("--rescore", metavar="RUN_ID", help="score a registered dev run again; no model calls")
     args = parser.parse_args()
     if args.rescore:
+        if args.split or args.part or args.only:
+            # a rescore takes its split, part and items from the registered run
+            parser.error("--rescore takes no --split, --part or --only")
         return rescore(args.rescore)
+    args.split, args.part = args.split or "v1", args.part or "dev"
     if args.part == "test" and args.only:
         raise SystemExit("the test part runs whole")
     sha = revision(args.part)

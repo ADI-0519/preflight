@@ -32,11 +32,11 @@ def inside(root: Path, name: str) -> Path:
 
 
 def media_response(path: Path, request: Request) -> Response:
-    # Copy while holding the retention lock: no open file survives local expiry.
-    body = path.read_bytes()
-    size = len(body)
+    size = path.stat().st_size
     headers = {"Accept-Ranges": "bytes", "X-Content-Type-Options": "nosniff"}
+    media_type = mimetypes.guess_type(path)[0] or "application/octet-stream"
     value = request.headers.get("range")
+    start, end, status = 0, size - 1, 200
     if value:
         match = re.fullmatch(r"bytes=(\d*)-(\d*)", value)
         if len(value) > 200 or not match or not any(match.groups()):
@@ -47,9 +47,12 @@ def media_response(path: Path, request: Request) -> Response:
         if start >= size or end < start:
             return Response(status_code=416, headers=headers | {"Content-Range": f"bytes */{size}"})
         headers["Content-Range"] = f"bytes {start}-{end}/{size}"
-        return Response(body[start:end + 1], status_code=206, headers=headers,
-                        media_type=mimetypes.guess_type(path)[0] or "application/octet-stream")
-    return Response(body, headers=headers, media_type=mimetypes.guess_type(path)[0] or "application/octet-stream")
+        status = 206
+    # read the slice while the caller holds the retention lock: no open file survives local expiry
+    with path.open("rb") as f:
+        f.seek(start)
+        body = f.read(end - start + 1)
+    return Response(body, status_code=status, headers=headers, media_type=media_type)
 
 
 def presentation(screening: Screening, crop_base: str) -> dict:

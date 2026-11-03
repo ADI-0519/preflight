@@ -11,7 +11,7 @@ from preflight.sources.on_hold import load_on_hold
 from preflight.sources.register import RegisterEntry, load_register
 from preflight.sources.rulings import load_ruling_index
 
-SCHEMA_VERSION = "1"
+SCHEMA_VERSION = "2"
 
 # rules 1 and 4: shown with every screening; no wording here may suggest the ad is cleared to run
 NOTICE = (
@@ -179,6 +179,8 @@ class Flag(_Record):
     # rule 3: every flag cites a source
     sources: tuple[SourceRef, ...] = Field(min_length=1)
     suggested_wording: SuggestedWording | None = None
+    # judge samples that flagged the claim when the check votes; none from a single sample
+    votes: int | None = Field(default=None, ge=1)
 
     @model_validator(mode="after")
     def _sources_fit_kind(self) -> Self:
@@ -196,6 +198,8 @@ class StageRun(_Record):
     model: str | None = None
     prompt: str | None = None
     effort: str | None = None
+    # judge samples whose answers counted when the check votes; one that breaks the contract abstains
+    samples: int | None = Field(default=None, ge=1)
 
     @model_validator(mode="after")
     def _standard_mode(self) -> Self:
@@ -213,7 +217,8 @@ class Snapshots(_Record):
 
 
 class Screening(_Record):
-    schema_version: Literal[SCHEMA_VERSION] = SCHEMA_VERSION
+    # v2 only added Flag.votes and StageRun.samples, so a v1 screening still reads
+    schema_version: Literal["1", SCHEMA_VERSION] = SCHEMA_VERSION
     screening_id: str
     # the screening this one re-checks after a fix round
     previous_id: str | None = None

@@ -1,5 +1,6 @@
 from functools import cache
 
+from preflight.check import voters
 from preflight.check.shortlist import shortlist
 from preflight.eval.check_reconstructions import words
 from preflight.schema import Claim, Flag, Screening
@@ -150,7 +151,7 @@ def _sources(screening: Screening, flags: list[Flag]) -> dict:
                     "relevant": relevant,
                 }  # fmt: skip
     return {
-        "flag_ids": [f.flag_id for f in flags], "reasons": [f.reason for f in flags],
+        "flag_ids": [f.flag_id for f in flags], "reasons": [f.reason for f in flags], "votes": [f.votes for f in flags],
         "primary_rules": primary, "other_rules": other,
         "register_refs": sorted({r.register_id for f in flags for r in f.sources if r.kind == "register"}),
         "on_hold_refs": sorted({r.on_hold_id for f in flags for r in f.sources if r.kind == "on_hold"}),
@@ -167,6 +168,7 @@ def _line(screening: Screening, claim: Claim, nested: list[Claim]) -> dict:
         "evidence": [_evidence(screening, e) for e in claim.evidence],
         "flags": {
             "flag_ids": sources["flag_ids"], "kinds": [f.kind for f in flags], "reasons": sources["reasons"],
+            "votes": sources["votes"],
         },
         "primary_rules": sources["primary_rules"], "other_rules": sources["other_rules"],
         "suggested_wording": _wordings(flags),
@@ -198,13 +200,19 @@ TIERS = ("high", "medium", "low", "unchecked")
 
 
 # rule 1: a tier orders the review by the CAP rules cited; it is not a verdict
-def _tier(line: dict) -> str:
+def _tier(line: dict, voted: int) -> str:
     rules = [r for part in (line, *line["folded"]) for r in part["primary_rules"] + part["other_rules"]]
     sections = {r.split(".")[0] for r in rules}
     # CAP 15.6: claims never acceptable for food and supplement ads, with 15.6.2 disease claims
     if "12" in sections or any(r == "15.6" or r.startswith("15.6.") for r in rules):
-        return "high"
-    return "medium" if sections & {"15", "3"} else "low"
+        tier = "high"
+    else:
+        tier = "medium" if sections & {"15", "3"} else "low"
+    votes = [v for v in line["flags"]["votes"] + [v for part in line["folded"] for v in part["votes"]] if v]
+    # a line that not every answering judge sample flagged sits one tier lower
+    if votes and max(votes) < voted:
+        tier = TIERS[min(TIERS.index(tier) + 1, TIERS.index("low"))]
+    return tier
 
 
 def _line_time(line: dict) -> float:
@@ -223,7 +231,7 @@ def build_view(screening: Screening) -> dict:
     groups = fold(screening)
     lines = [_line(screening, c, nested) for c, nested in groups]
     for line in lines:
-        line["tier"] = _tier(line)
+        line["tier"] = _tier(line, voters(screening))
     lines.sort(key=lambda line: (TIERS.index(line["tier"]), _line_time(line)))
     flagged = {f.claim_id for f in screening.flags}
     ad = screening.ad

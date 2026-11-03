@@ -182,6 +182,14 @@ def test_changed_inputs_miss_the_cache(tmp_path):
     assert api.requests == 4
 
 
+def test_each_sample_is_cached_apart_and_sample_0_keeps_the_recorded_key(replay):
+    ask = dict(prompt_version=PV, effort="low", schema=SCHEMA)
+    text = f"List every claim in this script.\n\n{SPEECH}"
+    assert replay.spark.ask(text, sample=0, **ask) == replay.spark.ask(text, **ask)
+    with pytest.raises(CacheMiss):
+        replay.spark.ask(text, sample=1, **ask)
+
+
 @pytest.mark.parametrize(
     "bad", [NS(**{**vars(response("{")), "status": "completed"}), NS(**{**vars(response()), "status": "incomplete"})]
 )

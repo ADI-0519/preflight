@@ -15,7 +15,7 @@ from preflight.evidence import on_screen, regions
 from preflight.evidence.on_screen import read_on_screen, snap
 from preflight.evidence.regions import find_regions
 from preflight.evidence.transcribe import transcribe
-from preflight.ingest import Ingested, capture, ingest
+from preflight.ingest import Ingested, capture, ingest, ingest_cards
 from preflight.models import Models, Spark
 from preflight.models.clients import SAM, SPARK, TRANSCRIBE
 from preflight.models.store import CacheMiss
@@ -81,12 +81,15 @@ def gather(
 
 def screen(
     done: Ingested, models: Models, precedents: PrecedentIndex, screening_id: str | None = None, *,
-    judge_prompt: str = judge.PROMPT_VERSION, judge_effort: str = judge.EFFORT,
-    on_stage: Callable[[StageRun], None] | None = None, **config,
+    judge_prompt: str = judge.PROMPT_VERSION, judge_effort: str = judge.EFFORT, judge_samples: int = judge.SAMPLES,
+    first_sample: int = 0, on_stage: Callable[[StageRun], None] | None = None, **config,
 ) -> Screening:
     gathered = gather(done, models, screening_id or default_id(done), on_stage=on_stage, **config)
     try:
-        checked = check(gathered, models.spark, precedents, prompt=judge_prompt, effort=judge_effort)
+        checked = check(
+            gathered, models.spark, precedents, prompt=judge_prompt, effort=judge_effort, samples=judge_samples,
+            first_sample=first_sample,
+        )
     except CacheMiss:
         raise
     except Exception as e:
@@ -99,9 +102,19 @@ def screen(
 
 
 def screen_target(
-    target: str, models: Models, precedents: PrecedentIndex, out: Path, *, align: Literal["mms"] | None = "mms"
+    target: str, models: Models, precedents: PrecedentIndex, out: Path, *, align: Literal["mms"] | None = "mms",
+    cards: tuple[str, ...] = (),
 ) -> tuple[Screening, Path, Path]:
-    done = capture(target) if target.startswith(("http://", "https://")) else ingest(Path(target))
+    page = target.startswith(("http://", "https://"))
+    if page and cards:
+        raise ValueError("a page is screened on its own, not as a card of a carousel")
+    if page:
+        done = capture(target)
+    elif cards:
+        # cards after the first make a carousel, read as one ad
+        done = ingest_cards([Path(target), *map(Path, cards)])
+    else:
+        done = ingest(Path(target))
     screening = screen(done, models, precedents, default_id(done), align=align)
     out.mkdir(parents=True, exist_ok=True)
     stem = out / screening.screening_id

@@ -133,3 +133,14 @@ def test_refused_picture_falls_back_and_keeps_wording(tmp_path):
     assert len(prompts) == 2 and FALLBACK_STILL in prompts[1]
     assert meta["fallback_stills"] == [0]
     assert (tmp_path / "A26-1000001" / "reconstruction.png").exists()
+
+
+@pytest.mark.skipif(not shutil.which("ffmpeg"), reason="ffmpeg not installed")
+def test_redraw_renders_the_saved_scenes_without_a_model_call(tmp_path):
+    Builder(client=Recorder()).build(AdDescription.from_ruling(ruling()), out_dir=tmp_path)
+    picture = tmp_path / "A26-1000001" / "reconstruction.png"
+    picture.unlink()
+    client = Recorder()
+    meta = Builder(client=client).redraw("A26-1000001", out_dir=tmp_path)
+    assert client.calls == []
+    assert picture.exists() and "redrawn_at" in meta

@@ -1,11 +1,21 @@
+import argparse
 import re
+import shutil
 import subprocess
 import tempfile
+import time
+from concurrent.futures import ThreadPoolExecutor
+from dataclasses import asdict
+from datetime import UTC, datetime
 from pathlib import Path
 
+from preflight import check as judge
+from preflight.check.precedents import load_precedents
 from preflight.eval.check_reconstructions import carried, words
+from preflight.eval.claim_recall import WORK
 from preflight.eval.reconstruct import (
     HEIGHT,
+    OUT_DIR,
     ROOT,
     Builder,
     Scene,
@@ -14,8 +24,15 @@ from preflight.eval.reconstruct import (
     _font,
     _wrap,
     canvas,
+    ensure_voice,
     label_filter,
 )
+from preflight.eval.registry import RESULTS, Metric, register, revision, snapshot_text, write_rows
+from preflight.eval.run import WORKERS, joined, kept, saved, screen_item, show, vote_tag
+from preflight.eval.score import caught, metric, metrics, per_ad, score_item
+from preflight.eval.split import RULING_ID, load_ground_truth, load_split
+from preflight.models import from_env
+from preflight.pipeline import SNAPSHOTS
 
 KINDS = ("music", "speech_only", "small_text", "split_cuts", "compressed")
 STRESS_DIR = ROOT / "data" / "raw" / "stress"
@@ -191,3 +208,109 @@ def render(kind: str, source: Path, out: Path, claims: list[str], builder: Build
         raise ValueError(f"unknown stress kind {kind}")
     return [out / "reconstruction.mp4"] if (out / "reconstruction.mp4").exists() else sorted(
         p for p in out.glob("reconstruction*") if p.suffix in (".png", ".jpg"))  # fmt: skip
+
+
+def flips(truth, plain: list, stress: list) -> tuple[bool, bool, int, int]:
+    carried_claims = kept(truth) or [True] * len(truth.claims)
+    before = caught(truth.claims, plain, truth.item_id).with_rule
+    after = caught(truth.claims, stress, truth.item_id).with_rule
+    pairs = [(b, a) for b, a, k in zip(before, after, carried_claims, strict=True) if k]
+    return (any(before) and not any(after), any(after) and not any(before),
+            sum(b and not a for b, a in pairs), sum(a and not b for b, a in pairs))  # fmt: skip
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Screen harder renders of the dev positives and register the run.")
+    parser.add_argument("kind", choices=KINDS)
+    parser.add_argument("--baseline", required=True, metavar="RUN_ID", help="the plain dev run screened the same way")
+    parser.add_argument("--samples", type=int, choices=[1, judge.VOTE_SAMPLES], default=judge.SAMPLES)
+    parser.add_argument("--render-only", action="store_true")
+    args = parser.parse_args()
+    if not shutil.which("ffmpeg"):
+        raise SystemExit("ffmpeg is not on PATH")
+    # rule 5: dev only, and only the ruled ads, since a variant is drawn from the reconstruction's own shot list
+    split = load_split("v2")
+    truths = [t for t in (load_ground_truth("v2", i) for i in split.dev if RULING_ID.match(i)) if t.label == "positive"]
+    # the builder only draws and speaks here; it never calls a model
+    builder = Builder(client=False, voice=ensure_voice())
+    paths, skipped = {}, {}
+    for t in truths:
+        out = STRESS_DIR / args.kind / t.item_id
+        # a render already made is reused, so the single and voting runs screen the same bytes
+        if made := sorted(p for p in out.glob("reconstruction*") if p.suffix in (".mp4", ".png", ".jpg")):
+            paths[t.item_id] = [p for p in made if p.suffix == ".mp4"] or made
+            continue
+        try:
+            paths[t.item_id] = render(args.kind, OUT_DIR / t.item_id, out, [c.claim for c in t.claims], builder)
+        except Skip as e:
+            skipped[t.item_id] = str(e)
+            shutil.rmtree(out, ignore_errors=True)
+        print(f"{t.item_id}: {skipped.get(t.item_id, 'rendered')}", flush=True)
+    if args.render_only:
+        return
+    base_row, plain, _ = saved(args.baseline)
+    if base_row["split"] != "v2" or base_row["part"] != "dev":
+        raise SystemExit(f"{args.baseline} is not a v2 dev run")
+    sha = revision("dev")
+    applied = [t for t in truths if t.item_id in paths]
+    precedents = {t.item_id: load_precedents(SNAPSHOTS.rulings, "v2", t.item_id) for t in applied}
+    models = from_env()
+    created = datetime.now(UTC)
+    run_id = f"stress-{args.kind}-{created:%Y%m%dT%H%M%S}"
+    (WORK / run_id).mkdir(parents=True)
+    began = time.monotonic()
+    with ThreadPoolExecutor(max_workers=WORKERS) as pool:
+        done = list(pool.map(lambda t: screen_item(
+            t, models, precedents[t.item_id], run_id, None, judge.PROMPT_VERSION, args.samples, 0, paths[t.item_id],
+        ), applied))  # fmt: skip
+    seconds = time.monotonic() - began
+
+    rows, before, after, flipped = [], [], [], []
+    for t, (score, screenings, usd) in zip(applied, done, strict=True):
+        plain_score = score_item(t, plain[t.item_id], kept(t))
+        ad_lost, ad_gained, c_lost, c_gained = flips(t, plain[t.item_id], screenings)
+        flipped.append((ad_lost, ad_gained, c_lost, c_gained))
+        failed = sorted({r.stage for s in screenings for r in s.stages if r.status == "failed"})
+        incomplete = any(not any(r.stage == "check" and r.status == "done" for r in s.stages) for s in screenings)
+        rows.append(asdict(score) | {
+            "kind": args.kind, "skipped": "", "media": len(screenings), "failed": " ".join(failed),
+            "incomplete_check": incomplete, "cost_usd": round(usd, 5), "plain_caught": plain_score.caught,
+            "plain_caught_carried": plain_score.caught_carried, "ad_lost": ad_lost, "ad_gained": ad_gained,
+            "claims_lost": c_lost, "claims_gained": c_gained, "baseline": args.baseline,
+        })  # fmt: skip
+        before.append(plain_score)
+        after.append(score)
+        failure = f", FAILED {' '.join(failed)}" if failed else ""
+        print(f"{t.item_id}: {score.caught_carried} of {score.carried} carried claims caught, plain "
+              f"{plain_score.caught_carried}{failure}", flush=True)  # fmt: skip
+    # a skipped item is listed, so it is never read as a catch or a miss
+    rows += [{"item_id": i, "kind": args.kind, "skipped": why, "baseline": args.baseline} for i, why in skipped.items()]
+    write_rows(RESULTS / "runs" / f"{run_id}.csv", rows)
+    if any(r.get("failed") or r.get("incomplete_check") for r in rows):
+        raise SystemExit(f"{run_id}: stages failed or checks did not finish, so the run is not registered")
+
+    screenings = [s for _, ss, _ in done for s in ss]
+    run_metrics = [
+        *metrics(after),
+        per_ad("plain_ad_recall", before, lambda i: i.caught > 0),
+        metric("plain_claim_recall_carried", before, lambda i: i.caught_carried, lambda i: i.carried),
+        Metric("ads_lost", sum(f[0] for f in flipped), len(applied)),
+        Metric("ads_gained", sum(f[1] for f in flipped), len(applied)),
+        Metric("claims_lost", sum(f[2] for f in flipped), sum(i.carried for i in before)),
+        Metric("claims_gained", sum(f[3] for f in flipped), sum(i.carried for i in before)),
+        Metric("items_skipped", len(skipped), len(truths)),
+        Metric("screen_cost_usd", round(sum(r["cost_usd"] for r in rows if not r["skipped"]), 4), len(applied)),
+        Metric("screen_wall_seconds", round(seconds, 1), len(applied)),
+    ]
+    register({
+        "run_id": run_id, "created_at": created.isoformat(timespec="seconds"), "git_sha": sha, "split": "v2",
+        "part": "dev", "stage": "stress", "model": joined(screenings, lambda r: r.model),
+        "prompt": joined(screenings, lambda r: r.prompt) + vote_tag(args.samples, 0),
+        "effort": joined(screenings, lambda r: r.effort and f"{r.stage}={r.effort}"),
+        "snapshots": snapshot_text(SNAPSHOTS),
+    }, run_metrics)  # fmt: skip
+    show(run_id, run_metrics)
+
+
+if __name__ == "__main__":
+    main()

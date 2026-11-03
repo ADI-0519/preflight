@@ -88,10 +88,12 @@ def kept(truth: GroundTruth) -> list[bool] | None:
 def screen_item(
     truth: GroundTruth, models: Models, precedents: PrecedentIndex, run_id: str, align: Literal["mms"] | None,
     judge_prompt: str = judge.PROMPT_VERSION, judge_samples: int = judge.SAMPLES, first_sample: int = 0,
+    paths: list[Path] | None = None,
 ) -> tuple[ItemScore, list[Screening], float]:
     item_models, bill = metered(models)
     screenings = []
-    for path in media(truth.item_id):
+    # a harder render stands in for the plain one; claims are still scored as the plain render carried them
+    for path in paths or media(truth.item_id):
         screening_id = f"{run_id}-{truth.item_id}-{path.stem}"
         s = screen(
             ingest(path), item_models, precedents, screening_id, judge_prompt=judge_prompt, judge_samples=judge_samples,

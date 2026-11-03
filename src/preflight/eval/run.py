@@ -1,6 +1,7 @@
 import argparse
 import csv
 import io
+import re
 import time
 import wave
 from collections import Counter
@@ -124,7 +125,9 @@ def citation_spread(screenings: list[Screening]) -> list[Metric]:
     ]
 
 
-def saved(run_id: str) -> tuple[dict, dict[str, list[Screening]], list[GroundTruth]]:
+def saved(run_id: str, directory: Path | None = None) -> tuple[dict, dict[str, list[Screening]], list[GroundTruth]]:
+    if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_.+-]*", run_id):
+        raise SystemExit("run ID must be a filename component")
     with RUNS.open(newline="", encoding="utf-8") as f:
         row = next((r for r in csv.DictReader(f) if r["run_id"] == run_id), None)
     if row is None:
@@ -139,14 +142,21 @@ def saved(run_id: str) -> tuple[dict, dict[str, list[Screening]], list[GroundTru
         raise SystemExit(f"{run_id} has no saved screenings; rescore the run that screened the ads")
     with scored.open(newline="", encoding="utf-8") as f:
         original = list(csv.DictReader(f))
-    expected = {r["item_id"]: int(r["media"]) for r in original}
     dev = load_split(row["split"]).dev
-    if not expected or len(expected) != len(original) or not set(expected) <= set(dev) or any(
+    items = [r["item_id"] for r in original]
+    if not items or len(set(items)) != len(items) or not set(items) <= set(dev):
+        raise SystemExit("saved rows must identify a unique original development cohort")
+    skipped = [r for r in original if r.get("skipped")]
+    if skipped and (row["stage"] != "stress" or any(r.get("media") for r in skipped)):
+        raise SystemExit("only stress runs may have skipped rows without media")
+    expected = {r["item_id"]: int(r["media"]) for r in original if not r.get("skipped")}
+    if not expected or any(
         n < 1 for n in expected.values()
     ):
         raise SystemExit("rescore requires unique original development rows with positive media counts")
     screenings: dict[str, list[Screening]] = {}
-    for path in sorted((WORK / run_id).glob(f"{run_id}-*.json")):
+    directory = directory if directory is not None else WORK / run_id
+    for path in sorted(directory.glob(f"{run_id}-*.json")):
         # Multi-image stems can contain hyphens, e.g. reconstruction-1.
         suffix = path.stem.removeprefix(f"{run_id}-")
         matched = [item for item in expected if suffix.startswith(item + "-")]

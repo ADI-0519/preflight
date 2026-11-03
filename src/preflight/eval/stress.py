@@ -1,4 +1,6 @@
 import argparse
+import hashlib
+import json
 import re
 import shutil
 import subprocess
@@ -35,7 +37,8 @@ from preflight.eval.split import RULING_ID, load_ground_truth, load_split
 from preflight.models import from_env
 from preflight.pipeline import SNAPSHOTS
 
-KINDS = ("music", "speech_only", "small_text", "split_cuts", "compressed")
+ORDERED = "split_ordered_v1"
+KINDS = ("music", "speech_only", "small_text", "split_cuts", "compressed", ORDERED)
 STRESS_DIR = ROOT / "data" / "raw" / "stress"
 # about 40% of the 34-point text a reconstruction's captions start at
 SMALL = 14
@@ -113,6 +116,68 @@ def split_cuts(shots: ShotList, claims: list[str]) -> tuple[ShotList, list[int],
     return shots.model_copy(update={"scenes": scenes}), stills, whole
 
 
+def ordered_cuts(shots: ShotList, claims: list[str]) -> tuple[ShotList, list[int], list[str]]:
+    """Cut each caption into consecutive fragments, without alternating or joining fragments."""
+    scenes, stills, changed = [], [], False
+    for i, scene in enumerate(shots.scenes):
+        captions = []
+        for line in scene.on_screen_text:
+            tokens = line.split()
+            boundaries = set()
+            for claim in claims:
+                if holds(line, claim) and (span := _span(tokens, claim)):
+                    start, end = span
+                    if end - start > 1:
+                        boundaries.add((start + end) // 2)
+            cuts = sorted(boundaries)
+            captions.append([" ".join(tokens[a:b]) for a, b in zip([0, *cuts], [*cuts, len(tokens)], strict=True)])
+        count = max(map(len, captions), default=1)
+        changed |= count > 1
+        for part in range(count):
+            scenes.append(scene.model_copy(update={
+                "on_screen_text": [pieces[part] for pieces in captions if part < len(pieces) and pieces[part]],
+                "duration_seconds": max(scene.duration_seconds / count, 2.0) if count > 1 else scene.duration_seconds,
+                "voiceover": scene.voiceover if part == 0 else "",
+            }))
+            stills.append(i)
+    if not changed:
+        raise Skip("no claim line splits at a word boundary")
+    whole = [c for c in claims if any(holds(" ".join(s.on_screen_text), c) for s in scenes)]
+    return shots.model_copy(update={"scenes": scenes}), stills, whole
+
+
+def digest(path: Path) -> str:
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def ordered_inputs(source: Path, claims: list[str]) -> dict:
+    shots = ShotList.model_validate_json((source / "shotlist.json").read_text(encoding="utf-8"))
+    return {
+        "variant": ORDERED, "claims": claims,
+        "sources": {name: digest(source / name) for name in [
+            "shotlist.json", *(f"scene{i}.png" for i in range(len(shots.scenes))),
+        ]},
+    }
+
+
+def cached_ordered(source: Path, out: Path, claims: list[str]) -> list[Path] | None:
+    """A manifest is the completion marker; partial or stale renders never enter a run."""
+    if not out.exists() or not any(out.iterdir()):
+        return None
+    try:
+        manifest = json.loads((out / "render.json").read_text(encoding="utf-8"))
+        made = sorted((p for p in out.glob("reconstruction*") if p.suffix in (".mp4", ".png", ".jpg")), key=card)
+        if manifest["inputs"] != ordered_inputs(source, claims) or not made or manifest["media"] != {
+            p.name: digest(p) for p in made
+        } or manifest["shotlist_sha256"] != digest(out / "shotlist.json"):
+            raise ValueError("render inputs or outputs changed")
+    except (OSError, ValueError, KeyError, TypeError) as exc:
+        raise ValueError(
+            f"{out}: incomplete or stale {ORDERED} render; preserve it and use a fresh output directory"
+        ) from exc
+    return made
+
+
 def small_text(shots: ShotList) -> ShotList:
     if shots.format != "video":
         return shots
@@ -173,16 +238,41 @@ def _seconds(path: Path) -> float:
 
 
 def render(kind: str, source: Path, out: Path, claims: list[str], builder: Builder) -> list[Path]:
+    if kind == ORDERED and (cached := cached_ordered(source, out, claims)):
+        return cached
     shots = ShotList.model_validate_json((source / "shotlist.json").read_text(encoding="utf-8"))
     stills = [source / f"scene{i}.png" for i in range(len(shots.scenes))]
     plain = [source / "reconstruction.mp4"] if shots.format == "video" else sorted(source.glob("reconstruction*.png"))
+    if kind == ORDERED:
+        cut, order, whole = ordered_cuts(shots, claims)
+        inputs = ordered_inputs(source, claims)
     out.mkdir(parents=True, exist_ok=True)
+    if shots.format == "video" and kind in {"speech_only", "split_cuts", "small_text", ORDERED} and any(
+        s.voiceover.strip() for s in shots.scenes
+    ) and builder.voice is None:
+        builder.voice = ensure_voice()
     if kind == "speech_only":
         builder.assemble(speech_only(shots, claims), out, stills)
     elif kind == "split_cuts":
         cut, order, whole = split_cuts(shots, claims)
         builder.assemble(cut, out, [stills[i] for i in order])
         (out / "whole_claims.txt").write_text("\n".join(whole), encoding="utf-8")
+    elif kind == ORDERED:
+        builder.assemble(cut, out, [stills[i] for i in order])
+        (out / "shotlist.json").write_text(cut.model_dump_json(indent=2), encoding="utf-8")
+        made = [out / "reconstruction.mp4"] if cut.format == "video" else sorted(
+            out.glob("reconstruction*.png"), key=card,
+        )
+        if not made:
+            raise ValueError("ordered renderer produced no media")
+        manifest = {
+            "inputs": inputs, "media": {p.name: digest(p) for p in made},
+            "shotlist_sha256": digest(out / "shotlist.json"), "source_scene_indices": order,
+            "whole_claims": whole, "planned_seconds": sum(s.duration_seconds for s in cut.scenes),
+            "rendered_seconds": _seconds(made[0]) if cut.format == "video" else None,
+            "timing_note": "Fragments last at least 2 seconds; voiceover can extend a scene. Cards play for 3 seconds.",
+        }
+        (out / "render.json").write_text(json.dumps(manifest, indent=2), encoding="utf-8")
     elif kind == "small_text":
         builder.assemble(small_text(shots), out, stills, overlay=lambda s: small_overlay(s, shots.format))
     elif kind == "music":
@@ -228,22 +318,37 @@ def flips(truth, plain: list, stress: list) -> tuple[bool, bool, int, int]:
 def main() -> None:
     parser = argparse.ArgumentParser(description="Screen harder renders of the dev positives and register the run.")
     parser.add_argument("kind", choices=KINDS)
-    parser.add_argument("--baseline", required=True, metavar="RUN_ID", help="the plain dev run screened the same way")
+    parser.add_argument("--baseline", metavar="RUN_ID", help="plain dev run screened the same way; required to screen")
     parser.add_argument("--samples", type=int, choices=[1, judge.VOTE_SAMPLES], default=judge.SAMPLES)
     parser.add_argument("--judge-prompt", default=judge.PROMPT_VERSION, help="a candidate judge prompt")
     parser.add_argument("--claims-prompt", default=extraction.PROMPT_VERSION, help="a candidate claims prompt")
     parser.add_argument("--render-only", action="store_true")
+    parser.add_argument("--render-root", type=Path, default=STRESS_DIR, help="root for versioned stress renders")
     args = parser.parse_args()
+    if not args.render_only and not args.baseline:
+        parser.error("--baseline is required unless --render-only is set")
+    if not args.render_only:
+        base_row, plain, _ = saved(args.baseline)
+        if base_row["split"] != "v2" or base_row["part"] != "dev" or base_row["stage"] != "screen":
+            raise SystemExit(f"{args.baseline} is not a v2 dev screening run")
     if not shutil.which("ffmpeg"):
         raise SystemExit("ffmpeg is not on PATH")
     # rule 5: dev only, and only the ruled ads, since a variant is drawn from the reconstruction's own shot list
     split = load_split("v2")
     truths = [t for t in (load_ground_truth("v2", i) for i in split.dev if RULING_ID.match(i)) if t.label == "positive"]
     # the builder only draws and speaks here; it never calls a model
-    builder = Builder(client=False, voice=ensure_voice())
+    builder = Builder(client=False)
     paths, skipped = {}, {}
     for t in truths:
-        out = STRESS_DIR / args.kind / t.item_id
+        out = args.render_root / args.kind / t.item_id
+        claims = [c.claim for c in t.claims]
+        if args.kind == ORDERED:
+            try:
+                paths[t.item_id] = render(args.kind, OUT_DIR / t.item_id, out, claims, builder)
+            except Skip as e:
+                skipped[t.item_id] = str(e)
+            print(f"{t.item_id}: {skipped.get(t.item_id, 'rendered or verified cache')}", flush=True)
+            continue
         # a render already made is reused, so the single and voting runs screen the same bytes
         if made := sorted((p for p in out.glob("reconstruction*") if p.suffix in (".mp4", ".png", ".jpg")), key=card):
             paths[t.item_id] = [p for p in made if p.suffix == ".mp4"] or made
@@ -256,9 +361,8 @@ def main() -> None:
         print(f"{t.item_id}: {skipped.get(t.item_id, 'rendered')}", flush=True)
     if args.render_only:
         return
-    base_row, plain, _ = saved(args.baseline)
-    if base_row["split"] != "v2" or base_row["part"] != "dev":
-        raise SystemExit(f"{args.baseline} is not a v2 dev run")
+    if not paths or not set(paths) <= set(plain):
+        raise SystemExit("the baseline must cover every applied stress item, and at least one item must apply")
     sha = revision("dev")
     applied = [t for t in truths if t.item_id in paths]
     precedents = {t.item_id: load_precedents(SNAPSHOTS.rulings, "v2", t.item_id) for t in applied}
@@ -286,6 +390,8 @@ def main() -> None:
             "incomplete_check": incomplete, "cost_usd": round(usd, 5), "plain_caught": plain_score.caught,
             "plain_caught_carried": plain_score.caught_carried, "ad_lost": ad_lost, "ad_gained": ad_gained,
             "claims_lost": c_lost, "claims_gained": c_gained, "baseline": args.baseline,
+            "render_manifest_sha256": digest(args.render_root / args.kind / t.item_id / "render.json")
+            if args.kind == ORDERED else "",
         })  # fmt: skip
         before.append(plain_score)
         after.append(score)

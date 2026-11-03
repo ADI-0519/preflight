@@ -1,5 +1,14 @@
 # Decisions
 
+- **3 Nov 2026 (P43/dev integration).** At the user's request, incorporated the
+  teammate's P43 commits through `50426a2` and merged dev `d026fca`. Retained the
+  measured development-only triage path and the selected runtime/evaluation
+  safeguards alongside P66's adopted prompts, three-sample voting, v2 schema,
+  carousel support and stress harness. The shared saved-run loader used by
+  comparisons and rescoring retains original-cohort/media/source/completion
+  validation. This is branch integration, not a new model-selection decision,
+  production triage adoption or final held-out run. See [verification](../p43.md).
+
 - **3 Nov 2026 (P43 measured).** Muse Spark Open (`meta-models/muse-spark-open-1026`,
   open weights, hosted by Baseten) ran `triage_v1` on the saved screenings of the
   registered v2 dev run `screen-20261103T172541` (N01 to N10), registered as

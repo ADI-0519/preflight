@@ -1,11 +1,13 @@
 import base64
 import shutil
+from pathlib import Path
 
 import pytest
 
 from preflight.eval.reconstruct import LABEL, Builder, Scene, ShotList, overlay_filter
 from preflight.eval.stress import (
     Skip,
+    card,
     holds,
     music_bed,
     music_gain,
@@ -120,3 +122,9 @@ def test_a_line_carrying_several_claims_has_each_claim_cut():
     out, _, whole = split_cuts(many, claims)
     assert whole == [] and len(out.scenes) == 2
     assert sorted(" ".join(t for s in out.scenes for t in s.on_screen_text).split()) == sorted(line.split())
+
+
+def test_cards_are_read_in_scene_order():
+    names = ["reconstruction-10.png", "reconstruction-1.png", "reconstruction.png", "reconstruction-2.png"]
+    assert [p.name for p in sorted(map(Path, names), key=card)] == [
+        "reconstruction.png", "reconstruction-1.png", "reconstruction-2.png", "reconstruction-10.png"]

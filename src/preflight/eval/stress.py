@@ -207,7 +207,12 @@ def render(kind: str, source: Path, out: Path, claims: list[str], builder: Build
     else:
         raise ValueError(f"unknown stress kind {kind}")
     return [out / "reconstruction.mp4"] if (out / "reconstruction.mp4").exists() else sorted(
-        p for p in out.glob("reconstruction*") if p.suffix in (".png", ".jpg"))  # fmt: skip
+        (p for p in out.glob("reconstruction*") if p.suffix in (".png", ".jpg")), key=card)  # fmt: skip
+
+
+def card(path: Path) -> tuple[int, str]:
+    # cards are read in order, and a name sort would put reconstruction-1 before reconstruction
+    return len(path.stem), path.stem
 
 
 def flips(truth, plain: list, stress: list) -> tuple[bool, bool, int, int]:
@@ -237,7 +242,7 @@ def main() -> None:
     for t in truths:
         out = STRESS_DIR / args.kind / t.item_id
         # a render already made is reused, so the single and voting runs screen the same bytes
-        if made := sorted(p for p in out.glob("reconstruction*") if p.suffix in (".mp4", ".png", ".jpg")):
+        if made := sorted((p for p in out.glob("reconstruction*") if p.suffix in (".mp4", ".png", ".jpg")), key=card):
             paths[t.item_id] = [p for p in made if p.suffix == ".mp4"] or made
             continue
         try:

@@ -1,0 +1,26 @@
+item_id,label,claims,carried,caught,caught_carried,caught_any_rule,flags,caught_exact_rules,caught_all_rules,rules_cited,rules_related,rules_wanted,rules_found,lines,unmatched_lines,chance_carried,weighted_carried,near_miss,near_miss_caught,clean_lines,clean_lines_flagged,wording_eligible,wording_suggested,unanimous_flags,unanimous_matched,split_flags,split_matched,kind,skipped,media,failed,incomplete_check,cost_usd,plain_caught,plain_caught_carried,ad_lost,ad_gained,claims_lost,claims_gained,baseline
+A24-1243213,positive,10,10,7,7,7,25,6,6,16,15,15,13,10,3,0.771,6.5,False,False,0,0,False,False,0,0,0,0,music,,1,,False,0.24528,7,7,False,False,0,0,screen-20261102T210524
+G24-1248968,positive,15,14,7,7,12,22,7,7,27,17,32,17,16,9,1.857,7.0,False,False,0,0,False,False,0,0,0,0,music,,1,,False,0.19342,12,12,False,False,5,0,screen-20261102T210524
+A24-1239910,positive,11,11,8,8,8,13,8,8,25,25,20,20,5,0,1.815,8.0,False,False,0,0,False,False,0,0,0,0,music,,1,,False,0.21089,9,9,False,False,1,0,screen-20261102T210524
+A24-1239905,positive,28,27,23,23,23,57,23,23,73,73,65,65,21,7,5.478,23.0,False,False,0,0,False,False,0,0,0,0,music,,1,,False,0.35282,22,22,False,False,0,1,screen-20261102T210524
+A24-1239904,positive,24,23,13,13,21,56,11,11,51,30,54,28,16,7,4.787,11.833,False,False,0,0,False,False,0,0,0,0,music,,1,,False,0.33808,15,15,False,False,2,0,screen-20261102T210524
+A24-1238193,positive,6,4,3,3,3,19,3,3,8,8,6,6,8,4,1.118,3.0,False,False,0,0,False,False,0,0,0,0,music,,1,,False,0.17704,3,3,False,False,0,0,screen-20261102T210524
+A24-1241024,positive,6,6,4,4,4,22,4,4,10,10,10,10,11,3,1.003,4.0,False,False,0,0,False,False,0,0,0,0,music,,1,,False,0.20458,4,4,False,False,0,0,screen-20261102T210524
+G24-1241706,positive,10,10,9,9,9,30,8,8,22,21,15,15,17,1,2.448,8.5,False,False,0,0,False,False,0,0,0,0,music,,1,,False,0.19832,9,9,False,False,1,1,screen-20261102T210524
+A24-1228813,positive,5,3,3,3,3,7,3,3,8,8,6,6,4,2,1.329,3.0,False,False,0,0,False,False,0,0,0,0,music,,1,,False,0.16869,2,2,False,False,0,1,screen-20261102T210524
+A23-1224570,positive,7,7,4,4,5,19,3,3,8,5,7,5,10,3,0.34,3.5,False,False,0,0,False,False,0,0,0,0,music,,1,,False,0.25671,4,4,False,False,0,0,screen-20261102T210524
+G23-1215538,positive,5,4,2,2,3,12,2,2,8,6,8,6,7,5,0.517,2.0,False,False,0,0,False,False,0,0,0,0,music,,1,,False,0.3243,3,3,False,False,1,0,screen-20261102T210524
+A23-1202159,positive,12,11,11,11,11,23,11,6,21,21,26,21,7,1,1.774,11.0,False,False,0,0,False,False,0,0,0,0,music,,1,,False,0.25997,9,9,False,False,0,2,screen-20261102T210524
+A23-1196136,positive,6,6,4,4,6,35,4,4,17,11,17,11,10,8,1.089,4.0,False,False,0,0,False,False,0,0,0,0,music,,1,,False,0.31504,3,3,False,False,0,1,screen-20261102T210524
+A24-1240828,,,,,,,,,,,,,,,,,,,,,,,,,,,,music,a still has no soundtrack,,,,,,,,,,,screen-20261102T210524
+A24-1241017,,,,,,,,,,,,,,,,,,,,,,,,,,,,music,a still has no soundtrack,,,,,,,,,,,screen-20261102T210524
+A24-1239908,,,,,,,,,,,,,,,,,,,,,,,,,,,,music,a still has no soundtrack,,,,,,,,,,,screen-20261102T210524
+A24-1239907,,,,,,,,,,,,,,,,,,,,,,,,,,,,music,a still has no soundtrack,,,,,,,,,,,screen-20261102T210524
+A24-1246372,,,,,,,,,,,,,,,,,,,,,,,,,,,,music,a still has no soundtrack,,,,,,,,,,,screen-20261102T210524
+A24-1241023,,,,,,,,,,,,,,,,,,,,,,,,,,,,music,a still has no soundtrack,,,,,,,,,,,screen-20261102T210524
+A24-1241337,,,,,,,,,,,,,,,,,,,,,,,,,,,,music,a still has no soundtrack,,,,,,,,,,,screen-20261102T210524
+A24-1231792,,,,,,,,,,,,,,,,,,,,,,,,,,,,music,a still has no soundtrack,,,,,,,,,,,screen-20261102T210524
+A24-1229687,,,,,,,,,,,,,,,,,,,,,,,,,,,,music,a still has no soundtrack,,,,,,,,,,,screen-20261102T210524
+A24-1241022,,,,,,,,,,,,,,,,,,,,,,,,,,,,music,a still has no soundtrack,,,,,,,,,,,screen-20261102T210524
+A23-1216841,,,,,,,,,,,,,,,,,,,,,,,,,,,,music,a still has no soundtrack,,,,,,,,,,,screen-20261102T210524
+A23-1191380,,,,,,,,,,,,,,,,,,,,,,,,,,,,music,a still has no soundtrack,,,,,,,,,,,screen-20261102T210524

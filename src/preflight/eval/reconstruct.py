@@ -15,6 +15,7 @@ import subprocess
 import tempfile
 import time
 import wave
+from collections.abc import Callable
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Literal
@@ -179,7 +180,11 @@ class Builder:
         (target / "meta.json").write_text(json.dumps(meta, indent=2), encoding="utf-8")
         return meta
 
-    def assemble(self, shots: ShotList, target: Path) -> None:
+    def assemble(
+        self, shots: ShotList, target: Path, stills: list[Path] | None = None,
+        overlay: Callable[[Scene], str] | None = None,
+    ) -> None:
+        stills = stills or [target / f"scene{i}.png" for i in range(len(shots.scenes))]
         with tempfile.TemporaryDirectory() as tmp:
             work = Path(tmp)
             clips = []
@@ -188,7 +193,8 @@ class Builder:
                 if shots.format == "video" and scene.voiceover.strip():
                     audio = work / f"scene{i}.wav"
                     self.speak(scene.voiceover, audio)
-                clips.append(render_scene(target / f"scene{i}.png", scene, audio, work / f"scene{i}.mp4", shots.format))
+                vf = overlay(scene) if overlay else None
+                clips.append(render_scene(stills[i], scene, audio, work / f"scene{i}.mp4", shots.format, vf=vf))
             if shots.format == "video":
                 concat(clips, target / "reconstruction.mp4", work)
             else:
@@ -240,10 +246,7 @@ def overlay_filter(on_screen_text: list[str], label: str = LABEL) -> str:
         step = int(size * 1.3)
         if step * len(rows) <= HEIGHT - 120:
             break
-    filters = [
-        f"scale={WIDTH}:{HEIGHT}:force_original_aspect_ratio=decrease",
-        f"pad={WIDTH}:{HEIGHT}:(ow-iw)/2:(oh-ih)/2:color=black",
-    ]
+    filters = canvas()
     top = max(HEIGHT - 50 - step * len(rows), 60)
     for i, row in enumerate(rows):
         filters.append(
@@ -251,11 +254,23 @@ def overlay_filter(on_screen_text: list[str], label: str = LABEL) -> str:
             f"drawtext={font}expansion=none:text='{_escape(row)}':fontsize={size}:fontcolor=white:"
             f"box=1:boxcolor=black@0.6:boxborderw={size // 4}:x=(w-text_w)/2:y={top + step * i}"
         )
-    filters.append(
-        f"drawtext={font}expansion=none:text='{_escape(label)}':fontsize=22:fontcolor=yellow:"
+    filters.append(label_filter(label))
+    return ",".join(filters)
+
+
+def canvas() -> list[str]:
+    return [
+        f"scale={WIDTH}:{HEIGHT}:force_original_aspect_ratio=decrease",
+        f"pad={WIDTH}:{HEIGHT}:(ow-iw)/2:(oh-ih)/2:color=black",
+    ]
+
+
+# rule 9: every reconstruction, and every harder render of one, says what it is
+def label_filter(label: str = LABEL) -> str:
+    return (
+        f"drawtext={_font()}expansion=none:text='{_escape(label)}':fontsize=22:fontcolor=yellow:"
         "box=1:boxcolor=black@0.7:boxborderw=6:x=20:y=20"
     )
-    return ",".join(filters)
 
 
 def _run(*cmd: str) -> None:
@@ -267,11 +282,14 @@ def _duration(path: Path) -> float:
         return f.getnframes() / f.getframerate()
 
 
-def render_scene(still: Path, scene: Scene, audio: Path | None, out: Path, fmt: str, label: str = LABEL) -> Path:
+def render_scene(
+    still: Path, scene: Scene, audio: Path | None, out: Path, fmt: str, label: str = LABEL, vf: str | None = None
+) -> Path:
     seconds = max(scene.duration_seconds, _duration(audio) + 0.5 if audio else 0, 2.0)
     cmd = ["ffmpeg", "-y", "-loop", "1", "-t", f"{seconds:.2f}", "-i", str(still)]
     cmd += ["-i", str(audio)] if audio else ["-f", "lavfi", "-t", f"{seconds:.2f}", "-i", "anullsrc=r=24000:cl=mono"]
-    cmd += ["-vf", overlay_filter(scene.on_screen_text, label), "-r", "25", "-c:v", "libx264", "-pix_fmt", "yuv420p"]
+    vf = vf or overlay_filter(scene.on_screen_text, label)
+    cmd += ["-vf", vf, "-r", "25", "-c:v", "libx264", "-pix_fmt", "yuv420p"]
     cmd += ["-c:a", "aac", "-ar", "24000", "-ac", "1", "-af", "apad", "-t", f"{seconds:.2f}", str(out)]
     _run(*cmd)
     return out

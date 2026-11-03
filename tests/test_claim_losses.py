@@ -1,6 +1,7 @@
 import importlib.util
 from datetime import UTC, datetime
 from pathlib import Path
+from types import SimpleNamespace
 
 from preflight.schema import (
     Ad,
@@ -72,7 +73,29 @@ def test_a_whole_claim_flagged_under_an_unrelated_rule_is_the_judge_missing_it()
 def test_a_second_card_is_filed_under_its_item(tmp_path, monkeypatch):
     monkeypatch.setattr(losses, "WORK", tmp_path)
     (tmp_path / "run").mkdir()
-    for stem in ("reconstruction", "reconstruction-1"):
-        s = screening(f"run-A24-1239908-{stem}", [], {})
+    for name in ("A24-1239908-reconstruction", "A24-1239908-reconstruction-1", "N01-ad"):
+        s = screening(f"run-{name}", [], {})
         (tmp_path / "run" / f"{s.screening_id}.json").write_text(s.model_dump_json(), encoding="utf-8")
-    assert {k: len(v) for k, v in losses.saved_screenings("run").items()} == {"A24-1239908": 2}
+    # a team ad's media is ad.mp4 or ad.png, so its stem is ad
+    assert {k: len(v) for k, v in losses.saved_screenings("run").items()} == {"A24-1239908": 2, "N01": 1}
+
+
+def test_unmatched_lines_are_counted_by_tier_and_sampled_without_the_ruling(tmp_path, monkeypatch, capsys):
+    scripts = Path(__file__).parents[1] / "scripts"
+    spec = importlib.util.spec_from_file_location("unmatched", scripts / "unmatched_lines.py")
+    unmatched = importlib.util.module_from_spec(spec)
+    monkeypatch.syspath_prepend(str(scripts))
+    spec.loader.exec_module(unmatched)
+    ruled = screening("run-A1-ad", ["Reduced stress and anxiety", "Boosts energy"],
+                      {"Reduced stress and anxiety": ["15.6.2"], "Boosts energy": ["15.1"]})
+    clean = screening("run-N1-ad", ["Supports immunity"], {"Supports immunity": ["15.1"]})
+    truths = {"A1": SimpleNamespace(label="positive", claims=[SimpleNamespace(claim=CLAIM, rules=RULES)]),
+              "N1": SimpleNamespace(label="negative", claims=[])}  # fmt: skip
+    monkeypatch.setattr(unmatched, "saved_screenings", lambda run: {"A1": [ruled], "N1": [clean]})
+    monkeypatch.setattr(unmatched, "load_ground_truth", lambda split, item: truths[item])
+    counts, lines = unmatched.tally("run")
+    assert counts["positive", "high", "matched"] == 1 and counts["positive", "medium", "unmatched"] == 1
+    assert counts["negative", "medium", "unmatched"] == 1
+    assert sorted(x["text"] for x in lines) == ["Boosts energy", "Supports immunity"]
+    # the grading sheet holds the flag, never the ASA's claim it failed to match
+    assert all(CLAIM not in " ".join(x.values()) for x in lines)

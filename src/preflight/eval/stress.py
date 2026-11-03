@@ -77,35 +77,36 @@ def _span(tokens: list[str], claim: str) -> tuple[int, int] | None:
     return min(found, key=lambda s: s[1] - s[0], default=None)
 
 
-def split_line(line: str, claims: list[str]) -> tuple[str, str] | None:
+def split_line(line: str, claims: list[str]) -> list[str] | None:
     held = [c for c in claims if holds(line, c)]
     tokens = line.split()
-    # a cut mid-claim for each claim, with pieces alternating between the scenes, puts each claim's halves apart
+    # a cut mid-claim for each claim; the pieces stay in reading order, one to a scene, as an ad cuts a long caption
     cuts = sorted({(i + j) // 2 for i, j in filter(None, (_span(tokens, c) for c in held)) if j - i > 1})
     if not cuts:
         return None
-    pieces = [tokens[a:b] for a, b in zip([0, *cuts], [*cuts, len(tokens)], strict=True)]
-    return " ".join(w for p in pieces[0::2] for w in p), " ".join(w for p in pieces[1::2] for w in p)
+    return [" ".join(tokens[a:b]) for a, b in zip([0, *cuts], [*cuts, len(tokens)], strict=True)]
 
 
 def split_cuts(shots: ShotList, claims: list[str]) -> tuple[ShotList, list[int], list[str]]:
     scenes, stills, split = [], [], False
     for i, s in enumerate(shots.scenes):
-        halves = {line: split_line(line, claims) for line in s.on_screen_text if any(holds(line, c) for c in claims)}
-        halves = {line: h for line, h in halves.items() if h}
-        if not halves:
+        pieces = {line: split_line(line, claims) for line in s.on_screen_text if any(holds(line, c) for c in claims)}
+        pieces = {line: p for line, p in pieces.items() if p}
+        if not pieces:
             scenes.append(s)
             stills.append(i)
             continue
         split = True
-        first = [halves[line][0] if line in halves else line for line in s.on_screen_text]
-        second = [halves[line][1] for line in s.on_screen_text if line in halves]
-        half = s.duration_seconds / 2
-        scenes += [
-            s.model_copy(update={"on_screen_text": first, "duration_seconds": half}),
-            s.model_copy(update={"on_screen_text": second, "duration_seconds": half, "voiceover": ""}),
-        ]
-        stills += [i, i]
+        # scene n shows each split line's n-th piece; lines left whole stay on the first scene
+        n = max(map(len, pieces.values()))
+        for k in range(n):
+            shown = [pieces.get(line, [line]) for line in s.on_screen_text]
+            text = [p[k] for p in shown if k < len(p)]
+            scenes.append(s.model_copy(update={
+                "on_screen_text": text, "duration_seconds": s.duration_seconds / n,
+                **({"voiceover": ""} if k else {}),
+            }))  # fmt: skip
+        stills += [i] * n
     if not split:
         raise Skip("no claim line splits at a word boundary")
     # claims a single scene still shows whole, reported with the item

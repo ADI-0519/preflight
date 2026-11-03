@@ -119,9 +119,11 @@ def test_a_line_carrying_several_claims_has_each_claim_cut():
     claims = ["reduces bloating in days", "eliminates hot flashes fast", "induces deep sleep tonight"]
     many = ShotList(format="image", scenes=[Scene(duration_seconds=4, image_prompt="x", voiceover="",
                                                   on_screen_text=[line])])  # fmt: skip
-    out, _, whole = split_cuts(many, claims)
-    assert whole == [] and len(out.scenes) == 2
-    assert sorted(" ".join(t for s in out.scenes for t in s.on_screen_text).split()) == sorted(line.split())
+    out, stills, whole = split_cuts(many, claims)
+    assert whole == [] and len(out.scenes) == 4 and stills == [0, 0, 0, 0]
+    # the pieces follow each other in reading order, so every claim's halves sit on neighbouring scenes, in order
+    assert " ".join(t for s in out.scenes for t in s.on_screen_text) == line
+    assert [s.duration_seconds for s in out.scenes] == [1, 1, 1, 1]
 
 
 def test_cards_are_read_in_scene_order():

@@ -11,7 +11,7 @@ Each of the 25 ruled ads in split v2 dev was rendered again in five ways, from i
 | `music` | a synthetic chord bed made by ffmpeg, 12 dB under the voiceover's mean level | the 13 video ads |
 | `speech_only` | every on-screen line carrying a ground-truth claim leaves the screen and joins that scene's voiceover | 12 video ads (A24-1241024 shows no claim on screen) |
 | `small_text` | captions at 14 points (about 40% of the plain size), no box, lower left; on video one line a second, on a still every line at once | all 25 |
-| `split_cuts` | each claim line is cut in the middle of each claim it carries, and the pieces alternate between two consecutive scenes with the same still | 24 (A24-1241024 has no line to cut) |
+| `split_cuts` | each claim line is cut in the middle of each claim it carries, and each piece goes on its own consecutive scene with the same still, in reading order (until 3 Nov the pieces alternated between two scenes; see Open) | 24 (A24-1241024 has no line to cut) |
 | `compressed` | the plain render re-encoded at 480 lines: video at 300 kb/s, stills as low-quality JPEG | all 25 |
 
 A kind that cannot apply to an ad is skipped and listed in the run's CSV, so it is never read as a catch or a miss. `split_cuts` leaves 34 claims whole on some screen across 15 ads (one-word claims such as "Focus", hashtags, claims repeated elsewhere); they are listed in each ad's `whole_claims.txt`.
@@ -120,6 +120,7 @@ The test reconstructions are built the same way as the plain dev renders, so the
 
 ## Open
 
+- **The `split_cuts` render (fixed in code 3 Nov, not yet re-rendered).** The first render dealt a line's pieces alternately onto two scenes, so a line holding two claims reached the screen out of order or glued to another claim's piece, which no real ad does (32 of the 104 claims lost on `stress-split_cuts-20261103T013804`). `split_line` now keeps the pieces in reading order, one to a scene. Every `split_cuts` figure in this note and in `docs/notes/claims-v5-judge-v8.md` comes from the old render, so it is quoted only until the set is re-rendered and rescreened.
 - The API upload and the web page still take one file; a carousel is screened from the command line or the eval harness only. Evidence on a carousel is reported by time, not by card.
 - Whether claim extraction should rejoin a claim shown in pieces within one screening (87 claims once a carousel is read as one ad). That is a prompt change, written from dev material only.
 - Scoring a split claim as caught when every piece of it is flagged, with the P70 line match (`docs/notes/noise-lines.md`), and whether an over-long quote of a whole claim counts (37 and 12 lost claims). Either changes a measurement.

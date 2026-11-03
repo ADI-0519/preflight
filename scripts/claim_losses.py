@@ -1,4 +1,5 @@
 import argparse
+import re
 from collections import defaultdict
 from difflib import SequenceMatcher
 
@@ -8,6 +9,8 @@ from preflight.eval.run import kept
 from preflight.eval.score import caught, current, fits, holds, matches
 from preflight.eval.split import load_ground_truth
 from preflight.schema import Screening
+
+MEDIA_STEM = re.compile(r"-(ad|reconstruction(-\d+)?)$")
 
 STEPS = (
     "not read",
@@ -24,8 +27,8 @@ STEPS = (
 def saved_screenings(run_id: str) -> dict[str, list[Screening]]:
     found: dict[str, list[Screening]] = defaultdict(list)
     for path in sorted((WORK / run_id).glob(f"{run_id}-*.json")):
-        # files are named <run_id>-<item_id>-<media stem>, and a stress card's stem can be reconstruction-1
-        item_id = path.stem.removeprefix(f"{run_id}-").partition("-reconstruction")[0]
+        # files are named <run_id>-<item_id>-<media stem>; the stem is ad, reconstruction or reconstruction-1
+        item_id = MEDIA_STEM.sub("", path.stem.removeprefix(f"{run_id}-"))
         found[item_id].append(Screening.model_validate_json(path.read_text(encoding="utf-8")))
     return found
 
@@ -81,11 +84,31 @@ def pieces_caught(claim: str, rules: list[str], screenings: list[Screening]) -> 
     return covered(claim, [said for said in flagged if holds(claim, said)])
 
 
+def misses(run_id: str) -> None:
+    # a plain run's carried claims it did not catch, by the step at which each dropped out; no model calls
+    steps: dict[str, list[str]] = defaultdict(list)
+    for item_id, screenings in sorted(saved_screenings(run_id).items()):
+        # rule 5: split v2 dev only
+        truth = load_ground_truth("v2", item_id)
+        hit = caught(truth.claims, screenings, item_id).with_rule
+        held = kept(truth) or [True] * len(truth.claims)
+        for i, (t, h, k) in enumerate(zip(truth.claims, hit, held, strict=True)):
+            if k and not h:
+                steps[lost_at(t.claim, current(t.rules, item_id), screenings)].append(f"{item_id}/{i}")
+    print(f"{run_id}: {sum(map(len, steps.values()))} carried claims missed")
+    for step in STEPS:
+        if ids := steps.get(step):
+            print(f"  {step}: {len(ids)}  {' '.join(ids)}")
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Find the step at which each claim a stress run lost dropped out.")
     parser.add_argument("plain", metavar="PLAIN_RUN")
-    parser.add_argument("stress", metavar="STRESS_RUN")
+    parser.add_argument("stress", metavar="STRESS_RUN", nargs="?")
+    parser.add_argument("--misses", action="store_true", help="break down the plain run's own misses instead")
     args = parser.parse_args()
+    if args.misses or not args.stress:
+        return misses(args.plain)
     plain, stress = saved_screenings(args.plain), saved_screenings(args.stress)
     steps: dict[tuple[str, str], list[str]] = defaultdict(list)
     loose = defaultdict(list)

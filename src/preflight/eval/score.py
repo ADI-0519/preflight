@@ -216,21 +216,25 @@ class ItemScore:
     split_matched: int = 0
 
 
-def line_counts(truth: list[BreachingClaim], screenings: list[Screening], item_id: str = "") -> tuple[int, int]:
+def matched_lines(truth: list[BreachingClaim], s: Screening, item_id: str = "") -> dict[str, bool]:
+    """Each flagged line, keyed by its top claim, and whether it matches an objected claim with a related rule."""
     wanted = [current(t.rules, item_id) for t in truth]
-    total = unmatched = 0
-    for s in screenings:
-        cited = {f.claim_id: [] for f in s.flags}
-        for f in s.flags:
-            cited[f.claim_id].extend(r.rule for r in f.sources if r.kind == "cap_rule")
-        for top, nested in fold(s):
-            total += 1
-            unmatched += not any(
-                holds(t.claim, words(c.text))
-                and any(related(r, g) for r in cited[c.claim_id] for g in w)
-                for c in [top, *nested] for t, w in zip(truth, wanted, strict=True)
-            )  # fmt: skip
-    return total, unmatched
+    cited = {f.claim_id: [] for f in s.flags}
+    for f in s.flags:
+        cited[f.claim_id].extend(r.rule for r in f.sources if r.kind == "cap_rule")
+    return {
+        top.claim_id: any(
+            holds(t.claim, words(c.text))
+            and any(related(r, g) for r in cited[c.claim_id] for g in w)
+            for c in [top, *nested] for t, w in zip(truth, wanted, strict=True)
+        )
+        for top, nested in fold(s)
+    }  # fmt: skip
+
+
+def line_counts(truth: list[BreachingClaim], screenings: list[Screening], item_id: str = "") -> tuple[int, int]:
+    matched = [m for s in screenings for m in matched_lines(truth, s, item_id).values()]
+    return len(matched), matched.count(False)
 
 
 def score_item(truth: GroundTruth, screenings: list[Screening], kept: list[bool] | None = None) -> ItemScore:

@@ -34,9 +34,12 @@ Carried claims caught with a matching rule, harder render against plain render o
 | `compressed` | vote | `stress-compressed-20261103T000531` | 25 | 192/238 [0.73, 0.89] | 194/238 [0.76, 0.87] | 14 / 12 | 25/25 (25/25) |
 | `split_cuts` | single | `stress-split_cuts-20261102T232611` | 24 | 66/232 [0.17, 0.41] | 189/232 [0.76, 0.87] | 130 / 7 | 16/24 (24/24) |
 | `split_cuts` | vote | `stress-split_cuts-20261103T004439` | 24 | 67/232 [0.18, 0.41] | 190/232 [0.76, 0.87] | 130 / 7 | 17/24 (24/24) |
+| `split_cuts`, cards read together | single | `stress-split_cuts-20261103T013804` | 24 | 94/232 [0.29, 0.55] | 189/232 [0.76, 0.87] | 104 / 9 | 22/24 (24/24) |
+| `split_cuts`, cards read together | vote | `stress-split_cuts-20261103T015225` | 24 | 95/232 [0.30, 0.55] | 190/232 [0.76, 0.87] | 102 / 7 | 22/24 (24/24) |
 
 Ads no longer caught under `split_cuts`: A24-1238193 (video), A24-1239908, A24-1239907, A24-1241337, A24-1231792, A24-1229687 and A23-1191380 (stills), and A24-1241017 on the single-sample run only. No other kind lost or gained an ad. By format, `split_cuts` caught 59 of 130 carried claims on video against 98 plain, and 7 of 102 on stills against 91 (single sample).
 
+The last two rows rerun `split_cuts` after a carousel's cards were read together as one slideshow (below, "Reading a carousel as one ad"). Stills rose from 7 to 35 of 102 carried claims (36 voting), video stayed at 59 of 130, and only A24-1238193 (video) and A24-1229687 (stills) are still not caught.
 
 ## What it shows
 
@@ -92,12 +95,31 @@ IDs are `<item>/<index of the claim in the item's ground truth>`, single judge s
 - **`speech_only` (20):** not read A23-1224570/1, A24-1228813/2, /3, A24-1239904/2, A24-1239905/10, G24-1241706/3; pieces extracted only A23-1224570/6, A24-1243213/0, /4, G23-1215538/0; another rule A24-1239905/24, G23-1215538/1; quote too long A23-1196136/5, A23-1202159/7, A24-1239904/9, A24-1239905/17, /18, A24-1239910/0, /4, /5
 - **`speech_only`, every piece flagged (10):** A23-1196136/5; A23-1202159/7; A24-1239904/9; A24-1239905/17, /18; A24-1239910/0, /4, /5; A24-1243213/0; G23-1215538/0
 
+## Reading a carousel as one ad
+
+The breakdown above showed that 58 stills claims were lost because each card was screened as its own ad. `preflight.ingest.ingest_cards` now renders an ad's cards, in order, as one silent slideshow (3 seconds a card, so card k spans 3k to 3k + 3 seconds) and ingests it through the video path. `screen_item` screens an item's media as one ad, and `preflight screen a.png b.png` screens a carousel from the command line. No plain dev reconstruction has more than one image, so the plain baselines are unchanged; the change reaches only multi-card ads.
+
+Lost claims by step after the change (`scripts/claim_losses.py`, single sample against `screen-20261102T210524`; voting differs by at most two claims a step):
+
+| Step | Stills before | Stills after | Video (unchanged) |
+|---|---|---|---|
+| Not read | 0 | 4 | 1 |
+| Shown in pieces across the ad's cards | 58 | – | – |
+| Shown in pieces within one screening | 26 | 48 | 39 |
+| Not extracted (pieces extracted) | 0 | 6 (4) | 1 (0) |
+| Not flagged or flagged with another rule | 0 | 0 | 1 |
+| Flagged, quote too long to score | 0 | 0 | 4 |
+| **Lost** | **84** | **58** | **46** |
+| Every piece flagged with a matching rule | 16 | 7 | 11 |
+
+With every card in one screening, the stills losses are now the same kind as the video losses: a claim shown in pieces that extraction does not rejoin (87 of 104). The four stills claims not read and six not extracted are all in A24-1241022, a 27-claim ad whose cards hold many short lines.
+
 ## What it means for the test figures
 
-The test reconstructions are built the same way as the plain dev renders, so the P33 test figures are an upper bound on legible ads. On dev, harder sound, smaller print and lossy compression move recall by no more than the noise, and claims carried only in speech cost about a tenth. An ad that splits a claim across carousel cards or cuts is the case the checker handles worst: there, recall on these ads fell from about 80% to under 30%, and a third of the ads were not caught at all. Quote the test recall with that limit beside it.
+The test reconstructions are built the same way as the plain dev renders, so the P33 test figures are an upper bound on legible ads. On dev, harder sound, smaller print and lossy compression move recall by no more than the noise, and claims carried only in speech cost about a tenth. An ad that splits a claim across carousel cards or cuts is the case the checker handles worst. With a carousel's cards read together, recall on these ads falls from about 80% to about 40%, and 2 of 24 ads are not caught; before that change it fell under 30%, with a third of the ads missed. Quote the test recall with that limit beside it.
 
 ## Open
 
-- Whether a carousel should be screened as one ad, with its cards read together, rather than card by card (58 stills claims).
-- Whether claim extraction should rejoin a claim shown in pieces within one screening (65 claims). That is a prompt change, written from dev material only.
+- The API upload and the web page still take one file; a carousel is screened from the command line or the eval harness only. Evidence on a carousel is reported by time, not by card.
+- Whether claim extraction should rejoin a claim shown in pieces within one screening (87 claims once a carousel is read as one ad). That is a prompt change, written from dev material only.
 - Scoring a split claim as caught when every piece of it is flagged, with the P70 line match (`docs/notes/noise-lines.md`), and whether an over-long quote of a whole claim counts (37 and 12 lost claims). Either changes a measurement.

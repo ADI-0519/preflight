@@ -431,7 +431,7 @@ def test_citation_spread_counts_the_six_most_cited():
     assert spread["precedent_rulings_cited"] == Metric("precedent_rulings_cited", 7, 28)
 
 
-def test_a_candidate_judge_prompt_reaches_the_screen(tmp_path, monkeypatch):
+def test_candidate_prompts_reach_the_screen(tmp_path, monkeypatch):
     asked = {}
 
     def fake_screen(done, models, precedents, screening_id, **kwargs):
@@ -444,8 +444,9 @@ def test_a_candidate_judge_prompt_reaches_the_screen(tmp_path, monkeypatch):
     monkeypatch.setattr(run, "ingest_cards", lambda paths: None)
     monkeypatch.setattr(run, "screen", fake_screen)
     monkeypatch.setattr(run, "metered", lambda models: (models, lambda: 0.0))
-    run.screen_item(truth("T16", []), None, None, "screen-1", None, "judge_v7", 3, 3)
+    run.screen_item(truth("T16", []), None, None, "screen-1", None, "judge_v7", 3, 3, claims_prompt="claims_v4")
     assert (asked["judge_prompt"], asked["judge_samples"], asked["first_sample"]) == ("judge_v7", 3, 3)
+    assert asked["prompt"] == "claims_v4"
 
 
 def test_the_cards_of_one_item_are_screened_as_one_ad(tmp_path, monkeypatch):

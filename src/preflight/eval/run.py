@@ -12,6 +12,7 @@ from pathlib import Path
 from typing import Literal
 
 from preflight import check as judge
+from preflight import claims as extraction
 from preflight.check.precedents import PrecedentIndex, load_precedents
 from preflight.eval.check_reconstructions import carried, lines, words
 from preflight.eval.claim_recall import WORK, Metered, cost, media_of
@@ -88,7 +89,7 @@ def kept(truth: GroundTruth) -> list[bool] | None:
 def screen_item(
     truth: GroundTruth, models: Models, precedents: PrecedentIndex, run_id: str, align: Literal["mms"] | None,
     judge_prompt: str = judge.PROMPT_VERSION, judge_samples: int = judge.SAMPLES, first_sample: int = 0,
-    paths: list[Path] | None = None,
+    paths: list[Path] | None = None, claims_prompt: str = extraction.PROMPT_VERSION,
 ) -> tuple[ItemScore, list[Screening], float]:
     item_models, bill = metered(models)
     # a harder render stands in for the plain one; claims are still scored as the plain render carried them
@@ -97,6 +98,7 @@ def screen_item(
     s = screen(
         ingest_cards(paths), item_models, precedents, f"{run_id}-{truth.item_id}-{paths[0].stem}",
         judge_prompt=judge_prompt, judge_samples=judge_samples, first_sample=first_sample, align=align,
+        prompt=claims_prompt,
     )
     (WORK / run_id / f"{s.screening_id}.json").write_text(s.model_dump_json(indent=1), encoding="utf-8")
     return score_item(truth, [s], kept(truth)), [s], bill()
@@ -219,6 +221,7 @@ def main() -> None:
     parser.add_argument("--only", nargs="*", help="item IDs to run (default: the whole part)")
     parser.add_argument("--no-align", action="store_true", help="keep each transcription turn's timing")
     parser.add_argument("--judge-prompt", default=judge.PROMPT_VERSION, help="a candidate judge prompt to measure")
+    parser.add_argument("--claims-prompt", default=extraction.PROMPT_VERSION, help="a candidate claims prompt")
     # the tiers and the vote metrics read a split vote as two of three
     parser.add_argument("--samples", type=int, choices=[1, judge.VOTE_SAMPLES], default=judge.SAMPLES)
     parser.add_argument("--first-sample", type=int, default=0, help="a repeat run starts later, so it calls afresh")
@@ -256,7 +259,8 @@ def main() -> None:
     with ThreadPoolExecutor(max_workers=WORKERS) as pool:
         done = list(pool.map(
             lambda t: screen_item(
-                t, models, precedents[t.item_id], run_id, align, args.judge_prompt, args.samples, args.first_sample
+                t, models, precedents[t.item_id], run_id, align, args.judge_prompt, args.samples, args.first_sample,
+                claims_prompt=args.claims_prompt,
             ),
             truths,
         ))

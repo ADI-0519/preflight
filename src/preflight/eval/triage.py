@@ -14,8 +14,8 @@ from pathlib import Path
 from dotenv import load_dotenv
 
 from preflight.eval.check_reconstructions import words
-from preflight.eval.registry import RESULTS, RUNS, git, snapshot_text, write_rows
-from preflight.eval.score import holds
+from preflight.eval.registry import RESULTS, RUNS, Metric, git, register, revision, snapshot_text, write_rows
+from preflight.eval.score import holds, interval
 from preflight.eval.split import ROOT, GroundTruth, load_ground_truth, load_split
 from preflight.models import Glimmer, Store
 from preflight.schema import Screening
@@ -121,7 +121,7 @@ def measure(item: str, ad_units: list[Unit], result: Result, truth: GroundTruth)
     }, skips
 
 
-def evaluate(inputs: Inputs, client: Glimmer, out: Path) -> dict:
+def evaluate(inputs: Inputs, client: Glimmer, out: Path) -> tuple[dict, list[dict]]:
     # Validate all evidence and labels before the first paid request.
     batch = {item: units(saved) for item, saved in inputs.screenings.items()}
     truths = {item: load_ground_truth("v2", item) for item in batch}
@@ -175,7 +175,31 @@ def evaluate(inputs: Inputs, client: Glimmer, out: Path) -> dict:
     write_rows(out / "items.csv", rows)
     (out / "false-skips.json").write_text(json.dumps(skips, indent=2), encoding="utf-8")
     (out / "report.json").write_text(json.dumps(report, indent=2), encoding="utf-8")
-    return report
+    return report, rows
+
+
+def register_run(run_id: str, created: datetime, inputs: Inputs, model: str, rows: list[dict]) -> list[Metric]:
+    sha = revision("dev")
+
+    def share(name: str, hit: str, out_of: str) -> Metric:
+        # units and characters cluster within an ad, so the interval resamples ads, as the screen metrics do
+        return Metric(name, sum(r[hit] for r in rows), sum(r[out_of] for r in rows),
+                      *interval(rows, lambda r: r[hit], lambda r: r[out_of]))
+    run_metrics = [
+        share("claim_units_kept", "claim_units_kept", "claim_units"),
+        share("units_skipped", "skipped", "units"),
+        share("chars_skipped", "skipped_chars", "chars"),
+        # per ad, like the cost metrics: summed over ads, out of the number of ads
+        Metric("triage_tokens", sum(r["triage_input_tokens"] + r["triage_output_tokens"] for r in rows), len(rows)),
+        Metric("triage_fallbacks", sum(r["fallback"] for r in rows), len(rows)),
+    ]
+    write_rows(RESULTS / "runs" / f"{run_id}.csv", rows)
+    register({
+        "run_id": run_id, "created_at": created.isoformat(timespec="seconds"), "git_sha": sha,
+        "split": "v2", "part": "dev", "stage": "triage", "model": model, "prompt": PROMPT_VERSION, "effort": "",
+        "snapshots": inputs.run["snapshots"],
+    }, run_metrics)
+    return run_metrics
 
 
 def main() -> None:
@@ -202,11 +226,15 @@ def main() -> None:
     key = "replay-only" if args.replay else os.environ.get("BASETEN_API_KEY")
     if not key:
         parser.error("set BASETEN_API_KEY locally, or use --replay with recorded responses")
-    out = args.out or OUTPUT / f"triage-{datetime.now(UTC):%Y%m%dT%H%M%S}"
+    created = datetime.now(UTC)
+    run_id = f"triage-{created:%Y%m%dT%H%M%S}"
+    out = args.out or OUTPUT / run_id
     with baseten_client(key) as api:
         client = Glimmer(Store(args.cache, "replay" if args.replay else "cache"), model, api)
-        report = evaluate(inputs, client, out)
-    print(json.dumps({"output": str(out), "claim_unit_recall": report["claim_unit_recall"],
+        report, rows = evaluate(inputs, client, out)
+    # registered last, so a run that fails partway leaves no row (rule 11)
+    register_run(run_id, created, inputs, model, rows)
+    print(json.dumps({"run_id": run_id, "output": str(out), "claim_unit_recall": report["claim_unit_recall"],
                       "skip_share": report["skip_share"], "skipped_char_share": report["skipped_char_share"],
                       "matches_full_pipeline_recall": report["matches_full_pipeline_recall"],
                       "gates_screening": False}))

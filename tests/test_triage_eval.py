@@ -1,3 +1,4 @@
+import csv
 import json
 import os
 import socket
@@ -9,6 +10,7 @@ from dotenv import load_dotenv
 from openai import OpenAI
 from test_eval import screening, truth
 
+from preflight.eval import registry as registry_module
 from preflight.eval import triage
 from preflight.eval.registry import snapshot_text, write_rows
 from preflight.eval.split import Split
@@ -30,6 +32,8 @@ def cohort(tmp_path, monkeypatch):
     write_rows(registry, [common | {"metric": "ad_recall", "total": 1}])
     write_rows(tmp_path / "runs" / f"{source_id}.csv", [{"item_id": "D1", "media": 1, "label": "positive"}])
     monkeypatch.setattr(triage, "RUNS", registry)
+    monkeypatch.setattr(registry_module, "RUNS", registry)
+    monkeypatch.setattr(triage, "revision", lambda part: "synthetic")
     monkeypatch.setattr(triage, "RESULTS", tmp_path)
     monkeypatch.setattr(triage, "load_split", lambda _: Split(
         version="v2", created="2026-11-02", frozen=True, dev=["D1", "new-dev"], test=["held-out"],
@@ -98,10 +102,9 @@ def test_cli_workflow_records_and_replays_without_network(cohort, tmp_path, monk
                          "message": {"role": "assistant", "content": json.dumps(answer)}}],
             "usage": {"prompt_tokens": 20, "completion_tokens": 10, "total_tokens": 30},
         })
-    before = registry.read_bytes()
     inputs = triage.load_inputs(run_id, folder)
     with OpenAI(api_key="synthetic", http_client=httpx.Client(transport=httpx.MockTransport(provider))) as api:
-        report = triage.evaluate(inputs, Glimmer(Store(cache), MODELS[0], api), tmp_path / "recorded")
+        report, _ = triage.evaluate(inputs, Glimmer(Store(cache), MODELS[0], api), tmp_path / "recorded")
     assert len(calls) == 1 and report["claim_unit_recall"] == 1 and report["skip_share"] == 0.5
     assert report["units_skipped_per_ad"] == 1 and report["gates_screening"] is False
     assert 0 < report["skipped_char_share"] < 1 and report["triage_tokens_per_ad"] == 30
@@ -114,8 +117,14 @@ def test_cli_workflow_records_and_replays_without_network(cohort, tmp_path, monk
     replayed = json.loads((out / "report.json").read_text())
     assert replayed["cache_mode"] == "replay" and replayed["totals"] == report["totals"]
     assert json.loads((out / "false-skips.json").read_text()) == []
-    assert registry.read_bytes() == before
-    assert "gates_screening" in capsys.readouterr().out
+    with registry.open(newline="", encoding="utf-8") as f:
+        rows = list(csv.DictReader(f))
+    assert [r["run_id"] for r in rows if r["stage"] == "screen"] == [run_id]
+    added = {r["metric"]: r for r in rows if r["stage"] == "triage"}
+    assert {r["run_id"] for r in added.values()} == {json.loads(capsys.readouterr().out)["run_id"]}
+    assert (added["claim_units_kept"]["hits"], added["claim_units_kept"]["total"]) == ("1", "1")
+    assert (added["units_skipped"]["hits"], added["triage_tokens"]["hits"]) == ("1", "30")
+    assert added["claim_units_kept"]["split"] == "v2" and added["claim_units_kept"]["part"] == "dev"
 
 
 def test_check_inputs_does_not_read_labels_or_credentials(cohort, monkeypatch):
@@ -160,7 +169,7 @@ def test_synthetic_live_triage_workflow(cohort, tmp_path):
     before = registry.read_bytes()
     inputs = triage.load_inputs(run_id, folder)
     with baseten_client(key) as api:
-        report = triage.evaluate(inputs, Glimmer(Store(tmp_path / "live-cache"), MODELS[0], api), tmp_path / "live")
+        report, _ = triage.evaluate(inputs, Glimmer(Store(tmp_path / "live-cache"), MODELS[0], api), tmp_path / "live")
     assert report["totals"]["claim_units_kept"] == report["totals"]["claim_units"] == 1
     assert report["totals"]["fallback"] == 0 and report["gates_screening"] is False
     assert registry.read_bytes() == before

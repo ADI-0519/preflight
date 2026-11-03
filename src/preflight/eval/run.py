@@ -12,15 +12,16 @@ from pathlib import Path
 from typing import Literal
 
 from preflight import check as judge
+from preflight import claims as extraction
 from preflight.check.precedents import PrecedentIndex, load_precedents
 from preflight.eval.check_reconstructions import carried, lines, words
 from preflight.eval.claim_recall import WORK, Metered, cost, media_of
 from preflight.eval.reconstruct import IMAGE_EACH, OUT_DIR, ShotList
 from preflight.eval.registry import RESULTS, RUNS, Metric, register, revision, snapshot_text, write_rows
-from preflight.eval.score import ItemScore, metrics, score_item
+from preflight.eval.score import ItemScore, caught, metrics, score_item
 from preflight.eval.split import RULING_ID, GroundTruth, load_ground_truth, load_split
 from preflight.eval.team_media import TEAM_DIR
-from preflight.ingest import ingest
+from preflight.ingest import ingest_cards
 from preflight.models import Models, from_env
 from preflight.models.clients import Image, Sam, SamResult, Turn, VoiceTranscribe
 from preflight.pipeline import SNAPSHOTS, screen
@@ -87,20 +88,30 @@ def kept(truth: GroundTruth) -> list[bool] | None:
 
 def screen_item(
     truth: GroundTruth, models: Models, precedents: PrecedentIndex, run_id: str, align: Literal["mms"] | None,
-    judge_prompt: str = judge.PROMPT_VERSION,
+    judge_prompt: str = judge.PROMPT_VERSION, judge_samples: int = judge.SAMPLES, first_sample: int = 0,
+    paths: list[Path] | None = None, claims_prompt: str = extraction.PROMPT_VERSION,
 ) -> tuple[ItemScore, list[Screening], float]:
     item_models, bill = metered(models)
-    screenings = []
-    for path in media(truth.item_id):
-        screening_id = f"{run_id}-{truth.item_id}-{path.stem}"
-        s = screen(ingest(path), item_models, precedents, screening_id, judge_prompt=judge_prompt, align=align)
-        (WORK / run_id / f"{s.screening_id}.json").write_text(s.model_dump_json(indent=1), encoding="utf-8")
-        screenings.append(s)
-    return score_item(truth, screenings, kept(truth)), screenings, bill()
+    # a harder render stands in for the plain one; claims are still scored as the plain render carried them
+    paths = paths or media(truth.item_id)
+    # an item is one video or the cards of one ad, which are read together as a carousel
+    s = screen(
+        ingest_cards(paths), item_models, precedents, f"{run_id}-{truth.item_id}-{paths[0].stem}",
+        judge_prompt=judge_prompt, judge_samples=judge_samples, first_sample=first_sample, align=align,
+        prompt=claims_prompt,
+    )
+    (WORK / run_id / f"{s.screening_id}.json").write_text(s.model_dump_json(indent=1), encoding="utf-8")
+    return score_item(truth, [s], kept(truth)), [s], bill()
 
 
 def joined(screenings: list[Screening], value) -> str:
     return "+".join(dict.fromkeys(v for s in screenings for r in s.stages if (v := value(r))))
+
+
+def vote_tag(samples: int, first: int) -> str:
+    if samples == 1 and not first:
+        return ""
+    return f"+vote{samples}" + (f"-from{first}" if first else "")
 
 
 def citation_spread(screenings: list[Screening]) -> list[Metric]:
@@ -113,16 +124,16 @@ def citation_spread(screenings: list[Screening]) -> list[Metric]:
     ]
 
 
-def rescore(run_id: str) -> None:
+def saved(run_id: str) -> tuple[dict, dict[str, list[Screening]], list[GroundTruth]]:
     with RUNS.open(newline="", encoding="utf-8") as f:
         row = next((r for r in csv.DictReader(f) if r["run_id"] == run_id), None)
     if row is None:
         raise SystemExit(f"{run_id} is not a registered run")
     if row["part"] == "test":
         # rule 5: the test part is scored once, by the run that screened it
-        raise SystemExit("a test run is not rescored")
+        raise SystemExit("a test run is not scored again")
     if reason := void_runs().get(run_id):
-        raise SystemExit(f"{run_id} is void ({reason}) and is not rescored")
+        raise SystemExit(f"{run_id} is void ({reason}) and is not scored again")
     scored = RESULTS / "runs" / f"{run_id}.csv"
     if "-rescored-" in run_id or not scored.exists():
         raise SystemExit(f"{run_id} has no saved screenings; rescore the run that screened the ads")
@@ -139,7 +150,11 @@ def rescore(run_id: str) -> None:
         raise SystemExit(f"{run_id}: saved screenings missing for {', '.join(short)}")
     # in the split's order, as the run scored them, so the bootstrap draws the same resamples
     order = [i for i in getattr(load_split(row["split"]), row["part"]) if i in expected]
-    truths = [load_ground_truth(row["split"], i) for i in order]
+    return row, screenings, [load_ground_truth(row["split"], i) for i in order]
+
+
+def rescore(run_id: str) -> None:
+    row, screenings, truths = saved(run_id)
     scores = [score_item(t, screenings[t.item_id], kept(t)) for t in truths]
     created = datetime.now(UTC)
     # stamped, so a run rescored again after a later scoring change is registered apart from the first rescore
@@ -149,6 +164,40 @@ def rescore(run_id: str) -> None:
     register(row | {"run_id": new_id, "created_at": created.isoformat(timespec="seconds"),
                     "git_sha": revision(row["part"])}, run_metrics)  # fmt: skip
     show(new_id, run_metrics)
+
+
+def flagged_claims(screenings: list[Screening]) -> set[str]:
+    # claims are matched by text, so two runs compare even where extraction numbered them apart
+    return {" ".join(words(c.text)) for s in screenings for f in s.flags for c in s.claims if c.claim_id == f.claim_id}
+
+
+def compare(first: str, second: str) -> None:
+    row, a, truths = saved(first)
+    row_b, b, _ = saved(second)
+    if (row["split"], row["part"]) != (row_b["split"], row_b["part"]):
+        raise SystemExit(f"{first} and {second} screened different split parts")
+    # a cohort run compares on the items both runs screened; the item count goes with the figure
+    truths = [t for t in truths if t.item_id in b]
+    positives = [t for t in truths if t.label == "positive"]
+    # for the P66 gate, a ground-truth claim changes when one run catches it with a matching rule and the other does not
+    changed = sum(
+        x != y
+        for t in positives
+        for x, y in zip(caught(t.claims, a[t.item_id], t.item_id).with_rule,
+                        caught(t.claims, b[t.item_id], t.item_id).with_rule, strict=True)
+    )  # fmt: skip
+    flipped = [len(flagged_claims(a[t.item_id]) ^ flagged_claims(b[t.item_id])) for t in truths]
+    run_metrics = [
+        Metric("claims_changed", changed, sum(len(t.claims) for t in positives)),
+        Metric("flagged_claims_changed", sum(flipped), len(truths)),
+    ]
+    created = datetime.now(UTC)
+    run_id = f"compare-{created:%Y%m%dT%H%M%S}"
+    register(row | {
+        "run_id": run_id, "created_at": created.isoformat(timespec="seconds"), "git_sha": revision(row["part"]),
+        "stage": "compare", "prompt": f"{first} vs {second}",
+    }, run_metrics)  # fmt: skip
+    show(run_id, run_metrics)
 
 
 def void_runs() -> dict[str, str]:
@@ -172,8 +221,15 @@ def main() -> None:
     parser.add_argument("--only", nargs="*", help="item IDs to run (default: the whole part)")
     parser.add_argument("--no-align", action="store_true", help="keep each transcription turn's timing")
     parser.add_argument("--judge-prompt", default=judge.PROMPT_VERSION, help="a candidate judge prompt to measure")
+    parser.add_argument("--claims-prompt", default=extraction.PROMPT_VERSION, help="a candidate claims prompt")
+    # the tiers and the vote metrics read a split vote as two of three
+    parser.add_argument("--samples", type=int, choices=[1, judge.VOTE_SAMPLES], default=judge.SAMPLES)
+    parser.add_argument("--first-sample", type=int, default=0, help="a repeat run starts later, so it calls afresh")
     parser.add_argument("--rescore", metavar="RUN_ID", help="score a registered dev run again; no model calls")
+    parser.add_argument("--compare", nargs=2, metavar="RUN_ID", help="count the claims two dev runs differ on")
     args = parser.parse_args()
+    if args.compare:
+        return compare(*args.compare)
     if args.rescore:
         if args.split or args.part or args.only:
             # a rescore takes its split, part and items from the registered run
@@ -202,7 +258,11 @@ def main() -> None:
     align = None if args.no_align else "mms"
     with ThreadPoolExecutor(max_workers=WORKERS) as pool:
         done = list(pool.map(
-            lambda t: screen_item(t, models, precedents[t.item_id], run_id, align, args.judge_prompt), truths
+            lambda t: screen_item(
+                t, models, precedents[t.item_id], run_id, align, args.judge_prompt, args.samples, args.first_sample,
+                claims_prompt=args.claims_prompt,
+            ),
+            truths,
         ))
     seconds = time.monotonic() - began
 
@@ -233,7 +293,7 @@ def main() -> None:
     register({
         "run_id": run_id, "created_at": created.isoformat(timespec="seconds"), "git_sha": sha, "split": args.split,
         "part": args.part, "stage": "screen", "model": joined(screenings, lambda r: r.model),
-        "prompt": joined(screenings, lambda r: r.prompt),
+        "prompt": joined(screenings, lambda r: r.prompt) + vote_tag(args.samples, args.first_sample),
         "effort": joined(screenings, lambda r: r.effort and f"{r.stage}={r.effort}"),
         "snapshots": snapshot_text(SNAPSHOTS),
     }, run_metrics)

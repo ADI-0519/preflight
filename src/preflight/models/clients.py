@@ -121,11 +121,15 @@ class Spark:
         image: bytes | None = None,
         image_mime: str = "image/png",
         video: Path | None = None,
+        sample: int = 0,
     ) -> SparkResult:
         parts = {
             "kind": "spark", "text": text, "prompt_version": prompt_version, "effort": effort, "schema": schema,
             "image": image and digest(image), "image_mime": image and image_mime, "video": video and digest(video),
         }
+        # each sample of the same question is cached apart; sample 0 keeps the key a single call has always had
+        if sample:
+            parts["sample"] = sample
 
         def respond(content: list[dict]) -> dict:
             kwargs = {}

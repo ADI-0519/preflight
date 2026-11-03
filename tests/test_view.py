@@ -1,6 +1,8 @@
 import json
 from datetime import UTC, date, datetime
 
+import pytest
+
 from preflight.schema import (
     Ad,
     CapRuleRef,
@@ -190,6 +192,27 @@ def test_tier_rises_with_folded_phrase():
     assert line["primary_rules"] == ["15.1"] and line["tier"] == "high"
 
 
+def voted(n: int, rules: tuple, votes: int | None) -> Flag:
+    return flag(n, rules).model_copy(update={"votes": votes})
+
+
+@pytest.mark.parametrize(
+    ("rules", "votes", "tier"),
+    [(("12.1",), 3, "high"), (("12.1",), 2, "medium"), (("15.1",), 2, "low"), (("4.1",), 2, "low"),
+     (("12.1",), None, "high")],
+)  # fmt: skip
+def test_a_split_vote_drops_one_tier(rules, votes, tier):
+    (line,) = build_view(build((claim(0, LINE, SEG0),), (voted(0, rules, votes),)))["lines"]
+    assert line["tier"] == tier and line["flags"]["votes"] == [votes]
+
+
+def test_a_unanimous_folded_phrase_keeps_the_line_its_tier():
+    claims = (claim(0, LINE, SEG0), claim(1, "banish tiredness", SEG0))
+    s = build(claims, (voted(0, ("12.1",), 2), voted(1, ("15.1",), 3)))
+    (line,) = build_view(s)["lines"]
+    assert line["tier"] == "high" and line["folded"][0]["votes"] == [3]
+
+
 def test_lines_sorted_by_tier_then_time():
     claims = (
         claim(0, LINE, SEG0), claim(1, "banish tiredness", SEG1), claim(2, "cures colds", TEXT0),
@@ -217,3 +240,9 @@ def test_tier_counts():
               claim(3, "quiet", SEG1))  # fmt: skip
     view = build_view(build(claims, (flag(0, ("15.1",)), flag(1, ("12.1",)), flag(2, ("4.1",)))))
     assert view["tiers"] == {"high": 1, "medium": 1, "low": 1, "unchecked": 0}
+
+
+def test_a_flag_every_answering_sample_gave_keeps_its_tier():
+    s = build((claim(0, LINE, SEG0),), (voted(0, ("12.1",), 2),))
+    s = s.model_copy(update={"stages": (StageRun(stage="check", status="done", samples=2),)})
+    assert build_view(s)["lines"][0]["tier"] == "high"

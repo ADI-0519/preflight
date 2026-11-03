@@ -431,7 +431,7 @@ def test_citation_spread_counts_the_six_most_cited():
     assert spread["precedent_rulings_cited"] == Metric("precedent_rulings_cited", 7, 28)
 
 
-def test_a_candidate_judge_prompt_reaches_the_screen(tmp_path, monkeypatch):
+def test_candidate_prompts_reach_the_screen(tmp_path, monkeypatch):
     asked = {}
 
     def fake_screen(done, models, precedents, screening_id, **kwargs):
@@ -441,8 +441,80 @@ def test_a_candidate_judge_prompt_reaches_the_screen(tmp_path, monkeypatch):
     monkeypatch.setattr(run, "WORK", tmp_path)
     (tmp_path / "screen-1").mkdir()
     monkeypatch.setattr(run, "media", lambda item_id: [Path("ad.png")])
-    monkeypatch.setattr(run, "ingest", lambda path: None)
+    monkeypatch.setattr(run, "ingest_cards", lambda paths: None)
     monkeypatch.setattr(run, "screen", fake_screen)
     monkeypatch.setattr(run, "metered", lambda models: (models, lambda: 0.0))
-    run.screen_item(truth("T16", []), None, None, "screen-1", None, "judge_v7")
-    assert asked["judge_prompt"] == "judge_v7"
+    run.screen_item(truth("T16", []), None, None, "screen-1", None, "judge_v7", 3, 3, claims_prompt="claims_v4")
+    assert (asked["judge_prompt"], asked["judge_samples"], asked["first_sample"]) == ("judge_v7", 3, 3)
+    assert asked["prompt"] == "claims_v4"
+
+
+def test_the_cards_of_one_item_are_screened_as_one_ad(tmp_path, monkeypatch):
+    read = []
+    monkeypatch.setattr(run, "WORK", tmp_path)
+    (tmp_path / "screen-1").mkdir()
+    monkeypatch.setattr(run, "ingest_cards", read.append)
+    monkeypatch.setattr(run, "screen", lambda done, models, precedents, screening_id, **kwargs: screening(
+        screening_id, ["Reduced stress", "and anxiety"], {0: ["15.6"], 1: ["15.6"]}))
+    monkeypatch.setattr(run, "metered", lambda models: (models, lambda: 0.0))
+    cards = [Path("reconstruction-1.png"), Path("reconstruction.png")]
+    _, screenings, _ = run.screen_item(truth("T1", []), None, None, "screen-1", None, paths=cards)
+    assert read == [cards] and [s.screening_id for s in screenings] == ["screen-1-T1-reconstruction-1"]
+    assert [p.name for p in (tmp_path / "screen-1").iterdir()] == ["screen-1-T1-reconstruction-1.json"]
+
+
+def voted(s: Screening, votes: dict[int, int]) -> Screening:
+    return s.model_copy(update={"flags": [f.model_copy(update={"votes": votes[n]}) for n, f in enumerate(s.flags)]})
+
+
+def test_unanimous_and_split_flags_are_scored_apart():
+    s = screening("s1", ["Cures anxiety fast", "Doctor recommended", "Tasty"], {0: ["15.6"], 1: ["12.1"], 2: ["15.1"]})
+    item = score_item(truth("A1", [("cures anxiety fast", ["15.6.2"]), ("doctor recommended", ["12.1"])]),
+                      [voted(s, {0: 3, 1: 2, 2: 2})])  # fmt: skip
+    found = {m.name: m for m in metrics([item])}
+    assert (found["unanimous_flags_matched"].hits, found["unanimous_flags_matched"].total) == (1, 1)
+    assert (found["split_flags_matched"].hits, found["split_flags_matched"].total) == (1, 2)
+
+
+def test_a_single_sample_run_registers_no_vote_metrics():
+    assert "unanimous_flags_matched" not in by_name()
+
+
+def test_compare_counts_claims_two_runs_differ_on(tmp_path, monkeypatch):
+    runs, work = saved_run(tmp_path, monkeypatch)
+    register({"run_id": "screen-2", "split": "v2", "part": "dev", "prompt": "judge_v5"}, [("ad_recall", 0, 1)])
+    registry.write_rows(tmp_path / "runs" / "screen-2.csv", [{"item_id": i, "media": 1} for i in ("T16", "A24-1")])
+    (work / "screen-2").mkdir()
+    for name, s in [("screen-2-A24-1-reconstruction", screening("a", ["Cures anxiety fast"], {})),
+                    ("screen-2-T16-ad", screening("b", ["Tasty"], {0: ["15.1"]}))]:  # fmt: skip
+        (work / "screen-2" / f"{name}.json").write_text(s.model_dump_json(), encoding="utf-8")
+    run.compare("screen-1", "screen-2")
+    with runs.open(newline="", encoding="utf-8") as f:
+        rows = {r["metric"]: r for r in csv.DictReader(f) if r["run_id"].startswith("compare-")}
+    assert (rows["claims_changed"]["hits"], rows["claims_changed"]["total"]) == ("1", "1")
+    assert (rows["flagged_claims_changed"]["hits"], rows["flagged_claims_changed"]["total"]) == ("2", "2")
+    assert rows["claims_changed"]["stage"] == "compare"
+
+
+def test_vote_tag_names_a_voting_run():
+    assert (run.vote_tag(1, 0), run.vote_tag(3, 0), run.vote_tag(3, 3)) == ("", "+vote3", "+vote3-from3")
+
+
+def test_compare_keeps_to_the_items_both_runs_screened(tmp_path, monkeypatch):
+    runs, work = saved_run(tmp_path, monkeypatch)
+    register({"run_id": "screen-2", "split": "v2", "part": "dev", "prompt": "judge_v5"}, [("ad_recall", 0, 1)])
+    registry.write_rows(tmp_path / "runs" / "screen-2.csv", [{"item_id": "A24-1", "media": 1}])
+    (work / "screen-2").mkdir()
+    s = screening("a", ["Cures anxiety fast"], {0: ["15.6"]})
+    (work / "screen-2" / "screen-2-A24-1-reconstruction.json").write_text(s.model_dump_json(), encoding="utf-8")
+    run.compare("screen-1", "screen-2")
+    with runs.open(newline="", encoding="utf-8") as f:
+        rows = {r["metric"]: r for r in csv.DictReader(f) if r["run_id"].startswith("compare-")}
+    assert (rows["claims_changed"]["hits"], rows["flagged_claims_changed"]["total"]) == ("0", "1")
+
+
+def test_a_flag_every_answering_sample_gave_is_unanimous():
+    s = voted(screening("s1", ["Cures anxiety fast"], {0: ["15.6"]}), {0: 2})
+    s = s.model_copy(update={"stages": (StageRun(stage="check", status="done", samples=2),)})
+    item = score_item(truth("A1", [("cures anxiety fast", ["15.6.2"])]), [s])
+    assert (item.unanimous_flags, item.split_flags) == (1, 0)

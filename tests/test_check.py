@@ -74,7 +74,8 @@ def screening(texts=TEXTS) -> Screening:
 
 def run(verdicts, texts=TEXTS):
     spark = FakeSpark(verdicts)
-    return check(screening(texts), spark, FakeIndex()), spark.calls
+    # one call, so a broken answer fails the check; a vote is tested below
+    return check(screening(texts), spark, FakeIndex(), samples=1), spark.calls
 
 
 def test_breach_cites_rule_register_and_ruling_with_its_date():
@@ -149,7 +150,7 @@ def test_claims_follow_the_reference_material_and_precede_the_instructions():
 
 def test_v3_layout_keeps_the_claims_first():
     spark = FakeSpark({f"claim-{n}": verdict() for n in range(3)})
-    check(screening(), spark, FakeIndex(), prompt="judge_v3", per_claim=False)
+    check(screening(), spark, FakeIndex(), prompt="judge_v3", per_claim=False, samples=1)
     ((prompt, _),) = spark.calls
     assert prompt.index("Claims:") < prompt.index("CAP Code rules:")
     assert 'claim-2 (explicit, substance: none named): "Clinically proven"' in prompt
@@ -180,7 +181,7 @@ def test_every_claim_needs_exactly_one_verdict(given):
             return SparkResult("muse-spark-1.3", "", {"verdicts": [{"claim_id": i, **verdict()} for i in given]}, {})
 
     with pytest.raises(ValueError, match="not one for each"):
-        check(screening(), Uneven({}), FakeIndex())
+        check(screening(), Uneven({}), FakeIndex(), samples=1)
 
 
 def test_no_claims_skips_the_model():
@@ -268,3 +269,111 @@ def test_existing_check_is_not_overwritten():
     with pytest.raises(ValueError, match="already"):
         check(s, spark, FakeIndex())
     assert spark.calls == []
+
+
+class SampledSpark:
+    def __init__(self, samples):
+        self.samples, self.calls = samples, []
+
+    def ask(self, text, **kwargs):
+        self.calls.append((text, kwargs))
+        verdicts = [{"claim_id": i, **v} for i, v in self.samples[kwargs["sample"]].items()]
+        return SparkResult("muse-spark-1.3", "", {"verdicts": verdicts}, {})
+
+
+def vote_on(samples, first_sample=0):
+    spark = SampledSpark(samples)
+    out = check(screening(), spark, FakeIndex(), samples=3, first_sample=first_sample)
+    return out, spark.calls
+
+
+def breach(*rules, **kw):
+    return verdict("possible_breach", rules, **kw)
+
+
+def test_two_of_three_samples_flag_a_claim_and_one_does_not():
+    out, _ = vote_on([
+        {"claim-0": breach("15.1.1"), "claim-1": breach("15.7"), "claim-2": verdict()},
+        {"claim-0": breach("15.1.1"), "claim-1": verdict(), "claim-2": verdict()},
+        {"claim-0": breach("15.1.1"), "claim-1": verdict(), "claim-2": verdict()},
+    ])
+    (flag,) = out.flags
+    assert (flag.claim_id, flag.votes) == ("claim-0", 3)
+    assert out.schema_version == "2"
+
+
+def test_rules_cited_by_two_samples_are_kept():
+    out, _ = vote_on([
+        {"claim-0": breach("15.1.1", "15.7"), "claim-1": verdict(), "claim-2": verdict()},
+        {"claim-0": verdict(), "claim-1": verdict(), "claim-2": verdict()},
+        {"claim-0": breach("15.1.1", "3.7"), "claim-1": verdict(), "claim-2": verdict()},
+    ])
+    (flag,) = out.flags
+    assert [s.rule for s in flag.sources if s.kind == "cap_rule"] == ["15.1.1"] and flag.votes == 2
+
+
+def test_with_no_rule_cited_twice_the_most_cited_is_kept_from_the_reasons_sample():
+    out, _ = vote_on([
+        {"claim-0": verdict(), "claim-1": verdict(), "claim-2": verdict()},
+        {"claim-0": breach("15.7", reason="second"), "claim-1": verdict(), "claim-2": verdict()},
+        {"claim-0": breach("3.7", reason="third"), "claim-1": verdict(), "claim-2": verdict()},
+    ])
+    (flag,) = out.flags
+    assert flag.reason == "second" and [s.rule for s in flag.sources if s.kind == "cap_rule"] == ["15.7"]
+
+
+# rule 2: a vote that leaves only a section 3 rule leaves no wording
+def test_wording_goes_when_the_vote_leaves_no_health_rule():
+    out, _ = vote_on([
+        {"claim-0": breach("15.1.1", "3.7", register=[TIREDNESS], suggested=TIREDNESS), "claim-1": verdict(),
+         "claim-2": verdict()},
+        {"claim-0": breach("3.7"), "claim-1": verdict(), "claim-2": verdict()},
+        {"claim-0": verdict(), "claim-1": verdict(), "claim-2": verdict()},
+    ])  # fmt: skip
+    assert out.flags[0].suggested_wording is None
+
+
+def test_a_split_between_on_hold_and_breach_reads_as_a_breach():
+    out, _ = vote_on([
+        {"claim-0": verdict(), "claim-1": verdict("on_hold", on_hold=[ASHWAGANDHA]), "claim-2": verdict()},
+        {"claim-0": verdict(), "claim-1": breach("15.1.1"), "claim-2": verdict()},
+        {"claim-0": verdict(), "claim-1": verdict(), "claim-2": verdict()},
+    ])
+    assert [(f.kind, f.votes) for f in out.flags] == [("possible_breach", 2)]
+
+
+def test_each_sample_asks_the_same_question_with_its_own_rule_order():
+    clean = {"claim-0": verdict(), "claim-1": verdict(), "claim-2": verdict()}
+    _, calls = vote_on([clean] * 6, first_sample=3)
+    (single_text, single), *_ = run(clean)[1]
+    assert sorted(kw["sample"] for _, kw in calls) == [3, 4, 5]
+    texts = [text for text, _ in calls]
+    assert len(set(texts)) == 3 and single_text not in texts
+    assert all(sorted(t.splitlines()) == sorted(single_text.splitlines()) for t in texts)
+    assert all(kw["schema"] == single["schema"] for _, kw in calls)
+
+
+def test_a_single_sample_keeps_the_original_call():
+    out, calls = run({"claim-0": breach("15.1.1"), "claim-1": verdict(), "claim-2": verdict()})
+    assert [kw["sample"] for _, kw in calls] == [0] and out.flags[0].votes is None
+
+
+def test_a_sample_that_breaks_the_contract_abstains():
+    out, _ = vote_on([
+        {"claim-0": breach("15.1.1"), "claim-1": verdict(), "claim-2": verdict()},
+        {"claim-0": verdict(rules=["15.1.1"]), "claim-1": verdict(), "claim-2": verdict()},
+        {"claim-0": breach("15.1.1"), "claim-1": verdict(), "claim-2": verdict()},
+    ])
+    assert [(f.claim_id, f.votes) for f in out.flags] == [("claim-0", 2)] and out.stages[-1].samples == 2
+
+
+def test_two_broken_samples_fail_the_check_rather_than_read_clean():
+    broken = {"claim-0": verdict(rules=["15.1.1"]), "claim-1": verdict(), "claim-2": verdict()}
+    with pytest.raises(ValueError, match="only 1 of 3"):
+        vote_on([broken, {"claim-0": verdict(), "claim-1": verdict(), "claim-2": verdict()}, broken])
+
+
+def test_the_check_votes_by_default():
+    spark = FakeSpark({"claim-0": breach("15.1.1"), "claim-1": verdict(), "claim-2": verdict()})
+    out = check(screening(), spark, FakeIndex())
+    assert len(spark.calls) == 3 and out.flags[0].votes == 3

@@ -57,7 +57,7 @@ The package is `preflight` (src layout). Stages exchange schema objects only, so
 | `preflight.schema` | Pydantic models: `Ad`, `Segment`, `Track`, `Region`, `Claim`, `Evidence`, `SourceRef`, `Flag`, `SuggestedWording`, `Screening` | no |
 | `preflight.models` | One thin client per Meta model (Spark, Voice Transcribe, SAM 3.1, Image) plus Glimmer; content-hash cache; record and replay for tests | the only module that does |
 | `preflight.sources` | Register loader, CAP rule pack, rulings corpus and scraper, snapshot versions | no |
-| `preflight.ingest` | Video, image and page-screenshot input; frame sampling | no |
+| `preflight.ingest` | Video, image and page-screenshot input; a carousel's cards read as one silent slideshow; frame sampling | no |
 | `preflight.evidence` | Transcription and region stages → segments, tracks, crops, on-screen text | via `models` |
 | `preflight.claims` | Claim extraction prompt and parser | via `models` |
 | `preflight.check` | Register shortlist, precedent retrieval, judge prompt, flag assembly | via `models` |

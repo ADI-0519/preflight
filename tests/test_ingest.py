@@ -8,7 +8,7 @@ import wave
 import pytest
 
 from preflight import ingest as ingest_module
-from preflight.ingest import capture, ingest, load
+from preflight.ingest import CARD_SECONDS, capture, ingest, ingest_cards, load
 from preflight.models.store import digest
 
 
@@ -79,6 +79,26 @@ def test_image_ingest(tmp_path, suffix):
     assert [(f.index, f.time) for f in done.frames] == [(0, 0.0)]
     assert done.frames[0].path.exists()
     assert done.keyframes == (0,)
+
+
+def test_cards_are_read_as_one_silent_slideshow_with_a_cut_at_each_card(tmp_path):
+    red, blue = tmp_path / "card.png", tmp_path / "card-1.jpg"
+    make_image(red)
+    # a card of another size is fitted to the first card's frame
+    ffmpeg("-f", "lavfi", "-i", "color=c=blue:s=100x100", "-frames:v", "1", str(blue))
+    done = ingest_cards([red, blue], tmp_path / "work")
+    assert (done.ad.media, done.ad.width, done.ad.height, done.audio) == ("video", 200, 120, None)
+    assert done.ad.duration == pytest.approx(2 * CARD_SECONDS, abs=0.1)
+    # ingest samples two frames a second, so the second card starts at frame 2 * CARD_SECONDS
+    assert done.keyframes == (0, 2 * CARD_SECONDS)
+    # the same cards in the same order reuse the slideshow, so the ingest is cached on the same bytes
+    assert ingest_cards([red, blue], tmp_path / "work").ad.content_hash == done.ad.content_hash
+    assert ingest_cards([blue, red], tmp_path / "work").ad.content_hash != done.ad.content_hash
+
+
+def test_one_card_is_ingested_as_a_still(tmp_path):
+    done = ingest_cards([make_image(tmp_path / "card.png")], tmp_path / "work")
+    assert done.ad.media == "image" and not (tmp_path / "work" / "carousels").exists()
 
 
 def test_page_screenshot(tmp_path):

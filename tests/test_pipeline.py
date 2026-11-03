@@ -3,6 +3,7 @@ import logging
 from dataclasses import replace
 from datetime import UTC, datetime
 from html import escape
+from pathlib import Path
 
 import pytest
 from test_evidence import CLIP, ffmpeg, hand_built, models  # noqa: F401
@@ -89,6 +90,22 @@ def test_cli_screens_the_fixture_clip_end_to_end(tmp_path, monkeypatch, models, 
     shown |= {f.flag_id for line in view["lines"] for n in line["folded"] for f in screening.flags
               if f.claim_id == n["claim_id"]}
     assert shown == {f.flag_id for f in screening.flags}
+
+
+def test_cli_reads_several_images_as_the_cards_of_one_carousel(tmp_path, monkeypatch, models, clip):  # noqa: F811
+    read = []
+    monkeypatch.setattr(pipeline, "ingest_cards", lambda cards: read.append(cards) or clip)
+    monkeypatch.setattr(cli, "from_env", lambda: models)
+    monkeypatch.setattr(cli, "load_precedents", lambda version: NoPrecedents())
+    assert cli.main(["screen", "card.png", "card-1.png", "--out", str(tmp_path / "out"), "--no-align"]) == 0
+    assert read == [[Path("card.png"), Path("card-1.png")]]
+    assert len([p for p in (tmp_path / "out").glob("*.json") if not p.name.endswith(".view.json")]) == 1
+
+
+def test_cli_refuses_a_page_as_a_card(tmp_path, monkeypatch, models):  # noqa: F811
+    monkeypatch.setattr(cli, "from_env", lambda: models)
+    monkeypatch.setattr(cli, "load_precedents", lambda version: NoPrecedents())
+    assert cli.main(["screen", "https://example.com", "card.png", "--out", str(tmp_path / "out")]) == 2
 
 
 def test_a_failed_stage_is_recorded_and_the_rest_runs(models, clip):  # noqa: F811

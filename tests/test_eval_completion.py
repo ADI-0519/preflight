@@ -38,7 +38,7 @@ def test_registration_requires_a_completed_check(tmp_path, monkeypatch, status):
     monkeypatch.setattr(run, "load_ground_truth", lambda version, item_id: item)
     monkeypatch.setattr(run, "load_precedents", lambda *args: None)
     monkeypatch.setattr(run, "from_env", lambda: None)
-    monkeypatch.setattr(run, "screen_item", lambda *args: (score_item(item, [result]), [result], 0.0))
+    monkeypatch.setattr(run, "screen_item", lambda *args, **kwargs: (score_item(item, [result]), [result], 0.0))
     monkeypatch.setattr(run, "WORK", tmp_path)
     monkeypatch.setattr(run, "RESULTS", tmp_path)
     monkeypatch.setattr(run, "register", lambda *args: registered.append(args))

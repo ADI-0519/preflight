@@ -16,7 +16,8 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="preflight")
     commands = parser.add_subparsers(dest="command", required=True)
     one = commands.add_parser("screen", help="screen one ad and write a JSON screening and an HTML report")
-    one.add_argument("target", help="a video or image file, or an http(s) URL of a page")
+    one.add_argument("target", nargs="+", help="a video or image file, the image files of one carousel in order, "
+                     "or an http(s) URL of a page")
     one.add_argument("--out", type=Path, default=OUT_DIR)
     one.add_argument("--no-align", action="store_true", help="keep each transcription turn's timing")
     one.add_argument("--replay", action="store_true", help="answer every model call from the recording or fail")
@@ -60,7 +61,7 @@ def main(argv: list[str] | None = None) -> int:
     align = None if args.no_align else "mms"
     try:
         screening, json_path, html_path = screen_target(
-            args.target, models_for(args), precedents, args.out, align=align
+            args.target[0], models_for(args), precedents, args.out, align=align, cards=tuple(args.target[1:])
         )
     except (RuntimeError, ValueError, FileNotFoundError) as e:
         print(e, file=sys.stderr)

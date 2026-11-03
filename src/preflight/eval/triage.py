@@ -112,6 +112,11 @@ def measure(item: str, ad_units: list[Unit], result: Result, truth: GroundTruth)
         "claim_units": sum(bool(v) for v in bearing.values()),
         "claim_units_kept": sum(bool(v) and by_id[uid] for uid, v in bearing.items()),
         "claims": len(truth.claims), "claims_in_units": len(covered), "claims_kept": len(kept),
+        # characters stand in for the input tokens a skipped unit would save in the stages after triage
+        "chars": sum(len(u.text) for u in ad_units),
+        "skipped_chars": sum(len(u.text) for u in ad_units if not by_id[u.id]),
+        "triage_input_tokens": result.usage.get("prompt_tokens", 0),
+        "triage_output_tokens": result.usage.get("completion_tokens", 0),
         "fallback": result.fallback,
     }, skips
 
@@ -134,7 +139,8 @@ def evaluate(inputs: Inputs, client: Glimmer, out: Path) -> dict:
         responses[item] = asdict(response)
         (out / "responses.json").write_text(json.dumps(responses, indent=2), encoding="utf-8")
     totals = {key: sum(r[key] for r in rows) for key in (
-        "units", "skipped", "claim_units", "claim_units_kept", "claims", "claims_in_units", "claims_kept", "fallback",
+        "units", "skipped", "claim_units", "claim_units_kept", "claims", "claims_in_units", "claims_kept", "chars",
+        "skipped_chars", "triage_input_tokens", "triage_output_tokens", "fallback",
     )}
     def ratio(numerator: str, denominator: str) -> float | None:
         return totals[numerator] / totals[denominator] if totals[denominator] else None
@@ -145,6 +151,11 @@ def evaluate(inputs: Inputs, client: Glimmer, out: Path) -> dict:
         "cache_mode": client.store.mode,
         "claim_unit_recall": ratio("claim_units_kept", "claim_units"),
         "skip_share": ratio("skipped", "units"), "units_skipped_per_ad": totals["skipped"] / len(rows),
+        "skipped_char_share": ratio("skipped_chars", "chars"),
+        "skipped_chars_per_ad": totals["skipped_chars"] / len(rows),
+        "triage_tokens_per_ad": (totals["triage_input_tokens"] + totals["triage_output_tokens"]) / len(rows),
+        # the full pipeline judges every unit, so a single false skip leaves triage below it (the issue's watch-out)
+        "matches_full_pipeline_recall": not skips,
         "gates_screening": False,
         "limitations": ["Dev experiment; not final test results.",
                         "Labels identify breaching claims, not every possible health or nutrition claim.",
@@ -196,7 +207,9 @@ def main() -> None:
         client = Glimmer(Store(args.cache, "replay" if args.replay else "cache"), model, api)
         report = evaluate(inputs, client, out)
     print(json.dumps({"output": str(out), "claim_unit_recall": report["claim_unit_recall"],
-                      "skip_share": report["skip_share"], "gates_screening": False}))
+                      "skip_share": report["skip_share"], "skipped_char_share": report["skipped_char_share"],
+                      "matches_full_pipeline_recall": report["matches_full_pipeline_recall"],
+                      "gates_screening": False}))
 
 
 if __name__ == "__main__":

@@ -79,6 +79,7 @@ def test_false_skips_and_visual_text_coverage_are_distinct(cohort):
     row, skips = triage.measure("D1", ad, Result(tuple(Decision(u.id, False) for u in ad), MODELS[0], {}), labels)
     assert (row["claim_units"], row["claim_units_kept"], row["claims_in_units"], row["claims_kept"]) == (1, 0, 1, 0)
     assert len(skips) == 1 and skips[0]["source_id"] == "text-0"
+    assert row["skipped_chars"] == row["chars"] == sum(len(u.text) for u in ad)
 
 
 def test_cli_workflow_records_and_replays_without_network(cohort, tmp_path, monkeypatch, capsys):
@@ -103,6 +104,8 @@ def test_cli_workflow_records_and_replays_without_network(cohort, tmp_path, monk
         report = triage.evaluate(inputs, Glimmer(Store(cache), MODELS[0], api), tmp_path / "recorded")
     assert len(calls) == 1 and report["claim_unit_recall"] == 1 and report["skip_share"] == 0.5
     assert report["units_skipped_per_ad"] == 1 and report["gates_screening"] is False
+    assert 0 < report["skipped_char_share"] < 1 and report["triage_tokens_per_ad"] == 30
+    assert report["matches_full_pipeline_recall"] is True
     monkeypatch.setattr(socket.socket, "connect", lambda *args: pytest.fail("replay used network"))
     out = tmp_path / "replay"
     monkeypatch.setattr(sys, "argv", ["triage", run_id, "--screenings", str(folder), "--replay",

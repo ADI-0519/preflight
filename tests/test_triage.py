@@ -56,6 +56,13 @@ def test_invalid_output_keeps_every_unit(answer):
     assert result.fallback and result.decisions == (Decision("u", True),)
 
 
+@pytest.mark.parametrize("wrap", ["{}", "```json\n{}\n```", "  ```\n{}\n```\n"])
+def test_one_markdown_fence_is_unwrapped(wrap):
+    answer = json.dumps({"units": [{"id": "u", "needs_review": False}]})
+    result = classify(Client(wrap.replace("{}", answer)), [Unit("u", "s", "text", "t", "Orange flavour")])
+    assert not result.fallback and result.decisions == (Decision("u", False),)
+
+
 def test_no_units_make_no_model_call():
     client = Client("unneeded")
     assert classify(client, []).decisions == () and client.calls == []

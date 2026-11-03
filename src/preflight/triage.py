@@ -1,6 +1,7 @@
 """Conservative text triage experiment; deliberately not wired into screening."""
 
 import json
+import re
 import ssl
 from dataclasses import dataclass
 from pathlib import Path
@@ -85,6 +86,12 @@ def request(ad_units: list[Unit]) -> str:
     )
 
 
+def unfenced(text: str | None) -> str:
+    # Baseten has no JSON mode for Muse Spark Open, so a reply wrapped in one Markdown fence is unwrapped first
+    match = re.fullmatch(r"\s*```(?:json)?\s*(.*?)\s*```\s*", text or "", re.DOTALL)
+    return match[1] if match else text or ""
+
+
 def classify(client: Glimmer, ad_units: list[Unit]) -> Result:
     """One batch per ad. Invalid output retains every unit, never silently skips it."""
     if client.model not in MODELS:
@@ -95,7 +102,7 @@ def classify(client: Glimmer, ad_units: list[Unit]) -> Result:
         return Result((), client.model, {})
     response = client.ask(request(ad_units), prompt_version=PROMPT_VERSION)
     try:
-        parsed = _Response.model_validate_json(response.text)
+        parsed = _Response.model_validate_json(unfenced(response.text))
         by_id = {d.id: d.needs_review for d in parsed.units}
         if len(by_id) != len(parsed.units) or set(by_id) != {u.id for u in ad_units}:
             raise ValueError("triage response must identify every unit exactly once")

@@ -37,12 +37,60 @@ Carried claims caught with a matching rule, harder render against plain render o
 
 Ads no longer caught under `split_cuts`: A24-1238193 (video), A24-1239908, A24-1239907, A24-1241337, A24-1231792, A24-1229687 and A23-1191380 (stills), and A24-1241017 on the single-sample run only. No other kind lost or gained an ad. By format, `split_cuts` caught 59 of 130 carried claims on video against 98 plain, and 7 of 102 on stills against 91 (single sample).
 
+
 ## What it shows
 
 - **Music, small print and compression cost little.** Each loses 1 to 4 carried claims net out of 136 to 238, within the run-to-run noise of 8 to 12 claims (`docs/notes/decisions.md`, P66), and no ad.
 - **Claims heard but not shown cost about a tenth.** With every claim line moved from the screen into speech, 13 of 130 carried claims are lost net (12 with voting), and every ad is still caught.
-- **Claims split across cuts or cards cost most of the recall.** On stills, each card of a split ad is screened as its own ad, so a claim cut across two cards never reaches the judge whole: 7 of 102 caught. The scoring adds to this, since a catch needs one flagged claim holding the whole ground-truth claim, so two flagged halves count as a miss. On video the voiceover still speaks every claim in full, yet 39 of 98 claims are lost; the reason is not yet known.
+- **Claims split across cuts or cards cost most of the recall.** On stills, each card of a split ad is screened as its own ad, so a claim cut across two cards never reaches the judge whole: 7 of 102 caught. On video, 39 of 98 claims are lost net, because most claims a reconstruction shows on screen are never spoken. The scoring adds to both, since a catch needs one flagged claim holding the whole ground-truth claim, so two flagged halves count as a miss. The next section traces each lost claim.
 - **Voting changes none of these by more than 4 claims.**
+
+## Where claims are lost
+
+`scripts/claim_losses.py` reads a stress run's saved screenings beside its plain baseline's, with no model call. A claim is lost when the plain run caught it with a matching rule and the stress run did not. The script places each lost claim at the first step it failed:
+
+- **Read:** the claim is whole in the transcript or in one on-screen text. If it is not, the script asks whether its pieces are all on screen, within one screening or only across the screenings of one ad.
+- **Extracted:** an extracted claim quotes it at any length. If none does, the script asks whether extracted claims hold its pieces.
+- **Flagged:** that extracted claim carries a flag.
+- **Rule:** the flag cites one of the claim's rules, or a rule above or below one.
+- **Scored:** flagged with a matching rule and still not caught. Only an over-long quote reaches this step, since claim recall rejects a quote longer than twice the claim plus five words (`docs/notes/noise-lines.md`).
+
+Separately, it counts the lost claims whose pieces were each flagged with a matching rule and together cover at least 80% of the claim's words, the P70 line match applied to recall.
+
+Lost claims by step, single judge sample against `screen-20261102T210524`:
+
+| Step | `split_cuts` stills | `split_cuts` video | `speech_only` |
+|---|---|---|---|
+| Not read | 0 | 1 | 6 |
+| Shown in pieces across the ad's cards | 58 | – | – |
+| Shown in pieces within one screening | 26 | 39 | 0 |
+| Not extracted (pieces extracted) | 0 | 1 (0) | 4 (4) |
+| Not flagged | 0 | 1 | 0 |
+| Flagged with another rule | 0 | 0 | 2 |
+| Flagged, quote too long to score | 0 | 4 | 8 |
+| **Lost** | **84** | **46** | **20** |
+| Every piece flagged with a matching rule | 16 | 11 | 10 |
+
+The voting runs (`stress-split_cuts-20261103T004439`, `stress-speech_only-20261102T231744` against `screen-20261102T211550`) place every claim at the same step, apart from one more stills claim shown in pieces across cards, one fewer video claim in pieces and one fewer flagged with another rule. The "lost" totals are gross; the results table nets them against claims gained.
+
+What each step shows:
+
+- **Split stills: every loss happens before extraction.** Each lost claim was shown only in pieces. In 58 the pieces sit on different cards, which `preflight.eval.run.screen_item` screens as separate ads, so no screening holds the whole claim. In the other 26 the pieces share a card as separate lines, and extraction did not rejoin them. In 16 of the 84 the judge flagged every piece with a matching rule.
+- **Split video: the claims were never spoken.** `split_cuts` cuts only on-screen lines, and 39 of the 46 lost claims were shown on screen and never spoken, so they reached the screening only as pieces on consecutive scenes. In 11 the judge flagged every piece with a matching rule. Four more were quoted whole inside a longer line and fail on length. Only two losses happen after reading and before flagging: A24-1239905/6 was not extracted, and A24-1239905/24 was extracted but not flagged.
+- **Speech only: transcription and quote length.** Eight claims were flagged with a matching rule inside a spoken sentence too long to score; the render joins each moved line onto that scene's voiceover, so the claim arrives mid-sentence. Six were not transcribed in a form the match accepts: two hashtags spoken as "hash ultimate hangover cure", "out-vitamin" heard as "without vitamin", "Dr Paul O'Connell" heard as "doctor Paula", and two short lines absent from the transcript. Four were extracted only in pieces, and two were flagged under another rule.
+
+So the losses come from three causes. The cards of one ad are screened apart (58 claims). Extraction does not rejoin a claim shown in pieces within one screening (65). Recall scoring needs one whole quote of bounded length (12 over-long quotes, and 37 claims whose flagged pieces cover them). The judge's own misses, a claim extracted whole but not flagged or flagged under another rule, are 3 of 150.
+
+IDs are `<item>/<index of the claim in the item's ground truth>`, single judge sample.
+
+- **`split_cuts` stills, pieces across cards (58):** A23-1191380/0; A23-1216841/2, /3, /4, /5, /6, /7; A24-1229687/0, /1, /2; A24-1231792/0, /1, /2, /3; A24-1239907/0, /1, /2, /3, /4, /5, /6, /7; A24-1239908/0, /1, /2, /3, /4; A24-1240828/0, /2; A24-1241017/0, /3, /4, /5; A24-1241022/0, /1, /2, /4, /6, /8, /11, /19, /26; A24-1241023/2, /3, /6, /9, /11; A24-1241337/0, /1, /2, /3, /6, /7; A24-1246372/0, /2, /3, /5, /10
+- **`split_cuts` stills, pieces on one card (26):** A23-1191380/2; A24-1241017/2, /6; A24-1241022/3, /7, /9, /10, /12, /13, /14, /16, /17, /18, /20, /22, /23, /24, /25; A24-1241023/0, /4, /8, /10; A24-1241337/4, /5; A24-1246372/4, /7
+- **`split_cuts` stills, every piece flagged (16):** A24-1229687/1, /2; A24-1239907/1; A24-1241017/2; A24-1241022/8, /12, /13, /16, /17, /23; A24-1241023/11; A24-1241337/1, /2, /4, /6; A24-1246372/0
+- **`split_cuts` video, pieces on one ad's scenes (39):** A23-1196136/1; A23-1224570/3; A24-1238193/1, /2, /4; A24-1239904/1, /2, /7, /8, /9, /22; A24-1239905/2, /5, /11, /13, /14, /20, /21, /22, /25, /26; A24-1239910/2, /3; A24-1243213/0, /2; G23-1215538/0, /1; G24-1241706/1, /3, /4, /5; G24-1248968/0, /1, /2, /3, /4, /10, /11, /12
+- **`split_cuts` video, other steps (7):** not read A24-1239905/15; not extracted A24-1239905/6; not flagged A24-1239905/24; quote too long A24-1239904/4, A24-1239905/10, /12, /18
+- **`split_cuts` video, every piece flagged (11):** A24-1238193/2; A24-1239904/4; A24-1239905/10, /12, /18; A24-1243213/0; G23-1215538/0; G24-1241706/3, /5; G24-1248968/2, /3
+- **`speech_only` (20):** not read A23-1224570/1, A24-1228813/2, /3, A24-1239904/2, A24-1239905/10, G24-1241706/3; pieces extracted only A23-1224570/6, A24-1243213/0, /4, G23-1215538/0; another rule A24-1239905/24, G23-1215538/1; quote too long A23-1196136/5, A23-1202159/7, A24-1239904/9, A24-1239905/17, /18, A24-1239910/0, /4, /5
+- **`speech_only`, every piece flagged (10):** A23-1196136/5; A23-1202159/7; A24-1239904/9; A24-1239905/17, /18; A24-1239910/0, /4, /5; A24-1243213/0; G23-1215538/0
 
 ## What it means for the test figures
 
@@ -50,6 +98,6 @@ The test reconstructions are built the same way as the plain dev renders, so the
 
 ## Open
 
-- Why `split_cuts` loses claims on video while the voiceover still carries them (extraction or scoring).
-- Whether a carousel should be screened as one ad, with its cards read together, rather than card by card.
-- Scoring a split claim as caught when every piece of it is flagged, with the P70 line match (`docs/notes/noise-lines.md`).
+- Whether a carousel should be screened as one ad, with its cards read together, rather than card by card (58 stills claims).
+- Whether claim extraction should rejoin a claim shown in pieces within one screening (65 claims). That is a prompt change, written from dev material only.
+- Scoring a split claim as caught when every piece of it is flagged, with the P70 line match (`docs/notes/noise-lines.md`), and whether an over-long quote of a whole claim counts (37 and 12 lost claims). Either changes a measurement.

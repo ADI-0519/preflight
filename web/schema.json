@@ -12,20 +12,37 @@
           "enum": [
             "video",
             "image",
-            "page"
+            "page",
+            "script"
           ],
           "title": "Media",
           "type": "string"
         },
         "width": {
-          "exclusiveMinimum": 0,
-          "title": "Width",
-          "type": "integer"
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Width"
         },
         "height": {
-          "exclusiveMinimum": 0,
-          "title": "Height",
-          "type": "integer"
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Height"
         },
         "duration": {
           "anyOf": [
@@ -124,6 +141,7 @@
               "mapping": {
                 "on_screen": "#/$defs/OnScreenEvidence",
                 "region": "#/$defs/RegionEvidence",
+                "script": "#/$defs/ScriptEvidence",
                 "transcript": "#/$defs/TranscriptEvidence"
               },
               "propertyName": "kind"
@@ -137,6 +155,9 @@
               },
               {
                 "$ref": "#/$defs/RegionEvidence"
+              },
+              {
+                "$ref": "#/$defs/ScriptEvidence"
               }
             ]
           },
@@ -479,6 +500,66 @@
       "title": "RulingRef",
       "type": "object"
     },
+    "ScriptEvidence": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "const": "script",
+          "default": "script",
+          "title": "Kind",
+          "type": "string"
+        },
+        "line_number": {
+          "exclusiveMinimum": 0,
+          "title": "Line Number",
+          "type": "integer"
+        },
+        "text": {
+          "minLength": 1,
+          "title": "Text",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "line_number",
+        "text"
+      ],
+      "title": "ScriptEvidence",
+      "type": "object"
+    },
+    "ScriptLine": {
+      "additionalProperties": false,
+      "properties": {
+        "line_number": {
+          "exclusiveMinimum": 0,
+          "title": "Line Number",
+          "type": "integer"
+        },
+        "text": {
+          "minLength": 1,
+          "title": "Text",
+          "type": "string"
+        },
+        "channel": {
+          "default": "plain",
+          "enum": [
+            "voiceover",
+            "super",
+            "plain"
+          ],
+          "title": "Channel",
+          "type": "string"
+        }
+      },
+      "required": [
+        "line_number",
+        "text",
+        "channel"
+      ],
+      "title": "ScriptLine",
+      "type": "object"
+    },
     "Segment": {
       "additionalProperties": false,
       "properties": {
@@ -707,10 +788,11 @@
   "additionalProperties": false,
   "properties": {
     "schema_version": {
-      "default": "2",
+      "default": "3",
       "enum": [
         "1",
-        "2"
+        "2",
+        "3"
       ],
       "title": "Schema Version",
       "type": "string"
@@ -756,6 +838,14 @@
         "$ref": "#/$defs/Segment"
       },
       "title": "Segments",
+      "type": "array"
+    },
+    "script_lines": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/ScriptLine"
+      },
+      "title": "Script Lines",
       "type": "array"
     },
     "on_screen": {
@@ -811,6 +901,7 @@
     "stages",
     "screened_at",
     "segments",
+    "script_lines",
     "on_screen",
     "tracks",
     "claims",

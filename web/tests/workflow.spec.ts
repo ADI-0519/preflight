@@ -76,8 +76,11 @@ test('fresh upload uses SSE, compares fix rounds, records an explicit synthetic 
     .fill('Magnesium tablets\nBeats fatigue in seven days');
   const report = page.getByRole('link', { name: 'Open full source report' });
   const originalReport = await report.getAttribute('href');
+  const revision = page.waitForRequest(
+    (request) => request.url().endsWith('/fixes') && request.method() === 'POST',
+  );
   await page.getByRole('button', { name: 'Run fix and re-screen' }).click();
-  await expect(page.getByRole('status')).toContainText('Job running');
+  await revision;
   await expect(report).toHaveAttribute('href', originalReport!);
   await expect(page.getByRole('heading', { name: 'Round 0', exact: true })).toBeVisible({
     timeout: 30000,

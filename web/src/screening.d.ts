@@ -5,13 +5,13 @@
  * and run json-schema-to-typescript to regenerate this file.
  */
 
-export type SchemaVersion = "1" | "2";
+export type SchemaVersion = "1" | "2" | "3";
 export type ScreeningId = string;
 export type PreviousId = string | null;
 export type ContentHash = string;
-export type Media = "video" | "image" | "page";
-export type Width = number;
-export type Height = number;
+export type Media = "video" | "image" | "page" | "script";
+export type Width = number | null;
+export type Height = number | null;
 export type Duration = number | null;
 export type Fps = number | null;
 export type GbRegister = string;
@@ -36,10 +36,14 @@ export type Turn = number;
 export type Text = string;
 export type Timing = "word" | "turn";
 export type Segments = Segment[];
+export type LineNumber = number;
+export type Text1 = string;
+export type Channel = "voiceover" | "super" | "plain";
+export type ScriptLines = ScriptLine[];
 export type Start1 = number;
 export type End1 = number;
 export type TextId = string;
-export type Text1 = string;
+export type Text2 = string;
 export type Box = [unknown, unknown, unknown, unknown] | null;
 export type OnScreen = OnScreenText[];
 export type TrackId = string;
@@ -57,15 +61,15 @@ export type Box1 = [unknown, unknown, unknown, unknown];
 export type Crop = string | null;
 export type Tracks = Track[];
 export type ClaimId = string;
-export type Text2 = string;
+export type Text3 = string;
 export type Kind = "explicit" | "implied";
 export type Substance = string | null;
 /**
  * @minItems 1
  */
 export type Evidence = [
-  TranscriptEvidence | OnScreenEvidence | RegionEvidence,
-  ...(TranscriptEvidence | OnScreenEvidence | RegionEvidence)[]
+  TranscriptEvidence | OnScreenEvidence | RegionEvidence | ScriptEvidence,
+  ...(TranscriptEvidence | OnScreenEvidence | RegionEvidence | ScriptEvidence)[]
 ];
 export type Kind1 = "transcript";
 export type SegmentId1 = string;
@@ -74,10 +78,13 @@ export type TextId1 = string;
 export type Kind3 = "region";
 export type TrackId1 = string;
 export type FrameTime1 = number;
+export type Kind4 = "script";
+export type LineNumber1 = number;
+export type Text4 = string;
 export type Claims = Claim[];
 export type FlagId = string;
 export type ClaimId1 = string;
-export type Kind4 = "possible_breach" | "on_hold";
+export type Kind5 = "possible_breach" | "on_hold";
 export type Reason = string;
 /**
  * @minItems 1
@@ -86,13 +93,13 @@ export type Sources = [
   RegisterRef | OnHoldRef | CapRuleRef | RulingRef,
   ...(RegisterRef | OnHoldRef | CapRuleRef | RulingRef)[]
 ];
-export type Kind5 = "register";
+export type Kind6 = "register";
 export type RegisterId = string;
-export type Kind6 = "on_hold";
+export type Kind7 = "on_hold";
 export type OnHoldId = string;
-export type Kind7 = "cap_rule";
+export type Kind8 = "cap_rule";
 export type Rule = string;
-export type Kind8 = "ruling";
+export type Kind9 = "ruling";
 export type RulingId = string;
 export type Date = string;
 export type RegisterId1 = string;
@@ -112,6 +119,7 @@ export interface Screening {
   stages: Stages;
   screened_at: ScreenedAt;
   segments: Segments;
+  script_lines: ScriptLines;
   on_screen: OnScreen;
   tracks: Tracks;
   claims: Claims;
@@ -149,11 +157,16 @@ export interface Segment {
   text: Text;
   timing: Timing;
 }
+export interface ScriptLine {
+  line_number: LineNumber;
+  text: Text1;
+  channel: Channel;
+}
 export interface OnScreenText {
   start: Start1;
   end: End1;
   text_id: TextId;
-  text: Text1;
+  text: Text2;
   box: Box;
 }
 export interface Track {
@@ -168,7 +181,7 @@ export interface Region {
 }
 export interface Claim {
   claim_id: ClaimId;
-  text: Text2;
+  text: Text3;
   kind: Kind;
   substance: Substance;
   evidence: Evidence;
@@ -186,29 +199,34 @@ export interface RegionEvidence {
   track_id: TrackId1;
   frame_time: FrameTime1;
 }
+export interface ScriptEvidence {
+  kind: Kind4;
+  line_number: LineNumber1;
+  text: Text4;
+}
 export interface Flag {
   flag_id: FlagId;
   claim_id: ClaimId1;
-  kind: Kind4;
+  kind: Kind5;
   reason: Reason;
   sources: Sources;
   suggested_wording: SuggestedWording | null;
   votes: Votes;
 }
 export interface RegisterRef {
-  kind: Kind5;
+  kind: Kind6;
   register_id: RegisterId;
 }
 export interface OnHoldRef {
-  kind: Kind6;
+  kind: Kind7;
   on_hold_id: OnHoldId;
 }
 export interface CapRuleRef {
-  kind: Kind7;
+  kind: Kind8;
   rule: Rule;
 }
 export interface RulingRef {
-  kind: Kind8;
+  kind: Kind9;
   ruling_id: RulingId;
   date: Date;
 }

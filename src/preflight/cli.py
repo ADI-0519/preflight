@@ -16,7 +16,7 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="preflight")
     commands = parser.add_subparsers(dest="command", required=True)
     one = commands.add_parser("screen", help="screen one ad and write a JSON screening and an HTML report")
-    one.add_argument("target", nargs="+", help="a video or image file, the image files of one carousel in order, "
+    one.add_argument("target", nargs="+", help="a video, image or .txt/.md script, images of one carousel in order, "
                      "or an http(s) URL of a page")
     one.add_argument("--out", type=Path, default=OUT_DIR)
     one.add_argument("--no-align", action="store_true", help="keep each transcription turn's timing")

@@ -1,5 +1,12 @@
 # Decisions
 
+- **3 Nov 2026 (P72).** The user confirmed in this working session that all three
+  founders agreed to script-line evidence: a script flag shows its exact quoted
+  source line and physical line number, with the existing policy provenance.
+  Media evidence requirements remain unchanged. Schema v3 adds script input and
+  script-line evidence; v1/v2 media results remain readable. A script screening
+  applies only to that copy; the finished ad requires a separate screening.
+
 - **3 Nov 2026 (P43/dev integration).** At the user's request, incorporated the
   teammate's P43 commits through `50426a2` and merged dev `d026fca`. Retained the
   measured development-only triage path and the selected runtime/evaluation

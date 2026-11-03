@@ -115,7 +115,9 @@ def question(
         found_near = closest.get(c.claim_id) if closest else None
         near = f"; closest past rulings: {', '.join(found_near)}" if found_near else ""
         claims.append(f'{c.claim_id} ({c.kind}, substance: {c.substance or "none named"}{near}): "{c.text}"')
-    evidence = [listing(list(screening.segments), list(screening.on_screen), list(screening.tracks))]
+    evidence = [listing(
+        list(screening.segments), list(screening.on_screen), list(screening.tracks), screening.script_lines,
+    )]
     reference = ["CAP Code rules:"]
     reference += [f"{r.rule}: {r.summary} Breach looks like: {r.breach_evidence}" for r in rules]
     reference += ["", "Register entries:"]
@@ -289,7 +291,7 @@ def check(
                 if samples == 1:
                     raise
                 # an answer that breaks the contract abstains from the vote; the samples left decide
-                log.warning("judge sample %d abstains: %s", sample, e)
+                log.warning("judge sample %d abstains: %s", sample, type(e).__name__)
                 return r, None
 
         with ThreadPoolExecutor(max_workers=samples) as pool:

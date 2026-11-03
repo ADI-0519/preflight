@@ -2,18 +2,26 @@
 
 import json
 import tempfile
+import time
 from contextlib import contextmanager
 from pathlib import Path
 
 import httpx
 from openai import OpenAI
 from test_api import AGENT, MEDIA, NoPrecedents, recorded_screener, replay_ingest
+from test_script import ScriptSpark
 
 from preflight.agent.draft import render_draft
 from preflight.api import Settings
 from preflight.api.app import create_app as application
 from preflight.models import Image, Models, Sam, Spark, Store, VoiceTranscribe
 from preflight.schema import Screening, StageRun
+
+
+class BrowserScriptSpark(ScriptSpark):
+    def ask(self, text, **config):
+        time.sleep(0.25)
+        return super().ask(text, **config)
 
 
 def rendered_recordings(models, precedents, directory, align=None):
@@ -34,7 +42,13 @@ def replay_clients(directory):
     with httpx.Client(transport=httpx.MockTransport(refuse)) as http:
         with OpenAI(api_key="replay-only", http_client=http, max_retries=0) as api:
             store = Store(Path(__file__).parent / "fixtures/models", "replay")
-            yield Models(Spark(store, api), VoiceTranscribe(store, "replay-only", http=http),
+            script = any((directory / f"media{suffix}").exists() for suffix in (".txt", ".md"))
+            spark = Spark(store, api)
+            if script:
+                source = next(directory.glob("media.*")).read_text(encoding="utf-8")
+                spark = BrowserScriptSpark(empty=source.startswith("SUPER: Orange flavour"),
+                                           broken=source.startswith("VO: Synthetic incomplete"))
+            yield Models(spark, VoiceTranscribe(store, "replay-only", http=http),
                          Sam(store, api), Image(store, api), None)
 
 

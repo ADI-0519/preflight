@@ -13,7 +13,14 @@ import {
 import type { Config, Demo, Fix, Job, Result, Reveal, Round, Scoreboard } from './api';
 import './style.css';
 import { ClaimTrack, Inspector, TierSummary } from './evidence';
-import { FlagCount, FlaggedList, RoundComparison, StageList, StillStage } from './workspace';
+import {
+  FlagCount,
+  FlaggedList,
+  RoundComparison,
+  ScriptPreview,
+  StageList,
+  StillStage,
+} from './workspace';
 
 function mebibytes(bytes: number): number {
   return Math.round((bytes / 1024 / 1024) * 10) / 10;
@@ -321,6 +328,7 @@ function App() {
     event.preventDefault();
     if (!source || !still) return;
     setBusy(true);
+    setStatus('Uploading revision…');
     setError('');
     setConfirmed(false);
     try {
@@ -367,6 +375,7 @@ function App() {
   }
 
   const claim = result?.claims.find((c) => c.claim_id === selected);
+  const script = result?.screening.ad.media === 'script';
   function select(id: string, seconds: number | null) {
     setSelected(id);
     if (seconds === null) return;
@@ -511,11 +520,11 @@ function App() {
                 )}
                 <span>Nothing uploaded yet.</span>
                 <label className="file-button primary">
-                  Choose image or video
+                  Choose ad or script
                   <input
                     aria-label="Upload ad"
                     type="file"
-                    accept="image/png,image/jpeg,image/webp,video/mp4,video/webm,video/quicktime"
+                    accept=".txt,.md,text/plain,text/markdown,image/png,image/jpeg,image/webp,video/mp4,video/webm,video/quicktime"
                     disabled={active || !config || Boolean(config.uploads_closed)}
                     onChange={(e) => {
                       const file = e.target.files?.[0];
@@ -530,7 +539,9 @@ function App() {
                 <p>
                   PNG, JPEG, WebP, MP4, WebM or QuickTime, up to{' '}
                   {config ? mebibytes(config.max_upload_bytes) : 100} MiB
-                  {config ? `, and video up to ${config.max_seconds} seconds` : ''}.
+                  {config ? `, and video up to ${config.max_seconds} seconds` : ''}. Scripts: UTF-8
+                  .txt or .md, up to 64 KiB and 1,000 lines. Use VO: or SUPER: to distinguish spoken
+                  and on-screen copy.
                 </p>
                 <h2>Retention</h2>
                 <p>
@@ -561,7 +572,11 @@ function App() {
             <div className="work">
               <section className="stage-col">
                 <div className="stage">
-                  {media && unavailableMedia !== media ? (
+                  {/\.(txt|md)$/i.test(chosen?.name ?? '') ? (
+                    <p>
+                      Reading your script. The numbered source lines will appear with the result.
+                    </p>
+                  ) : media && unavailableMedia !== media ? (
                     chosen?.video ? (
                       <video src={media} controls preload="metadata" aria-label="Uploaded ad" />
                     ) : (
@@ -607,7 +622,7 @@ function App() {
                   <button aria-pressed={view === 'evidence'} onClick={() => setView('evidence')}>
                     Evidence
                   </button>
-                  {mode === 'screen' && source && !fix && complete(result.screening) && (
+                  {mode === 'screen' && source && !fix && !script && complete(result.screening) && (
                     <button aria-pressed={view === 'edit'} onClick={() => setView('edit')}>
                       Prepare revision
                     </button>
@@ -659,7 +674,15 @@ function App() {
             <div className="workspace" hidden={view !== 'evidence'}>
               <section className="viewer" aria-label="Ad and claim timeline">
                 <div className="stage">
-                  {media && unavailableMedia !== media ? (
+                  {script ? (
+                    <ScriptPreview
+                      lines={result.screening.script_lines}
+                      selected={
+                        claim?.evidence.map((e) => e.line_number).filter((n): n is number => !!n) ??
+                        []
+                      }
+                    />
+                  ) : media && unavailableMedia !== media ? (
                     (fix ? fix.draft.format === 'video' : result.screening.ad.media === 'video') ? (
                       <video
                         ref={player}
@@ -712,7 +735,7 @@ function App() {
             </div>
           </>
         )}
-        {mode === 'screen' && source && !fix && result && complete(result.screening) && (
+        {mode === 'screen' && source && !fix && result && !script && complete(result.screening) && (
           <div className="work editor" hidden={view !== 'edit'}>
             <section className="stage-col">
               <StillStage file={still} />

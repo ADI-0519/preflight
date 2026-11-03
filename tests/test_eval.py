@@ -441,11 +441,25 @@ def test_a_candidate_judge_prompt_reaches_the_screen(tmp_path, monkeypatch):
     monkeypatch.setattr(run, "WORK", tmp_path)
     (tmp_path / "screen-1").mkdir()
     monkeypatch.setattr(run, "media", lambda item_id: [Path("ad.png")])
-    monkeypatch.setattr(run, "ingest", lambda path: None)
+    monkeypatch.setattr(run, "ingest_cards", lambda paths: None)
     monkeypatch.setattr(run, "screen", fake_screen)
     monkeypatch.setattr(run, "metered", lambda models: (models, lambda: 0.0))
     run.screen_item(truth("T16", []), None, None, "screen-1", None, "judge_v7", 3, 3)
     assert (asked["judge_prompt"], asked["judge_samples"], asked["first_sample"]) == ("judge_v7", 3, 3)
+
+
+def test_the_cards_of_one_item_are_screened_as_one_ad(tmp_path, monkeypatch):
+    read = []
+    monkeypatch.setattr(run, "WORK", tmp_path)
+    (tmp_path / "screen-1").mkdir()
+    monkeypatch.setattr(run, "ingest_cards", read.append)
+    monkeypatch.setattr(run, "screen", lambda done, models, precedents, screening_id, **kwargs: screening(
+        screening_id, ["Reduced stress", "and anxiety"], {0: ["15.6"], 1: ["15.6"]}))
+    monkeypatch.setattr(run, "metered", lambda models: (models, lambda: 0.0))
+    cards = [Path("reconstruction-1.png"), Path("reconstruction.png")]
+    _, screenings, _ = run.screen_item(truth("T1", []), None, None, "screen-1", None, paths=cards)
+    assert read == [cards] and [s.screening_id for s in screenings] == ["screen-1-T1-reconstruction-1"]
+    assert [p.name for p in (tmp_path / "screen-1").iterdir()] == ["screen-1-T1-reconstruction-1.json"]
 
 
 def voted(s: Screening, votes: dict[int, int]) -> Screening:

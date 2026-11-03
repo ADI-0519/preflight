@@ -20,7 +20,7 @@ from preflight.eval.registry import RESULTS, RUNS, Metric, register, revision, s
 from preflight.eval.score import ItemScore, caught, metrics, score_item
 from preflight.eval.split import RULING_ID, GroundTruth, load_ground_truth, load_split
 from preflight.eval.team_media import TEAM_DIR
-from preflight.ingest import ingest
+from preflight.ingest import ingest_cards
 from preflight.models import Models, from_env
 from preflight.models.clients import Image, Sam, SamResult, Turn, VoiceTranscribe
 from preflight.pipeline import SNAPSHOTS, screen
@@ -91,17 +91,15 @@ def screen_item(
     paths: list[Path] | None = None,
 ) -> tuple[ItemScore, list[Screening], float]:
     item_models, bill = metered(models)
-    screenings = []
     # a harder render stands in for the plain one; claims are still scored as the plain render carried them
-    for path in paths or media(truth.item_id):
-        screening_id = f"{run_id}-{truth.item_id}-{path.stem}"
-        s = screen(
-            ingest(path), item_models, precedents, screening_id, judge_prompt=judge_prompt, judge_samples=judge_samples,
-            first_sample=first_sample, align=align,
-        )
-        (WORK / run_id / f"{s.screening_id}.json").write_text(s.model_dump_json(indent=1), encoding="utf-8")
-        screenings.append(s)
-    return score_item(truth, screenings, kept(truth)), screenings, bill()
+    paths = paths or media(truth.item_id)
+    # an item is one video or the cards of one ad, which are read together as a carousel
+    s = screen(
+        ingest_cards(paths), item_models, precedents, f"{run_id}-{truth.item_id}-{paths[0].stem}",
+        judge_prompt=judge_prompt, judge_samples=judge_samples, first_sample=first_sample, align=align,
+    )
+    (WORK / run_id / f"{s.screening_id}.json").write_text(s.model_dump_json(indent=1), encoding="utf-8")
+    return score_item(truth, [s], kept(truth)), [s], bill()
 
 
 def joined(screenings: list[Screening], value) -> str:

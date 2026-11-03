@@ -1,5 +1,17 @@
 # Decisions
 
+- **3 Nov 2026 (P43 measured).** Muse Spark Open (`meta-models/muse-spark-open-1026`,
+  open weights, hosted by Baseten) ran `triage_v1` on the saved screenings of the
+  registered v2 dev run `screen-20261102T170916` (N01 to N10). It kept 10 of 10
+  claim-bearing units and skipped 65% of units (58% of characters, about 205 per ad),
+  while using about 4,100 tokens per ad, so it costs more than it saves. It also
+  skipped the food supplement statement, which the judge needs. Triage stays a
+  dev-only demonstration and does not gate screening. On the open-weights award:
+  `docs/notes/hackathon-rules.md` asks for meaningful use and states nothing more;
+  a measured experiment off the product path is a weak case, and the founders decide
+  whether to enter it. Founder confirmation of Baseten's terms is still pending.
+  See [P43](../p43.md#dev-measurement-3-november).
+
 - **2 Nov 2026 (PR82 comparison follow-up).** Compared PR82 with dev `33535b8`
   against their shared base. Ported concrete source-boundary, client-cleanup,
   TLS, preview-recovery, selection and rescore fixes into the current P43 branch.

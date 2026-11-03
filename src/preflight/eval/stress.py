@@ -10,6 +10,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 from preflight import check as judge
+from preflight import claims as extraction
 from preflight.check.precedents import load_precedents
 from preflight.eval.check_reconstructions import carried, words
 from preflight.eval.claim_recall import WORK
@@ -229,6 +230,8 @@ def main() -> None:
     parser.add_argument("kind", choices=KINDS)
     parser.add_argument("--baseline", required=True, metavar="RUN_ID", help="the plain dev run screened the same way")
     parser.add_argument("--samples", type=int, choices=[1, judge.VOTE_SAMPLES], default=judge.SAMPLES)
+    parser.add_argument("--judge-prompt", default=judge.PROMPT_VERSION, help="a candidate judge prompt")
+    parser.add_argument("--claims-prompt", default=extraction.PROMPT_VERSION, help="a candidate claims prompt")
     parser.add_argument("--render-only", action="store_true")
     args = parser.parse_args()
     if not shutil.which("ffmpeg"):
@@ -266,7 +269,8 @@ def main() -> None:
     began = time.monotonic()
     with ThreadPoolExecutor(max_workers=WORKERS) as pool:
         done = list(pool.map(lambda t: screen_item(
-            t, models, precedents[t.item_id], run_id, None, judge.PROMPT_VERSION, args.samples, 0, paths[t.item_id],
+            t, models, precedents[t.item_id], run_id, None, args.judge_prompt, args.samples, 0, paths[t.item_id],
+            args.claims_prompt,
         ), applied))  # fmt: skip
     seconds = time.monotonic() - began
 

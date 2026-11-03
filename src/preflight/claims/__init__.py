@@ -17,7 +17,7 @@ from preflight.schema import (
 )
 
 PROMPTS = Path(__file__).resolve().parents[3] / "prompts"
-PROMPT_VERSION = "claims_v3"
+PROMPT_VERSION = "claims_v5"
 # the second pass is shown the first pass's claims and asked for what they missed
 MISSED_VERSION = "claims_missed_v1"
 EFFORT = "high"

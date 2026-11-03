@@ -32,7 +32,7 @@ from preflight.sources.rulings import Ruling
 
 log = logging.getLogger(__name__)
 
-PROMPT_VERSION = "judge_v7"
+PROMPT_VERSION = "judge_v8"
 EFFORT = "high"
 # judge samples per ad; when the check votes, a claim is flagged when two of three agree
 VOTE_SAMPLES = 3

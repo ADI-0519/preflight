@@ -63,7 +63,7 @@ def test_ids_become_evidence_of_their_kind(tmp_path):
     assert [e.kind for e in c.evidence] == ["transcript", "on_screen", "region"]
     # a track is cited at the frame its crop was cut from
     assert c.evidence[2].frame_time == 1.5
-    assert (stage.stage, stage.status, stage.prompt) == ("claims", "done", "claims_v3")
+    assert (stage.stage, stage.status, stage.prompt) == ("claims", "done", "claims_v5")
 
 
 def test_a_repeated_claim_is_merged_with_all_its_evidence(tmp_path):
@@ -128,7 +128,7 @@ def test_unknown_evidence_id_raises():
 
 def test_video_is_sent_with_the_listing_and_an_id_enum(tmp_path):
     _, _, ((prompt, kwargs),) = run(tmp_path, [])
-    assert prompt.startswith((PROMPTS / "claims_v3.txt").read_text(encoding="utf-8"))
+    assert prompt.startswith((PROMPTS / "claims_v5.txt").read_text(encoding="utf-8"))
     assert 'segment-0 [0.5-2 s]: "Feel calmer every day."' in prompt
     assert "bottle-1 [bottle, 1-1.5 s]" in prompt
     assert kwargs["video"] == tmp_path / "ad.mp4" and "image" not in kwargs
@@ -194,11 +194,11 @@ def test_second_pass_is_shown_the_first_and_adds_what_it_missed(tmp_path):
     spark = Twice([])
     claims, stage = extract_claims(ingested(tmp_path, "video"), spark, [SEGMENT], [TEXT], [TRACK], second_pass=True)
     assert [c.text for c in claims] == ["100% natural", "Feel calmer"]
-    assert stage.prompt == "claims_v3+claims_missed_v1"
+    assert stage.prompt == "claims_v5+claims_missed_v1"
     (asked, first_kwargs), (second, kwargs) = spark.calls
     assert second.startswith(asked) and '"text": "100% natural"' in second
     # the first call is keyed as a single-pass call, so its cached answer is shared
-    assert (first_kwargs["prompt_version"], kwargs["prompt_version"]) == ("claims_v3", "claims_v3+claims_missed_v1")
+    assert (first_kwargs["prompt_version"], kwargs["prompt_version"]) == ("claims_v5", "claims_v5+claims_missed_v1")
 
 
 def test_a_quote_covering_much_more_than_the_claim_scores_only_loosely():

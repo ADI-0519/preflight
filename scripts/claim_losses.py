@@ -1,13 +1,14 @@
 import argparse
+import json
 from collections import defaultdict
 from difflib import SequenceMatcher
+from pathlib import Path
 
 from preflight.eval.check_reconstructions import NEAR, carried, words
-from preflight.eval.claim_recall import WORK, media_of
-from preflight.eval.run import kept
+from preflight.eval.run import kept, saved
 from preflight.eval.score import caught, current, fits, holds, matches
-from preflight.eval.split import load_ground_truth
 from preflight.schema import Screening
+from preflight.view import TIERS, build_view
 
 STEPS = (
     "not read",
@@ -21,21 +22,14 @@ STEPS = (
 )
 
 
-def saved_screenings(run_id: str) -> dict[str, list[Screening]]:
-    found: dict[str, list[Screening]] = defaultdict(list)
-    for path in sorted((WORK / run_id).glob(f"{run_id}-*.json")):
-        # files are named <run_id>-<item_id>-<media stem>, and a stress card's stem can be reconstruction-1
-        item_id = path.stem.removeprefix(f"{run_id}-").partition("-reconstruction")[0]
-        found[item_id].append(Screening.model_validate_json(path.read_text(encoding="utf-8")))
-    return found
-
-
 def piece(claim: str, said: list[str]) -> bool:
     return len(said) >= 2 and carried(" ".join(said), words(claim)) != "missing"
 
 
 def covered(claim: str, pieces: list[list[str]]) -> bool:
     target = words(claim)
+    if not target:
+        return False
     seen = set()
     for said in pieces:
         for b in SequenceMatcher(None, target, said, autojunk=False).get_matching_blocks():
@@ -81,34 +75,82 @@ def pieces_caught(claim: str, rules: list[str], screenings: list[Screening]) -> 
     return covered(claim, [said for said in flagged if holds(claim, said)])
 
 
-def main() -> None:
-    parser = argparse.ArgumentParser(description="Find the step at which each claim a stress run lost dropped out.")
-    parser.add_argument("plain", metavar="PLAIN_RUN")
-    parser.add_argument("stress", metavar="STRESS_RUN")
-    args = parser.parse_args()
-    plain, stress = saved_screenings(args.plain), saved_screenings(args.stress)
-    steps: dict[tuple[str, str], list[str]] = defaultdict(list)
-    loose = defaultdict(list)
-    for item_id, after in sorted(stress.items()):
-        # rule 5: stress runs screen split v2 dev only
-        truth = load_ground_truth("v2", item_id)
-        # a carousel is screened as a slideshow, so the format comes from the plain reconstruction
-        fmt = "video" if media_of(item_id)[0].suffix == ".mp4" else "stills"
-        before = caught(truth.claims, plain[item_id], item_id).with_rule
+def diagnose(run_id: str, directory: Path | None = None, baseline: str | None = None) -> dict:
+    row, screenings, truths = saved(run_id, directory)
+    if row["split"] != "v2" or row["part"] != "dev" or row["stage"] not in {"screen", "stress"}:
+        raise SystemExit("diagnostics require a registered v2 development screen or stress run")
+    plain = None
+    if baseline:
+        base_row, plain, _ = saved(baseline)
+        if base_row["split"] != row["split"] or base_row["part"] != "dev" or base_row["stage"] != "screen":
+            raise SystemExit("the baseline must be a screening run on the same development split")
+        if not set(screenings) <= set(plain):
+            raise SystemExit("the baseline is missing items screened by the compared run")
+    misses, unmatched = [], []
+    total = hits = 0
+    for truth in truths:
+        item_id = truth.item_id
+        after = screenings[item_id]
+        original = plain[item_id] if plain is not None else after
+        fmt = "video" if original[0].ad.media == "video" else "stills"
         now = caught(truth.claims, after, item_id).with_rule
-        for i, (t, b, a, k) in enumerate(zip(truth.claims, before, now, kept(truth), strict=True)):
-            if not (k and b and not a):
+        carried_claims = kept(truth)
+        carried_claims = carried_claims if carried_claims is not None else [True] * len(truth.claims)
+        before = caught(truth.claims, plain[item_id], item_id).with_rule if plain is not None else None
+        for i, (t, a, k) in enumerate(zip(truth.claims, now, carried_claims, strict=True)):
+            total += bool(k)
+            hits += bool(k and a)
+            if not k or a or (before is not None and not before[i]):
                 continue
             rules = current(t.rules, item_id)
-            steps[fmt, lost_at(t.claim, rules, after)].append(f"{item_id}/{i}")
-            if pieces_caught(t.claim, rules, after):
-                loose[fmt].append(f"{item_id}/{i}")
-    for fmt in sorted({f for f, _ in steps}):
-        print(f"{args.stress} {fmt}: {sum(len(v) for (f, _), v in steps.items() if f == fmt)} lost")
-        for step in STEPS:
-            if ids := steps.get((fmt, step)):
-                print(f"  {step}: {len(ids)}  {' '.join(ids)}")
-        print(f"  every piece flagged with a matching rule: {len(loose[fmt])}  {' '.join(loose[fmt])}")
+            misses.append({"id": f"{item_id}/{i}", "format": fmt, "claim": t.claim, "rules": rules,
+                           "step": lost_at(t.claim, rules, after),
+                           "flagged_pieces_cover": pieces_caught(t.claim, rules, after)})
+        # Match the scorer's folded review lines, not raw flags. A line is
+        # unmatched only when none of its phrases holds a claim with a related rule.
+        if truth.label != "positive":
+            continue
+        for s in after:
+            rules = flagged_rules(s)
+            for line in build_view(s)["lines"]:
+                ids = {part["claim_id"] for part in [line, *line["folded"]]}
+                matched = any(
+                    holds(t.claim, words(c.text)) and any(fits(r, current(t.rules, item_id)) for r in rules[c.claim_id])
+                    for c in s.claims if c.claim_id in ids for t in truth.claims
+                )
+                if not matched:
+                    unmatched.append({"item_id": item_id, "screening_id": s.screening_id, **line})
+    return {
+        "run": row, "baseline": baseline, "dev_only": True, "registered_metrics_changed": False,
+        "items": len(truths), "carried": total, "caught": hits,
+        "miss_scope": "lost against baseline" if baseline else "all carried misses",
+        "misses_by_step": {step: sum(m["step"] == step for m in misses) for step in STEPS},
+        "misses": misses, "unmatched_lines": unmatched,
+        "unmatched_by_tier": {tier: sum(line["tier"] == tier for line in unmatched) for tier in TIERS},
+        "notice": "Unmatched means absent from the ruling labels, not an incorrect flag. Piece coverage is diagnostic.",
+    }
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Diagnose saved dev misses and unmatched lines without model calls.")
+    parser.add_argument("plain", metavar="PLAIN_RUN")
+    parser.add_argument("stress", nargs="?", metavar="STRESS_RUN", help="compare losses against PLAIN_RUN")
+    parser.add_argument("--screenings", type=Path, help="saved folder for the diagnosed run (not its baseline)")
+    parser.add_argument("--json", action="store_true", help="include claim evidence and tiers as JSON on stdout")
+    args = parser.parse_args()
+    report = diagnose(args.stress or args.plain, args.screenings, args.plain if args.stress else None)
+    if args.json:
+        print(json.dumps(report, indent=2))
+        return
+    print(f"{report['run']['run_id']}: {report['caught']}/{report['carried']} carried claims caught")
+    print(f"{len(report['misses'])} {report['miss_scope']}")
+    for step, count in report["misses_by_step"].items():
+        ids = " ".join(m["id"] for m in report["misses"] if m["step"] == step)
+        print(f"  {step}: {count}  {ids}")
+    for fmt in sorted({m["format"] for m in report["misses"]}):
+        print(f"  {fmt}: {sum(m['format'] == fmt for m in report['misses'])} misses")
+    print(f"Unmatched positive-ad review lines by tier: {report['unmatched_by_tier']}")
+    print(report["notice"])
 
 
 if __name__ == "__main__":

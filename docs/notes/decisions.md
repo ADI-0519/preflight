@@ -1,5 +1,52 @@
 # Decisions
 
+- **3 Nov 2026 (P43/dev integration).** At the user's request, incorporated the
+  teammate's P43 commits through `50426a2` and merged dev `d026fca`. Retained the
+  measured development-only triage path and the selected runtime/evaluation
+  safeguards alongside P66's adopted prompts, three-sample voting, v2 schema,
+  carousel support and stress harness. The shared saved-run loader used by
+  comparisons and rescoring retains original-cohort/media/source/completion
+  validation. This is branch integration, not a new model-selection decision,
+  production triage adoption or final held-out run. See [verification](../p43.md).
+
+- **3 Nov 2026 (P43 measured).** Muse Spark Open (`meta-models/muse-spark-open-1026`,
+  open weights, hosted by Baseten) ran `triage_v1` on the saved screenings of the
+  registered v2 dev run `screen-20261103T172541` (N01 to N10), registered as
+  `triage-20261103T173048`. It kept 10 of 10 claim-bearing units and skipped 69% of
+  units (55% of characters, about 194 per ad), while using about 3,400 tokens per ad,
+  more than the at most 194 or so tokens the skipped text could save in each
+  downstream call (Baseten's price is not on record, so this compares tokens). It also
+  skipped the food supplement statement in 9 of 10 ads, which the judge needs. Triage
+  stays a dev-only demonstration and does not gate screening. On the open-weights award:
+  `docs/notes/hackathon-rules.md` asks for meaningful use and states nothing more;
+  a measured experiment off the product path is a weak case, and the founders decide
+  whether to enter it. Founder confirmation of Baseten's terms is still pending.
+  See [P43](../p43.md#dev-measurement-3-november).
+
+- **2 Nov 2026 (PR82 comparison follow-up).** Compared PR82 with dev `33535b8`
+  against their shared base. Ported concrete source-boundary, client-cleanup,
+  TLS, preview-recovery, selection and rescore fixes into the current P43 branch.
+  Retained the newer P60 decision allowing explicitly named registered dev
+  cohorts and all P67 public-mode safeguards; did not import the legacy baseline,
+  alternate corpus or historical document inventory. This does not change founder
+  acceptance thresholds, frozen data, prompt selection or benchmark history.
+  See [audit and verification](../reviews/pr82-dev-gap-audit-2026-11-02.md).
+
+- **2 Nov 2026 (P43 implementation, pending measurement).** At the user's request,
+  started `p43-open-weights-triage` from dev `33535b8`. Use Muse Spark Open through
+  Baseten synchronous Model APIs with the existing `Glimmer` client. Triage is an
+  offline dev experiment and does not gate screening. Invalid decisions retain
+  all units; reports preserve the source cohort, evidence IDs, model/host, hashes,
+  usage and false skips. Provider terms are recorded in [source terms](../source-terms.md),
+  pending founder confirmation. A real synthetic smoke passed on 2 November with
+  returned ID `meta-models/muse-spark-open-1026`; the unversioned alias returned
+  HTTP 403, so the pinned variant is the default. The original saved dev bundle
+  is still absent, so recall and net-savings measurement remain pending.
+  The participant rules allow partner-hosted
+  open weights in principle, but an offline prototype without measured meaningful
+  use does not establish award eligibility; the formal Official Rules remain a
+  separate unresolved source. P43 is not marked complete or cut. See [P43](../p43.md).
+
 - **1 Nov 2026 (P52 presentation).** Following the user-approved design research, loaded results use a compact media-first workspace with separate evidence, editable-draft and saved-round comparison views. Dark/light appearance is session-local. The time axis supplements the full claim list and preserves recorded timing; changed caption highlighting never rewrites wording. No API, model, evaluation or review-eligibility behavior changes. See [the design research](./p52-design-research.md) and [verification](../reviews/p52-user-verification-2026-11-01.md).
 
 - **1 Nov 2026 (P52 implementation).** The local React page consumes P51 and receives progress over SSE. Screening types are generated from the schema; private media and exact evidence crops are served through confined API reads. Demo outcomes are revealed from committed ruling metadata, while scoreboard rates require an explicit registered test-run selection in `results/final.md`. Missing final assets/metrics stay unavailable rather than being replaced with development or replay results. See [the web guide](../web.md).

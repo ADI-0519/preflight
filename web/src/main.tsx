@@ -81,6 +81,7 @@ function App() {
   const [job, setJob] = useState<Job | null>(null);
   const [source, setSource] = useState<string | null>(null);
   const [media, setMedia] = useState('');
+  const [unavailableMedia, setUnavailableMedia] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [status, setStatus] = useState('No ad loaded.');
@@ -238,6 +239,7 @@ function App() {
     setSelected(null);
     setSource(null);
     setMedia('');
+    setUnavailableMedia(null);
     setStages({});
     setConfirmed(false);
     setBy('');
@@ -559,7 +561,7 @@ function App() {
             <div className="work">
               <section className="stage-col">
                 <div className="stage">
-                  {media ? (
+                  {media && unavailableMedia !== media ? (
                     chosen?.video ? (
                       <video src={media} controls preload="metadata" aria-label="Uploaded ad" />
                     ) : (
@@ -657,7 +659,7 @@ function App() {
             <div className="workspace" hidden={view !== 'evidence'}>
               <section className="viewer" aria-label="Ad and claim timeline">
                 <div className="stage">
-                  {media ? (
+                  {media && unavailableMedia !== media ? (
                     (fix ? fix.draft.format === 'video' : result.screening.ad.media === 'video') ? (
                       <video
                         ref={player}
@@ -670,13 +672,19 @@ function App() {
                         controls
                         preload="metadata"
                         src={media}
+                        onError={() => setUnavailableMedia(media)}
                         aria-label="Ad video"
                       />
                     ) : (
-                      <img className="ad-image" src={media} alt="Ad being screened" />
+                      <img
+                        className="ad-image"
+                        src={media}
+                        alt="Ad being screened"
+                        onError={() => setUnavailableMedia(media)}
+                      />
                     )
                   ) : (
-                    <p>The ad preview is not kept after a reload. Its evidence is below.</p>
+                    <p>Ad preview unavailable. The saved claims and evidence remain below.</p>
                   )}
                 </div>
                 <TierSummary tiers={result.tiers} flags={result.screening.flags.length} />

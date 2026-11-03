@@ -62,6 +62,25 @@ Costs are the measured usage multiplied by the published prices. The account's b
 - SAM keeps one object ID across back-to-back captions (ID 0 for the whole 30 seconds), so tracks are also split where the box jumps between consecutive frames.
 - Text with no box behind it gets no region. Its evidence is Spark's on-screen text with start and end only.
 
+## P43 Baseten Muse Spark Open
+
+Checked documentation on 2 Nov 2026. P43 uses the existing `Glimmer` transport
+against synchronous `https://inference.baseten.co/v1` with configured model ID
+`meta-models/muse-spark-open` or `meta-models/muse-spark-open-1026`. This is partner
+inference, separate from the Meta Model API. The
+[provider docs](https://docs.baseten.co/inference/model-apis/overview) exclude
+Muse Spark Open from JSON-mode/structured-output support, so responses require
+local validation and invalid output retains every unit for review.
+
+A live synthetic smoke passed on 2 Nov 2026 with returned model ID
+`meta-models/muse-spark-open-1026`: 493 prompt tokens and 1,025 completion tokens,
+1,518 total including reasoning. The unversioned `meta-models/muse-spark-open`
+returned HTTP 403, so the pinned variant is the default. The authenticated model
+catalogue lists both IDs. HTTPX uses the system SSL trust context with certificate
+and hostname verification enabled; its default CA setup failed on this Windows
+machine. The smoke validates hosted inference and the parser, not dataset recall,
+net savings or award eligibility. Actual dev screenings are still needed.
+
 ## Muse Image
 
 - The `size` parameter is ignored: `256x256` returned a 1600x1600 image of about 2.6 MB (31 Oct, P22).

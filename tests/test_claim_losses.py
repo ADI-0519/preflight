@@ -1,7 +1,16 @@
 import importlib.util
+import json
+import socket
+import sys
 from datetime import UTC, datetime
 from pathlib import Path
 
+import pytest
+from test_eval import saved_run
+
+from preflight.eval import registry, run
+from preflight.eval.score import line_counts
+from preflight.eval.split import BreachingClaim, GroundTruth
 from preflight.schema import (
     Ad,
     CapRuleRef,
@@ -69,10 +78,79 @@ def test_a_whole_claim_flagged_under_an_unrelated_rule_is_the_judge_missing_it()
     assert losses.lost_at(CLAIM, RULES, s) == "not flagged"
 
 
-def test_a_second_card_is_filed_under_its_item(tmp_path, monkeypatch):
-    monkeypatch.setattr(losses, "WORK", tmp_path)
-    (tmp_path / "run").mkdir()
+def test_a_second_card_is_filed_under_its_registered_item(tmp_path, monkeypatch):
+    _, work = saved_run(tmp_path, monkeypatch)
+    registry.write_rows(tmp_path / "runs" / "screen-1.csv", [{"item_id": "A24-1", "media": 2}])
+    for path in (work / "screen-1").glob("*.json"):
+        path.unlink()
     for stem in ("reconstruction", "reconstruction-1"):
-        s = screening(f"run-A24-1239908-{stem}", [], {})
-        (tmp_path / "run" / f"{s.screening_id}.json").write_text(s.model_dump_json(), encoding="utf-8")
-    assert {k: len(v) for k, v in losses.saved_screenings("run").items()} == {"A24-1239908": 2}
+        s = screening(f"screen-1-A24-1-{stem}", [], {})
+        (work / "screen-1" / f"{s.screening_id}.json").write_text(s.model_dump_json(), encoding="utf-8")
+    assert {k: len(v) for k, v in run.saved("screen-1")[1].items()} == {"A24-1": 2}
+
+
+def test_single_run_cli_reports_all_misses_without_network_or_registry_writes(tmp_path, monkeypatch, capsys):
+    runs, work = saved_run(tmp_path, monkeypatch)
+    # Replace the positive ad with an extracted, unflagged claim and an unrelated flagged line.
+    s = screening("screen-1-A24-1-reconstruction", ["Cures anxiety fast", "Orange flavour"],
+                  {"Cures anxiety fast": [], "Orange flavour": ["15.1"]})
+    (work / "screen-1" / f"{s.screening_id}.json").write_text(s.model_dump_json(), encoding="utf-8")
+    monkeypatch.setattr(losses, "kept", lambda _: None)
+    monkeypatch.setattr(socket.socket, "connect", lambda *args: pytest.fail("diagnostics used the network"))
+    before = runs.read_bytes()
+    monkeypatch.setattr(sys, "argv", ["claim_losses.py", "screen-1", "--json"])
+    losses.main()
+    report = json.loads(capsys.readouterr().out)
+    assert (report["caught"], report["carried"], len(report["misses"])) == (0, 1, 1)
+    assert report["misses_by_step"]["not flagged"] == 1
+    assert report["unmatched_by_tier"] == {"high": 0, "medium": 1, "low": 0, "unchecked": 0}
+    assert report["unmatched_lines"][0]["text"] == "Orange flavour"
+    assert runs.read_bytes() == before
+
+
+@pytest.mark.parametrize("case", ["missing", "test", "foreign"])
+def test_diagnostic_guards_run_before_labels(tmp_path, monkeypatch, case):
+    _, work = saved_run(tmp_path, monkeypatch, part="test" if case == "test" else "dev")
+    if case == "missing":
+        (work / "screen-1" / "screen-1-T16-ad.json").unlink()
+    elif case == "foreign":
+        (work / "screen-1" / "screen-1-held-out-ad.json").write_text("must not open")
+    monkeypatch.setattr(run, "load_ground_truth", lambda *args: pytest.fail("guard opened labels"))
+    with pytest.raises(SystemExit):
+        losses.diagnose("screen-1")
+
+
+def test_empty_target_is_not_covered_by_empty_pieces():
+    assert not losses.covered("", [])
+
+
+def test_folded_child_with_matching_rule_keeps_whole_line_out_of_unmatched_report(monkeypatch):
+    text = "Reduced stress and anxiety"
+    s = screening("s", [text], {text + " through a calmer daily routine": ["3.7"], text: ["15.6.2"]})
+    truth = GroundTruth(item_id="T1", kind="team", label="positive", outcome=None, written_by="synthetic",
+                        checked_by=None, claims=[BreachingClaim(claim=text, rules=RULES, points=[1])])
+    monkeypatch.setattr(losses, "saved", lambda *args: (
+        {"run_id": "screen-1", "split": "v2", "part": "dev", "stage": "screen"}, {"T1": [s]}, [truth],
+    ))
+    report = losses.diagnose("screen-1")
+    assert line_counts(truth.claims, [s]) == (1, 0)
+    assert report["unmatched_lines"] == []
+
+
+def test_baseline_comparison_counts_only_claims_previously_caught(monkeypatch):
+    text = "Reduced stress and anxiety"
+    truth = GroundTruth(item_id="T1", kind="team", label="positive", outcome=None, written_by="synthetic",
+                        checked_by=None, claims=[BreachingClaim(claim=text, rules=RULES, points=[1])])
+    plain = screening("plain", [text], {text: ["15.6.2"]})
+    after = screening("after", [text], {text: []})
+    def saved(run_id, directory=None):
+        return ({"run_id": run_id, "split": "v2", "part": "dev",
+                 "stage": "screen" if run_id == "plain" else "stress"},
+                {"T1": [plain if run_id == "plain" else after]}, [truth])
+    monkeypatch.setattr(losses, "saved", saved)
+    report = losses.diagnose("stress", baseline="plain")
+    assert report["miss_scope"] == "lost against baseline"
+    assert report["misses_by_step"]["not flagged"] == 1
+    assert report["misses"][0]["format"] == "stills"
+    plain = plain.model_copy(update={"flags": ()})
+    assert losses.diagnose("stress", baseline="plain")["misses"] == []

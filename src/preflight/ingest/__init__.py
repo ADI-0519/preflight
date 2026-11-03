@@ -17,6 +17,9 @@ from preflight.schema import Ad
 MAX_SECONDS = 600
 STILL_FORMATS = {"image2", "png_pipe", "jpeg_pipe", "webp_pipe", "gif", "bmp_pipe", "tiff_pipe"}
 MANIFEST = "ingest.json"
+# each card of a carousel holds the slideshow this long, so card k spans [k * CARD_SECONDS, (k + 1) * CARD_SECONDS)
+CARD_SECONDS = 3
+CARD_FPS = 25
 
 
 class Frame(BaseModel):
@@ -166,6 +169,39 @@ def ingest(
     threshold: float = 0.3,
 ) -> Ingested:
     return ingest_file(path, out_root, media, rate, threshold)
+
+
+def ingest_cards(
+    cards: list[Path], out_root: Path = Path("data/work"), *, rate: float = 2.0, threshold: float = 0.3
+) -> Ingested:
+    if len(cards) == 1:
+        return ingest_file(cards[0], out_root, None, rate, threshold)
+    # one ad's cards are read together, so a claim split across two cards reaches the screening whole
+    return ingest_file(slideshow(cards, out_root), out_root, None, rate, threshold)
+
+
+def slideshow(cards: list[Path], out_root: Path) -> Path:
+    # named by the cards in order, so the same carousel reuses its slideshow and the ingest cached on its bytes
+    name = digest("".join(digest(c.resolve()) for c in cards).encode())
+    out = out_root.resolve() / "carousels" / f"{name}.mp4"
+    if out.exists():
+        return out
+    out.parent.mkdir(parents=True, exist_ok=True)
+    size = run("ffprobe", "-v", "error", "-select_streams", "v:0", "-show_entries", "stream=width,height",
+               "-of", "csv=p=0", str(cards[0]))  # fmt: skip
+    # libx264 needs even sides; every card is fitted to the first card's frame
+    width, height = (int(v) // 2 * 2 for v in size.strip().split(","))
+    fit = (f"scale={width}:{height}:force_original_aspect_ratio=decrease,pad={width}:{height}:(ow-iw)/2:(oh-ih)/2,"
+           f"setsar=1,fps={CARD_FPS},format=yuv420p")  # fmt: skip
+    graph = "".join(f"[{i}:v]{fit}[c{i}];" for i in range(len(cards)))
+    graph += "".join(f"[c{i}]" for i in range(len(cards))) + f"concat=n={len(cards)}:v=1:a=0[v]"
+    inputs = [arg for c in cards for arg in ("-loop", "1", "-t", str(CARD_SECONDS), "-i", str(c.resolve()))]
+    with tempfile.TemporaryDirectory(dir=out.parent) as tmp:
+        part = Path(tmp) / out.name
+        run("ffmpeg", "-nostdin", "-hide_banner", "-loglevel", "error", "-y", *inputs, "-filter_complex", graph,
+            "-map", "[v]", "-c:v", "libx264", "-pix_fmt", "yuv420p", str(part))  # fmt: skip
+        part.replace(out)
+    return out
 
 
 def ingest_file(

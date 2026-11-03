@@ -218,6 +218,19 @@
             }
           ],
           "default": null
+        },
+        "votes": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Votes"
         }
       },
       "required": [
@@ -226,7 +239,8 @@
         "kind",
         "reason",
         "sources",
-        "suggested_wording"
+        "suggested_wording",
+        "votes"
       ],
       "title": "Flag",
       "type": "object"
@@ -595,6 +609,19 @@
           ],
           "default": null,
           "title": "Effort"
+        },
+        "samples": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Samples"
         }
       },
       "required": [
@@ -602,7 +629,8 @@
         "status",
         "model",
         "prompt",
-        "effort"
+        "effort",
+        "samples"
       ],
       "title": "StageRun",
       "type": "object"
@@ -679,8 +707,11 @@
   "additionalProperties": false,
   "properties": {
     "schema_version": {
-      "const": "1",
-      "default": "1",
+      "default": "2",
+      "enum": [
+        "1",
+        "2"
+      ],
       "title": "Schema Version",
       "type": "string"
     },

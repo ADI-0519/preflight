@@ -2,6 +2,7 @@
 
 import json
 import ssl
+import subprocess
 import sys
 from types import SimpleNamespace
 
@@ -109,6 +110,24 @@ def test_unknown_selection_is_rejected_before_revision_or_inputs(monkeypatch):
     monkeypatch.setattr(run, "revision", lambda *args: pytest.fail("invalid selection reached revision"))
     with pytest.raises(SystemExit, match="outside"):
         run.main()
+
+
+def test_revision_ignores_run_outputs_but_not_sources(tmp_path, monkeypatch):
+    def git(*args):
+        return subprocess.run(["git", *args], cwd=tmp_path, capture_output=True, text=True, check=True).stdout
+    git("init", "-q")
+    (tmp_path / "prompt.txt").write_text("v1")
+    git("add", ".")
+    git("-c", "user.name=t", "-c", "user.email=t@t", "commit", "-qm", "base")
+    monkeypatch.setattr(registry, "git", git)
+    sha = git("rev-parse", "--short", "HEAD").strip()
+    (tmp_path / "results" / "runs").mkdir(parents=True)
+    (tmp_path / "results" / "runs" / "screen-failed.csv").write_text("item_id")
+    assert registry.revision("dev") == registry.revision("test") == sha
+    (tmp_path / "new_prompt.txt").write_text("v2")
+    assert registry.revision("dev") == sha + "-dirty"
+    with pytest.raises(SystemExit, match="dirty"):
+        registry.revision("test")
 
 
 def test_untracked_sources_mark_dev_revision_dirty(monkeypatch):

@@ -29,14 +29,16 @@ def git(*args: str) -> str:
 
 def revision(part: str) -> str:
     sha = git("rev-parse", "--short", "HEAD").strip()
+    # results/ holds what runs write, such as a failed run's item scores, not the code or prompts a run uses
+    changed = git("status", "--porcelain", "--", ".", ":(exclude)results")
     if part == "test":
         # rule 5: the test part runs once per final configuration, which must be traceable to a commit;
         # untracked files count, since an untracked prompt file changes what runs
-        if git("status", "--porcelain"):
+        if changed:
             raise SystemExit("refusing to run on the test part from a dirty tree; commit or stash first")
         return sha
     # a run on uncommitted code is not reproducible from its SHA alone
-    return sha + "-dirty" if git("status", "--porcelain") else sha
+    return sha + "-dirty" if changed else sha
 
 
 def snapshot_text(s: Snapshots) -> str:

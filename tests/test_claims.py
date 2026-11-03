@@ -160,19 +160,20 @@ def normalised(text: str) -> str:
 
 
 # rule 5: no split item's wording or ID reaches the prompt
+@pytest.mark.parametrize("version", ["v1", "v2"])
 @pytest.mark.parametrize(
     "path", sorted([*PROMPTS.glob("claims_*.txt"), *PROMPTS.glob("judge_*.txt")]), ids=lambda p: p.stem
 )
-def test_prompt_holds_no_split_item(path):
+def test_prompt_holds_no_split_item(path, version):
     prompt = path.read_text(encoding="utf-8")
     assert not re.search(r"\b[AG]\d{2}-\d{6,8}\b", prompt)
     text = normalised(prompt)
-    split = load_split("v1")
-    assert len(list((EVAL_DIR / "ground_truth" / "v1").glob("*.json"))) == len(split.items)
+    split = load_split(version)
+    assert len(list((EVAL_DIR / "ground_truth" / version).glob("*.json"))) == len(split.items)
     quoted = sorted({
         item_id
         for item_id in split.items
-        for c in load_ground_truth("v1", item_id).claims
+        for c in load_ground_truth(version, item_id).claims
         # single words such as "energy" are ordinary vocabulary; a phrase of three or more is a quote
         if len(normalised(c.claim).split()) >= 3 and f" {normalised(c.claim)} " in f" {text} "
     })  # fmt: skip

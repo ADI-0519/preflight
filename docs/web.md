@@ -92,6 +92,14 @@ An operator supplies `items.json`, a JSON array such as:
 ]
 ```
 
+`scripts/build_demos.py <run_id> <item_id>...` writes this directory from a registered
+run's own screenings, so a demo shows that run's blind result. It refuses an item outside
+the part the run screened, a void or unregistered run, a screening that fails source
+verification, and media whose content hash is not the file the run screened. It needs the
+run's `data/work/runs/<run_id>/` screenings and each screened file's ingest folder
+(`data/work/<content hash>/crops/`), which stay on the machine that ran it. Titles say
+whether the item is a reconstruction or a team-written ad, and which split part it is from.
+
 Media/screening paths are relative to the demo directory. The crops directory is
 relative to the screening JSON's parent. Every asset must resolve inside the demo
 root, including symlinks. Screening JSON is validated against repository snapshots
@@ -115,6 +123,10 @@ The selection format in `results/final.md` is one standalone line:
 ```text
 run_id: <registered-screen-run-id>
 ```
+
+`python -m preflight.eval.final` writes this line when exactly one of the runs it is
+given is a test screening run, and omits it otherwise. The current file names
+`screen-20261104T052428`.
 
 The API joins this ID to `results/runs.csv` and requires `part=test`, `stage=screen`
 and consistent run metadata. Displayed metrics retain their registered numerators,

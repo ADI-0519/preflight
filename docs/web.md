@@ -2,7 +2,10 @@
 
 The React/TypeScript page uses the P51 API. It makes no model calls itself and stores
 no keys, ad content or decisions in browser storage. FastAPI serves the Vite build.
-This remains a localhost, single-process prototype without authentication.
+This remains a localhost, single-process prototype. Firebase sign-in with an emailed
+code is available when configured; otherwise the workspace runs without sign-in.
+Sign-in gates access to a shared workspace and does not add per-user ownership of
+uploads or jobs. See the authentication setup in the README.
 
 The product page includes an illustrative synthetic evidence example, supported
 creative types, a review walkthrough, data handling, FAQs and a closing action.
@@ -10,13 +13,22 @@ The footer links to these sections, the API documentation and the account pages.
 Content uses PreFlight's actual capabilities; it does not borrow another site's
 copy, artwork, customer endorsements or performance claims.
 
-`/login` and `/signup` are directly addressable account **page previews**, served
+Product copy names the task directly: upload an ad, check its claims and review
+the evidence. It describes flags as possible issues, not verified breaches, and
+does not promise a fast result or automatic editing of an uploaded video. The
+upload notice distinguishes expiry from local deletion: cleanup requires a running
+server and may wait for active jobs. No model accuracy claim follows from a
+successful browser journey.
+
+With Firebase sign-in disabled, `/login` and `/signup` are directly addressable account **page previews**, served
 with the same build checks and content security policy as `/`. They do not implement
 authentication, create accounts or protect uploads. Their forms are disabled, explain
 that accounts are not connected, and do not collect credentials. They link to one
 another and back to the local desk. A real account rollout needs an agreed identity
-provider plus ownership/access controls for uploads, jobs, reports and revisions;
-adding a sign-in screen alone must not be described as private account isolation.
+provider plus ownership/access controls for uploads, jobs, reports and revisions.
+The merged Firebase flow supplies sign-in when enabled, but still does not provide
+private account isolation. With sign-in enabled, the real sign-in flow replaces
+the previews and runs before the workspace loads.
 
 The entry screen accepts one file through the chooser or drag-and-drop, explains
 the review workflow and keeps upload terms visible. Format/retention details
@@ -56,7 +68,7 @@ tools (`preflight.view`): a flagged phrase inside a longer flagged claim on the 
 evidence folds into that claim's row, so a row is a line of the ad, and an on-screen
 line with no time read shows "Time not read" (a still, "Still") rather than 0:00.0.
 Beside it, the inspector opens on the ad's words and the register's exact wording with
-its register ID, or says that no register wording matches; the line's CAP rules follow,
+its register ID, or says that no replacement wording was suggested; the line's CAP rules follow,
 section 15 first, then each flag's reason, sources and evidence. Phrases folded into the
 line are listed under it with their own flags; a source the line already shows in full
 is named only. "What you may say" opens the register's authorised entries for

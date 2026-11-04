@@ -146,6 +146,12 @@ Follow-up to `docs/notes/meta-model-api-findings.md` (P03) for rules 6 and 10. S
 - **`store=False` turns storage off (P67).** Checked live on 2 Nov 2026 against `muse-spark-1.3`: with `store=False` the response echoes `store: false` and retrieving it by ID returns 404; the same request with `store=True` echoes `store: true` and can be retrieved. Both `responses.create` calls in `preflight.models.clients` set `store=False`.
 - **No terms of service page is linked from the docs.** The binding terms are the ones accepted at sign-up on dev.meta.ai; a founder should save a copy from the account.
 
+Follow-up, 4 November 2026: the [public Meta Model API terms](https://dev.meta.ai/legal/terms-of-service)
+are now accessible (dated 9 October 2026). Section 5.1 excludes using content
+submitted to Standard Services to train Meta Models. The product page links this
+source. This confirms a contractual training exclusion, not zero provider retention
+or private account isolation in PreFlight.
+
 ## Hackathon Official Rules
 
 Follow-up to `docs/notes/hackathon-rules.md` (P01). On 31 Oct 2026 both public event pages (`cerebralvalley.ai/e/meta-ai-developer-hackathon`, `dev.meta.ai/events/global-hackathon`) still say "Official Rules will be published before the Hackathon begins on October 26, 2026 and must be accepted by the selected participants", with no link. The participant Notion page renders only in a browser. The rules are therefore readable only by a logged-in founder.

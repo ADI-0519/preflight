@@ -27,15 +27,15 @@ export function ProductSections() {
     <div className="product-sections">
       <section className="product-story" id="features" aria-labelledby="features-heading">
         <div className="section-intro">
-          <p className="eyebrow">01 / A closer look</p>
+          <p className="eyebrow">01 / Evidence</p>
           <h2 id="features-heading">
-            Every flag.
+            See what was flagged.
             <br />
-            <em>Something to go on.</em>
+            <em>Check the source.</em>
           </h2>
           <p>
-            A warning on its own creates more work. PreFlight puts the words, the evidence and the
-            source together, so you can investigate.
+            Each flag links the claim to a source line, video passage or image region, and explains
+            which rule may apply. You decide whether the concern is justified.
           </p>
         </div>
         <figure className="receipt-example">
@@ -66,11 +66,11 @@ export function ProductSections() {
 
       <section className="format-section" aria-labelledby="format-heading">
         <div className="section-heading">
-          <p className="eyebrow">02 / Made for the whole creative</p>
+          <p className="eyebrow">02 / Supported inputs</p>
           <h2 id="format-heading">
-            Start with the words.
+            Screen a script.
             <br />
-            Come back with the cut.
+            Check the finished ad separately.
           </h2>
         </div>
         <div className="format-grid">
@@ -85,8 +85,8 @@ export function ProductSections() {
             <span className="label">Before production</span>
             <h3>The script</h3>
             <p>
-              Check copy early. Return to exact numbered lines and distinguish spoken words from
-              on-screen captions.
+              Review copy before production. Evidence points to numbered source lines. Use VO: and
+              SUPER: labels to identify speech and captions in the script.
             </p>
             <p className="format-detail">UTF-8 .txt or .md</p>
           </article>
@@ -111,11 +111,11 @@ export function ProductSections() {
               <span>Draft 02</span>
               <i />
             </div>
-            <span className="label">After a rethink</span>
+            <span className="label">Revisions</span>
             <h3>The next draft</h3>
             <p>
-              Prepare an editable scene, compare saved revisions and re-screen. Where available,
-              suggested wording comes verbatim from the register.
+              Supply a still and editable captions to prepare a revision. Re-screen the rendered
+              scene and compare saved rounds. Text already burned into a video cannot be edited.
             </p>
             <p className="format-detail">A person makes the final decision</p>
           </article>
@@ -124,28 +124,28 @@ export function ProductSections() {
 
       <section className="process-section" id="how-it-works" aria-labelledby="process-heading">
         <div className="section-intro">
-          <p className="eyebrow">03 / Your review, with receipts</p>
+          <p className="eyebrow">03 / Review workflow</p>
           <h2 id="process-heading">
-            Less searching.
+            Read the claim.
             <br />
-            <em>More context.</em>
+            <em>Then check the reasoning.</em>
           </h2>
           <p>
-            Follow a claim from the creative to the source. Keep the judgement with the person
-            reviewing it.
+            Flags are suggestions for review. Open the evidence, read the cited rule and check
+            whether the explanation fits the ad.
           </p>
           <a className="text-action" href="#workspace">
-            Put an ad on the desk <span aria-hidden="true">↗</span>
+            Upload an ad <span aria-hidden="true">↗</span>
           </a>
         </div>
         <ol className="process-list">
           <li>
             <span>01</span>
             <div>
-              <h3>Bring the creative</h3>
+              <h3>Upload your ad</h3>
               <p>
-                Upload a script, image or video. The workflow reads the available speech, text and
-                visual context.
+                Upload one script, image or video. Processing may take several minutes. Progress
+                shows which stages have finished.
               </p>
             </div>
           </li>
@@ -174,22 +174,26 @@ export function ProductSections() {
 
       <section className="data-section" id="data-handling" aria-labelledby="data-heading">
         <div>
-          <p className="eyebrow">Know what goes where</p>
+          <p className="eyebrow">Data handling</p>
           <h2 id="data-heading">
-            Clear boundaries.
+            How your ad is processed.
             <br />
-            No fine-print promises.
+            What this prototype stores.
           </h2>
         </div>
         <div>
           <p>
-            Screening uses the Meta Model API in Standard mode, which does not use your inputs for
-            training. The upload desk shows the retention period before you send a file.
+            Screening uses the Meta Model API in Standard mode. Meta&apos;s{' '}
+            <a href="https://dev.meta.ai/legal/terms-of-service" target="_blank" rel="noreferrer">
+              Standard-mode terms
+            </a>{' '}
+            exclude using submitted content to train its models. The upload form shows the local
+            retention period before you send a file.
           </p>
           <p>
-            This build is a local prototype without account-based access controls. Do not upload
-            confidential ads. Examples in the gallery are labelled reconstructions or synthetic
-            creative.
+            Uploads, model responses and generated revisions are stored on the local server. This
+            prototype uses a shared workspace without per-user isolation. Do not upload confidential
+            ads. Gallery examples are labelled reconstructions or team-made ads.
           </p>
           <a href="/docs">Explore the API documentation ↗</a>
         </div>
@@ -197,11 +201,11 @@ export function ProductSections() {
 
       <section className="faq-section" id="questions" aria-labelledby="faq-heading">
         <div className="section-intro">
-          <p className="eyebrow">A few useful answers</p>
+          <p className="eyebrow">Questions</p>
           <h2 id="faq-heading">
-            Before you
+            Before you upload.
             <br />
-            <em>send it live.</em>
+            <em>What to expect.</em>
           </h2>
         </div>
         <div className="faq-list">
@@ -238,24 +242,24 @@ export function ProductSections() {
           <details>
             <summary>Can I use it for confidential client work?</summary>
             <p>
-              Not in this local prototype. It has no account-based isolation or production
-              authentication. Do not upload confidential material.
+              No. This prototype uses a shared workspace without per-user isolation. Do not upload
+              confidential material.
             </p>
           </details>
         </div>
       </section>
 
       <section className="closing-section" aria-labelledby="closing-heading">
-        <p className="eyebrow">A second look, before the world sees it</p>
+        <p className="eyebrow">Start a screening</p>
         <h2 id="closing-heading">
-          Give good creative
+          Review your ad
           <br />
-          <em>a considered send-off.</em>
+          <em>before publication.</em>
         </h2>
         <a className="primary" href="#workspace">
           Screen an ad <span aria-hidden="true">↗</span>
         </a>
-        <p>A script, an image or the finished cut. Your judgement stays yours.</p>
+        <p>PreFlight identifies possible issues. A person decides what to change.</p>
       </section>
     </div>
   );
@@ -269,8 +273,9 @@ export function SiteFooter({ signedIn = false }: { signedIn?: boolean }) {
         <div className="footer-brand">
           <Brand />
           <p>
-            Evidence before submission.
-            <br />A second look for health and supplement creative.
+            Screening for health and supplement ads.
+            <br />
+            Claims, evidence and policy sources in one place.
           </p>
         </div>
         <nav aria-label="Product">
@@ -294,7 +299,7 @@ export function SiteFooter({ signedIn = false }: { signedIn?: boolean }) {
         )}
       </div>
       <div className="footer-bottom">
-        <span>PreFlight / Built for considered decisions</span>
+        <span>PreFlight / GB ad screening prototype</span>
         <p>{NOTICE}</p>
       </div>
     </footer>
@@ -311,13 +316,13 @@ export function AccountPage({ mode }: { mode: 'login' | 'signup' }) {
       </header>
       <main className="account-page">
         <section className="account-intro">
-          <p className="eyebrow">The PreFlight review desk</p>
+          <p className="eyebrow">PreFlight</p>
           <h1>
-            Good creative.
+            Check the claims.
             <br />
-            <em>A second look.</em>
+            <em>Review the evidence.</em>
           </h1>
-          <p>Keep the creative in view. Keep the evidence close. Keep a person in the loop.</p>
+          <p>Screen health and supplement ads against the GB register and CAP Code.</p>
           <div className="account-note">
             <span>01 / Read the claim</span>
             <span>02 / Follow the source</span>
@@ -325,7 +330,7 @@ export function AccountPage({ mode }: { mode: 'login' | 'signup' }) {
           </div>
         </section>
         <section className="account-card" aria-labelledby="account-heading">
-          <p className="eyebrow">{signup ? 'Make room for a second look' : 'Back to the desk'}</p>
+          <p className="eyebrow">{signup ? 'Registration preview' : 'Sign-in preview'}</p>
           <h2 id="account-heading">{signup ? 'Create your account' : 'Welcome back.'}</h2>
           <p>
             {signup ? 'Already have an account?' : 'New to PreFlight?'}{' '}

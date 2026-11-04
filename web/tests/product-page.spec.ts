@@ -20,7 +20,7 @@ test('product sections, source example, FAQ and footer navigation work', async (
   await footer.getByRole('link', { name: 'How it works', exact: true }).click();
   await expect(page).toHaveURL(/#how-it-works$/);
   await expect(page.locator('#how-it-works')).toBeInViewport();
-  await page.getByRole('link', { name: 'Put an ad on the desk', exact: false }).click();
+  await page.getByRole('link', { name: 'Upload an ad', exact: false }).click();
   await expect(page.getByLabel('Upload ad')).toBeEnabled();
   expect(errors).toEqual([]);
 });

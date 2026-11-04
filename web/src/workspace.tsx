@@ -110,7 +110,10 @@ export function StillStage({ file }: { file: File | null }) {
 }
 
 export const MAY_SAY =
-  'Authorised GB register wording for this substance, with its conditions of use. It is context for the person deciding, separate from the wording suggested above.';
+  'Authorised GB register entries for this substance. Check the conditions before using any wording. These entries may differ from the suggestion above.';
+
+export const NO_SUGGESTION =
+  'No replacement wording was suggested. Check the register and the ad before deciding what to change.';
 
 // rule 2: the register's authorised entries, quoted exactly, apart from any line's suggested wording
 export function MaySayList({ items }: { items: MaySay[] }) {
@@ -120,7 +123,7 @@ export function MaySayList({ items }: { items: MaySay[] }) {
         <div className="may-say" key={m.substance}>
           <p className="pair-label">Authorised for {m.substance}</p>
           {m.entries.length === 0 ? (
-            <p className="none">No authorised register entry matches.</p>
+            <p className="none">No authorised register entries were found for this substance.</p>
           ) : (
             <ul>
               {m.entries.map((e) => (
@@ -158,9 +161,7 @@ export function FlaggedList({ claims, maySay }: { claims: ClaimView[]; maySay: M
                 <p className="id">GB register {wording.register_id}</p>
               </>
             ) : (
-              <p className="none">
-                No register wording matches this claim. A person must decide what to change.
-              </p>
+              <p className="none">{NO_SUGGESTION}</p>
             )}
           </div>
         );
@@ -169,8 +170,8 @@ export function FlaggedList({ claims, maySay }: { claims: ClaimView[]; maySay: M
         <>
           <h2>What you may say</h2>
           <p className="muted">
-            Authorised GB register wording for the substances flagged above, with conditions of use.
-            It is context for the person deciding, separate from the wording suggested for a line.
+            Check the conditions attached to each entry before using its wording. These entries may
+            differ from the suggestions for individual claims.
           </p>
           <MaySayList items={maySay} />
         </>

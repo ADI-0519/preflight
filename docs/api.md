@@ -16,8 +16,9 @@ Live screening also needs the team's cached ASA ruling HTML pages under
 snapshots contain metadata only. With an empty cache, the precedent loader fails
 before model screening; `/health` alone does not verify this prerequisite. Keep
 downloaded ruling pages ignored rather than adding them to Git.
-The service is a local, single-process prototype. It has no user authentication or
-tenant isolation. Keep it bound to localhost; production access needs separate work.
+The service is a local, single-process prototype. Firebase sign-in can gate the
+workspace when configured, but uploads and jobs have no per-user ownership or tenant
+isolation. Keep it bound to localhost; production access needs separate work.
 An approval's `by` value is a person's supplied name, not an authenticated identity.
 
 Creating or starting the app does not load credentials or call a model. Starting a
@@ -69,8 +70,9 @@ curl.exe -X POST http://127.0.0.1:8000/uploads -H "Content-Type: image/png" --da
 
 Supported types: PNG, JPEG, WebP, MP4, WebM and QuickTime. Validation restricts FFmpeg's
 input formats/protocols and checks that a frame decodes. Playlists and URLs are not
-supported inputs. Defaults: 100 MiB per upload, 256 KiB for JSON bodies, ten minutes
-maximum media duration, two worker threads and sixteen pending jobs. No original
+supported inputs. Defaults: 150 MiB per local upload (25 MiB in public mode),
+256 KiB for JSON bodies, ten minutes maximum media duration, two worker threads
+and sixteen pending jobs. No original
 filename is retained or used as a path. Oversized/failed uploads are discarded.
 
 ### Fix

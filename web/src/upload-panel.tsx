@@ -66,8 +66,8 @@ export function UploadPanel({
         </svg>
       </div>
       <div className="upload-heading">
-        <h2>Put your ad on the desk.</h2>
-        <p>A script, an image or the finished cut.</p>
+        <h2>Upload an ad</h2>
+        <p>Choose a script, image or video to screen.</p>
       </div>
       <label className="file-button primary">
         Choose ad or script <span aria-hidden="true">↗</span>

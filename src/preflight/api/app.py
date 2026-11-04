@@ -2,6 +2,7 @@ import asyncio
 import json
 import logging
 import os
+import re
 from contextlib import asynccontextmanager, suppress
 from pathlib import Path
 
@@ -21,6 +22,7 @@ from preflight.api.contracts import (
     SignIn,
     StartFix,
     StartScreening,
+    StartUpload,
     UploadView,
 )
 from preflight.api.public import Public
@@ -38,6 +40,9 @@ MEDIA = {
     "image/png": ".png", "image/jpeg": ".jpg", "image/webp": ".webp",
     "video/mp4": ".mp4", "video/webm": ".webm", "video/quicktime": ".mov",
 }
+# Cloud Run refuses any request over 32 MiB, so larger files arrive in parts of at most this size
+PART_BYTES = 16 * 1024 * 1024
+PART_PATH = re.compile(r"^/uploads/[0-9a-f]{32}/parts$")
 MEDIA_INPUT_OPTIONS = (
     "-protocol_whitelist", "file,pipe",
     "-format_whitelist", "mov,matroska,webm,png_pipe,jpeg_pipe,webp_pipe",
@@ -65,7 +70,9 @@ class BodyLimit:
     async def __call__(self, scope, receive, send):
         if scope["type"] != "http":
             return await self.app(scope, receive, send)
-        limit = self.public.max_upload_bytes() if scope["path"] == "/uploads" else self.settings.max_json_bytes
+        path = scope["path"]
+        limit = (self.public.max_upload_bytes() if path == "/uploads"
+                 else PART_BYTES if PART_PATH.fullmatch(path) else self.settings.max_json_bytes)
         size = 0
 
         async def limited_receive():
@@ -221,6 +228,28 @@ def create_app(
     def health():
         return {"status": "ready", "notice": NOTICE}
 
+    async def check_saved(path: Path, media_type: str, size: int) -> None:
+        if not size:
+            raise APIError(422, "empty_upload")
+        if media_type in SCRIPT_TYPES:
+            try:
+                await asyncio.to_thread(read_script, path)
+            except ScriptError as exc:
+                code = str(exc)
+                status = 415 if code in {"invalid_script_encoding", "invalid_script_content"} else 422
+                raise APIError(status, code) from None
+        else:
+            try:
+                info = await asyncio.to_thread(validate_media, path, public.max_seconds(MAX_SECONDS))
+            except (ValueError, RuntimeError):
+                raise APIError(415, "unreadable_media") from None
+            if info["still"] != media_type.startswith("image/"):
+                raise APIError(415, "media_type_mismatch")
+
+    def upload_limit(media_type: str) -> int:
+        limit = public.max_upload_bytes()
+        return min(limit, MAX_SCRIPT_BYTES) if media_type in SCRIPT_TYPES else limit
+
     @app.post("/uploads", status_code=201, response_model=UploadView, openapi_extra={
         "requestBody": {"required": True, "content": {
             media_type: {"schema": {"type": "string", "format": "binary"}} for media_type in MEDIA
@@ -231,9 +260,7 @@ def create_app(
         if media_type not in MEDIA:
             raise APIError(415, "unsupported_media_type")
         with public.admit(client(request), "upload"):
-            limit = public.max_upload_bytes()
-            if media_type in SCRIPT_TYPES:
-                limit = min(limit, MAX_SCRIPT_BYTES)
+            limit = upload_limit(media_type)
             fields = storage.begin(media_type, MEDIA[media_type])
             saved, size = False, 0
             try:
@@ -244,22 +271,7 @@ def create_app(
                         if size > limit:
                             raise APIError(413, "body_too_large")
                         stream.write(chunk)
-                if not size:
-                    raise APIError(422, "empty_upload")
-                if media_type in SCRIPT_TYPES:
-                    try:
-                        await asyncio.to_thread(read_script, path)
-                    except ScriptError as exc:
-                        code = str(exc)
-                        status = 415 if code in {"invalid_script_encoding", "invalid_script_content"} else 422
-                        raise APIError(status, code) from None
-                else:
-                    try:
-                        info = await asyncio.to_thread(validate_media, path, public.max_seconds(MAX_SECONDS))
-                    except (ValueError, RuntimeError):
-                        raise APIError(415, "unreadable_media") from None
-                    if info["still"] != media_type.startswith("image/"):
-                        raise APIError(415, "media_type_mismatch")
+                await check_saved(path, media_type, size)
                 fields = storage.finish(fields, size)
                 saved = True
                 keys = ("upload_id", "media_type", "bytes", "expires_at")
@@ -267,6 +279,75 @@ def create_app(
             finally:
                 if not saved:
                     storage.discard(fields["upload_id"])
+
+    parts_lock: dict[str, asyncio.Lock] = {}
+
+    def unfinished(upload_id: str) -> tuple[dict, Path]:
+        directory = storage.upload_dir(upload_id)
+        meta = directory / "upload.json"
+        if not meta.is_file():
+            raise APIError(404, "upload_not_found")
+        fields = json.loads(meta.read_text(encoding="utf-8"))
+        if fields["stored"] or "expected" not in fields:
+            raise APIError(409, "upload_already_complete")
+        if fields["expires_at"] <= storage.clock():
+            raise APIError(410, "upload_expired")
+        return fields, directory / ("media" + fields["suffix"])
+
+    @app.post("/uploads/parts", status_code=201)
+    def start_parts(fields: StartUpload, request: Request):
+        """Starts a file sent in parts. The visitor's upload allowance is used here, once per file."""
+        media_type = fields.media_type.lower()
+        if media_type not in MEDIA:
+            raise APIError(415, "unsupported_media_type")
+        if fields.bytes > upload_limit(media_type):
+            raise APIError(413, "body_too_large")
+        with public.admit(client(request), "upload"):
+            started = storage.begin(media_type, MEDIA[media_type])
+            started = started | {"expected": fields.bytes}
+            with storage.lock:
+                storage.write(started)
+                # unfinished parts are not pinned: the sweep deletes them at expiry like any upload
+                storage.release((started["upload_id"],))
+            (storage.upload_dir(started["upload_id"]) / ("media" + started["suffix"])).touch()
+            return {"upload_id": started["upload_id"], "part_bytes": PART_BYTES, "notice": NOTICE}
+
+    @app.post("/uploads/{upload_id}/parts")
+    async def add_part(upload_id: str, offset: int, request: Request):
+        """Appends one part at `offset`; a retried part is refused with the size already received."""
+        lock = parts_lock.setdefault(upload_id, asyncio.Lock())
+        async with lock:
+            fields, path = unfinished(upload_id)
+            size = path.stat().st_size
+            if offset != size:
+                return JSONResponse({"error": "wrong_offset", "received": size, "notice": NOTICE}, status_code=409)
+            with path.open("ab") as stream:
+                async for chunk in request.stream():
+                    size += len(chunk)
+                    if size > fields["expected"]:
+                        stream.truncate(offset)
+                        raise APIError(413, "body_too_large")
+                    stream.write(chunk)
+            return {"received": size, "notice": NOTICE}
+
+    @app.post("/uploads/{upload_id}/complete", status_code=201, response_model=UploadView)
+    async def complete_parts(upload_id: str):
+        lock = parts_lock.setdefault(upload_id, asyncio.Lock())
+        async with lock:
+            fields, path = unfinished(upload_id)
+            size = path.stat().st_size
+            if size != fields["expected"]:
+                raise APIError(409, "upload_incomplete")
+            try:
+                await check_saved(path, fields["media_type"], size)
+            except APIError:
+                storage.discard(upload_id)
+                raise
+            finally:
+                parts_lock.pop(upload_id, None)
+            fields = storage.finish({k: v for k, v in fields.items() if k != "expected"}, size)
+            keys = ("upload_id", "media_type", "bytes", "expires_at")
+            return {key: fields[key] for key in keys} | {"notice": NOTICE}
 
     @app.post("/screenings", status_code=202, response_model=JobView)
     def start_screening(fields: StartScreening, request: Request):

@@ -68,7 +68,8 @@ ALLOW_ANYONE=1 SITE=preflight-ai PROJECT=preflight-513720 bash deploy/cloud-run.
 ```
 
 `PUBLIC_MODE` (default `on`) sets `PREFLIGHT_PUBLIC_MODE`: each signed-in account may start 3 screenings,
-1 fix and 10 uploads an hour, with uploads up to 25 MiB and 60 seconds. `DAILY_CAP_USD` (default 10) sets
+1 fix and 10 uploads an hour, with uploads up to 150 MiB and 60 seconds. Cloud Run refuses any request over
+32 MiB, so the page sends files over 16 MiB in parts (docs/api.md, "Uploading in parts"). `DAILY_CAP_USD` (default 10) sets
 `PREFLIGHT_DAILY_CAP_USD`, the day's model spend across everyone, after which new screenings are refused until
 midnight UTC.
 

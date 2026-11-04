@@ -45,6 +45,13 @@ class Approval(Input):
     note: Annotated[str, Field(max_length=2000)] = ""
 
 
+class StartUpload(Input):
+    """A file sent in parts, because Cloud Run refuses any one request over 32 MiB."""
+
+    media_type: Annotated[str, Field(max_length=100)]
+    bytes: int = Field(gt=0)
+
+
 class SignIn(Input):
     id_token: Annotated[str, Field(min_length=1, max_length=8192)]
 

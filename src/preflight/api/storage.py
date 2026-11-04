@@ -36,7 +36,7 @@ class Settings:
     public_screenings_per_hour: int = 3
     public_fixes_per_hour: int = 1
     public_fix_rounds: int = 1
-    public_max_upload_bytes: int = 25 * 1024 * 1024
+    public_max_upload_bytes: int = 150 * 1024 * 1024
     public_max_seconds: float = 60
     daily_cap_usd: float = 40.0
 
@@ -106,6 +106,11 @@ class Retention:
             self.active[upload_id] = 1
             self.journal("storage_started", upload_id)
             return fields
+
+    def write(self, fields: dict) -> None:
+        """Rewrites an upload's record, such as a file sent in parts noting its expected size."""
+        with self.lock:
+            write_json(self.upload_dir(fields["upload_id"]) / "upload.json", fields)
 
     def finish(self, fields: dict, size: int) -> dict:
         with self.lock:

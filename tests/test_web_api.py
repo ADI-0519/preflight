@@ -257,3 +257,16 @@ def test_presentation_folds_nested_flags_and_shows_each_flag_once():
     ranks = [("high", "medium", "low").index(r["tier"]) for r in rows if r["flags"]]
     assert ranks == sorted(ranks) and all(r["tier"] is None for r in rows if not r["flags"])
     assert sum(result["tiers"].values()) == sum(r["tier"] is not None for r in rows)
+
+
+def test_a_long_media_range_is_answered_in_slices_under_cloud_runs_response_limit(tmp_path, monkeypatch):
+    import preflight.api.web as web
+
+    monkeypatch.setattr(web, "MEDIA_SLICE", 1000)
+    with TestClient(create_app(Settings(root=tmp_path / "uploads"))) as client:
+        content = (MEDIA / "captions.mp4").read_bytes()
+        url = f"/uploads/{upload(client, content, 'video/mp4')}/media"
+        first = client.get(url, headers={"Range": "bytes=0-"})
+        assert first.status_code == 206 and first.content == content[:1000]
+        assert first.headers["content-range"] == f"bytes 0-999/{len(content)}"
+        assert client.get(url, headers={"Range": "bytes=1000-"}).content == content[1000:2000]

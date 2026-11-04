@@ -281,7 +281,9 @@ function App({ account, guest = false }: { account: Account | null; guest?: bool
         throw new Error(
           `The upload limit is ${mebibytes(config.max_upload_bytes)} MiB. Choose a smaller file.`,
         );
-      const saved = await upload(file);
+      const saved = await upload(file, (done) => {
+        if (current === generation.current) setStatus(`Uploading ad… ${Math.round(done * 100)}%`);
+      });
       const queued = await post<Job>('/screenings', { upload_id: saved.upload_id, align: false });
       if (current !== generation.current) return;
       setMedia(`/uploads/${saved.upload_id}/media`);

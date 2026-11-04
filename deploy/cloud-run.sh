@@ -51,6 +51,12 @@ gcloud services enable run.googleapis.com cloudbuild.googleapis.com artifactregi
 NUMBER=$(gcloud projects describe "$PROJECT" --format='value(projectNumber)')
 RUNNER="$NUMBER-compute@developer.gserviceaccount.com"
 HOST="$SERVICE-$NUMBER.$REGION.run.app"
+# Firebase Hosting forwards to the service's older *.a.run.app address, which exists once the service does
+LEGACY=$(gcloud run services describe "$SERVICE" --project "$PROJECT" --region "$REGION" \
+  --format 'value(status.url)' 2>/dev/null | tr -d '\r' | sed 's#^https://##' || true)
+HOSTS=$HOST${LEGACY:+,$LEGACY}
+[ -z "${SITE:-}" ] || [ -n "$LEGACY" ] ||
+  echo "  first deploy: run the script again so the web.app site's forwarded host is allowed"
 # source deploys build as the default compute account, which needs the builder role on new projects
 gcloud projects add-iam-policy-binding "$PROJECT" --member "serviceAccount:$RUNNER" \
   --role roles/run.builder --condition None --quiet >/dev/null
@@ -95,7 +101,7 @@ env_vars=(
   "PREFLIGHT_SMTP_PORT=${port:-587}"
   "PREFLIGHT_SMTP_USER=$(value PREFLIGHT_SMTP_USER)"
   "PREFLIGHT_MAIL_FROM=$(value PREFLIGHT_MAIL_FROM)"
-  "PREFLIGHT_ALLOWED_HOSTS=$HOST${SITE:+,$SITE.web.app,$SITE.firebaseapp.com}"
+  "PREFLIGHT_ALLOWED_HOSTS=$HOSTS${SITE:+,$SITE.web.app,$SITE.firebaseapp.com}"
   # per-account hourly limits and a daily model spend cap (src/preflight/api/public.py)
   "PREFLIGHT_PUBLIC_MODE=${PUBLIC_MODE:-on}"
   "PREFLIGHT_DAILY_CAP_USD=${DAILY_CAP_USD:-10}"

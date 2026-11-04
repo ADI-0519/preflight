@@ -56,7 +56,9 @@ After the first deploy, add that host name in Firebase > Authentication > Settin
 Google sign-in refuses it.
 
 Run the same command to deploy a new version. The service only answers on the host names in
-`PREFLIGHT_ALLOWED_HOSTS`, which the script sets to that address, plus `<SITE>.web.app` and
+`PREFLIGHT_ALLOWED_HOSTS`, which the script sets to that address and the service's older `*.a.run.app`
+address (where Firebase Hosting forwards; it exists only after the first deploy, so run the script twice the first
+time), plus `<SITE>.web.app` and
 `<SITE>.firebaseapp.com` when `SITE` names a Firebase Hosting site.
 
 The team's deployment runs open to any account, under public mode's per-account limits:

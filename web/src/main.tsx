@@ -40,6 +40,10 @@ function Metrics({ board }: { board: Scoreboard }) {
           <p>
             Run {board.run_id} on split {board.split}, revision {board.git_sha}
           </p>
+          <p>
+            These figures describe that recorded test run, not this upload. The current build may
+            use different settings.
+          </p>
           <table>
             <thead>
               <tr>
@@ -496,8 +500,8 @@ function App({ account, guest = false }: { account: Account | null; guest?: bool
               <div className="what">
                 <h1>Explore demos</h1>
                 <p className="lead">
-                  Reconstructions of ruled ads and fixtures the team made. Outcomes stay hidden
-                  until you reveal them.
+                  Review reconstructions of ruled ads and team-made examples. For reconstructions,
+                  reveal the ASA outcome after reviewing the screening.
                 </p>
               </div>
             </div>
@@ -509,15 +513,15 @@ function App({ account, guest = false }: { account: Account | null; guest?: bool
           <>
             <div className="title-row entry-title">
               <div className="what">
-                <p className="eyebrow">PreFlight / The creative review desk</p>
+                <p className="eyebrow">Health and supplement ad screening</p>
                 <h1>
-                  Good creative.
+                  Check the claims.
                   <br />
-                  <em>A second look.</em>
+                  <em>Review the evidence.</em>
                 </h1>
                 <p className="lead">
-                  Screen health and supplement ads before they go live. Find the claims, follow the
-                  evidence, and decide what needs a rethink.
+                  Upload a script, image or video. Review possible issues against the GB register
+                  and CAP Code, with evidence from your ad and the sources behind each flag.
                 </p>
                 <p className="entry-sources">
                   GB health claims register <span aria-hidden="true">/</span> CAP Code{' '}
@@ -541,15 +545,16 @@ function App({ account, guest = false }: { account: Account | null; guest?: bool
                   <h2>Formats</h2>
                   <p>
                     PNG, JPEG, WebP, MP4, WebM or QuickTime, up to{' '}
-                    {config ? mebibytes(config.max_upload_bytes) : 100} MiB
+                    {config ? mebibytes(config.max_upload_bytes) : 150} MiB
                     {config ? `, and video up to ${config.max_seconds} seconds` : ''}. Scripts:
                     UTF-8 .txt or .md, up to 64 KiB and 1,000 lines. Use VO: or SUPER: to
                     distinguish spoken and on-screen copy.
                   </p>
                   <h2>Retention</h2>
                   <p>
-                    Uploads are deleted after {config ? config.retention_seconds / 3600 : 24} hours,
-                    or later if a job is still using them. Screening spends model credits.
+                    Uploads expire after {config ? config.retention_seconds / 3600 : 24} hours.
+                    Local deletion runs while the server is on and may wait for active jobs.
+                    Screening uses model credits.
                   </p>
                 </details>
                 <div>
@@ -558,7 +563,7 @@ function App({ account, guest = false }: { account: Account | null; guest?: bool
                     <button className="link" onClick={openDemos}>
                       Explore labelled demos
                     </button>
-                    . Their ASA outcomes stay hidden until you reveal them.
+                    . Reconstructions have ASA outcomes you can reveal; team-made examples do not.
                   </p>
                 </div>
               </div>

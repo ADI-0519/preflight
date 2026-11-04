@@ -619,11 +619,15 @@ def test_replay_switch_turns_uploads_off_without_public_settings(tmp_path, monke
         assert response.status_code == 503 and response.json()["error"] == "uploads_paused"
         config = client.get("/ui/config").json()
         assert (config["public_mode"], config["uploads_closed"]) == ("replay", "uploads_paused")
-        assert "deleted after 24 hours. Do not upload confidential ads" in config["upload_notice"]
+        assert config["max_upload_bytes"] == 25 * 1024 * 1024
+        assert "Uploads expire after 24 hours." in config["upload_notice"]
+        assert "Local deletion runs while the server is on and may wait for active jobs." in config["upload_notice"]
+        assert "Do not upload confidential ads." in config["upload_notice"]
         assert client.get("/ui/demos").status_code == 200
     monkeypatch.setenv("PREFLIGHT_PUBLIC_MODE", "off")
     with TestClient(app) as client:
         assert client.get("/ui/config").json()["uploads_closed"] is None
+        assert client.get("/ui/config").json()["max_upload_bytes"] == 150 * 1024 * 1024
 
 
 def test_public_approval_is_recorded_as_a_demo_approval(tmp_path, replay_models, monkeypatch):

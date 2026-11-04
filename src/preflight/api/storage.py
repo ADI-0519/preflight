@@ -25,7 +25,7 @@ class Settings:
     retention_seconds: float = 86400
     # a job still running this long after its input expired is taken as hung; a screening takes minutes
     job_grace_seconds: float = 3600
-    max_upload_bytes: int = 100 * 1024 * 1024
+    max_upload_bytes: int = 150 * 1024 * 1024
     max_json_bytes: int = 256 * 1024
     sweep_seconds: float = 30
     workers: int = 2

@@ -16,9 +16,10 @@ Live screening also needs the team's cached ASA ruling HTML pages under
 snapshots contain metadata only. With an empty cache, the precedent loader fails
 before model screening; `/health` alone does not verify this prerequisite. Keep
 downloaded ruling pages ignored rather than adding them to Git.
-The service is a single-process prototype with no tenant isolation. Locally it runs
-open on localhost. With `FIREBASE_PROJECT_ID` set it requires sign-in, and an approval's
-`by` value is then the signed-in account's email; without sign-in it is a supplied name.
+The service is a single-process prototype. Locally it runs open on localhost. With
+`FIREBASE_PROJECT_ID` set it requires sign-in, and an approval's `by` value is then the
+signed-in account's email; without sign-in it is a supplied name. Uploads and jobs have no
+per-user ownership or tenant isolation: any signed-in account can open a job by its ID.
 To run it on Google Cloud Run, see [deploy.md](./deploy.md).
 
 Creating or starting the app does not load credentials or call a model. Starting a
@@ -70,8 +71,9 @@ curl.exe -X POST http://127.0.0.1:8000/uploads -H "Content-Type: image/png" --da
 
 Supported types: PNG, JPEG, WebP, MP4, WebM and QuickTime. Validation restricts FFmpeg's
 input formats/protocols and checks that a frame decodes. Playlists and URLs are not
-supported inputs. Defaults: 100 MiB per upload, 256 KiB for JSON bodies, ten minutes
-maximum media duration, two worker threads and sixteen pending jobs. No original
+supported inputs. Defaults: 150 MiB per local upload (25 MiB in public mode),
+256 KiB for JSON bodies, ten minutes maximum media duration, two worker threads
+and sixteen pending jobs. No original
 filename is retained or used as a path. Oversized/failed uploads are discarded.
 
 ### Fix

@@ -416,7 +416,7 @@ def test_a_flag_marks_only_phrases_its_claim_holds(quotes, kept):
 def test_only_prompts_that_ask_for_quotes_get_the_field():
     _, ((_, kwargs),) = run({f"claim-{n}": verdict() for n in range(3)})
     assert "quotes" not in kwargs["schema"]["properties"]["verdicts"]["items"]["properties"]
-    assert [asks_quote(p) for p in ("judge_v8", "judge_v9", "judge_v10", "judge_v11")] == [False, False, True, True]
+    assert [asks_quote(p) for p in ("judge_v8", "judge_v9", "judge_v10", "judge_v11")] == [False, False, True, False]
     claims, found = list(screening().claims), SimpleNamespace(register=[], on_hold=[])
     item = output_schema(claims, found, [], [], quote=True)["properties"]["verdicts"]["items"]
     assert "quotes" in item["properties"] and "quotes" in item["required"]

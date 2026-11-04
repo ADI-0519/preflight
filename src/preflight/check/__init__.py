@@ -34,8 +34,8 @@ from preflight.sources.rulings import Ruling
 log = logging.getLogger(__name__)
 
 PROMPT_VERSION = "judge_v8"
-# judge prompts from this version on ask each flag to mark the phrases that carry the breach
-QUOTE_FROM = 10
+# judge prompts that ask each flag to mark the phrases that carry the breach
+QUOTE_PROMPTS = {"judge_v10"}
 EFFORT = "high"
 # judge samples per ad; when the check votes, a claim is flagged when two of three agree
 VOTE_SAMPLES = 3
@@ -69,8 +69,7 @@ def ids(values: list[str]) -> dict:
 
 
 def asks_quote(prompt: str) -> bool:
-    version = re.fullmatch(r"judge_v(\d+)", prompt)
-    return bool(version) and int(version[1]) >= QUOTE_FROM
+    return prompt in QUOTE_PROMPTS
 
 
 def output_schema(

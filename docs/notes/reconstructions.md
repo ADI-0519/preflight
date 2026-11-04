@@ -15,7 +15,7 @@ Built 31 Oct 2026 by `preflight.eval.reconstruct` from the 74 ruling items in sp
 
 ## Run of 31 Oct 2026
 
-| checker: passes | checker: passes |
+| | |
 |---|---|
 | Ruling items in split v1 | 74 |
 | Built | 74 (38 image, 36 video) |

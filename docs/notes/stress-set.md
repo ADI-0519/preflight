@@ -143,6 +143,14 @@ with evidence, cited sources and displayed tiers. Piece coverage is an unordered
 it does not establish that the pieces form a coherent claim. It adds no catches to registered recall.
 Unmatched lines are not labelled false flags. The report makes no model calls and writes no registered results.
 
+`--grade N` also writes N of the unmatched lines, drawn with the run ID as seed, to `data/work/grading/<run>.csv`
+(git-ignored) for a blind grade of breach, arguable or wrong. Each row holds the line, its tier, its rules and the
+judge's reasons, but not the ruling, so a grader working from the CAP rule pack is not steered by what the ASA said:
+
+```powershell
+uv run python scripts/claim_losses.py screen-20261103T204921 --grade 40
+```
+
 Restore each complete original screening bundle under `data/work/runs/<run_id>/`, plus the original dev
 reconstruction shot lists under `data/raw/reconstructions/<item_id>/shotlist.json` for carried-claim masks.
 `--screenings <folder>` accepts another location for the diagnosed run's bundle; a comparison's baseline

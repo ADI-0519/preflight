@@ -12,7 +12,9 @@ test('three labelled demo states, honest scoreboard and explicit reveal', async 
   await expect(page.getByText('Network-blocked synthetic replay.', { exact: false })).toBeVisible();
   await expect(page.getByRole('note')).toContainText('a person makes that call');
   // P67: the upload notice shows before anything can be uploaded
-  await expect(page.getByText('Do not upload confidential ads.')).toBeVisible();
+  await expect(page.getByRole('region', { name: 'Upload workspace' })).toContainText(
+    'Do not upload confidential ads.',
+  );
   await expect(page.getByText('not use it for training', { exact: false })).toBeVisible();
   await page.getByRole('button', { name: 'Explore demos' }).click();
   await expect(page.getByRole('heading', { name: 'Registered test scoreboard' })).toBeVisible();

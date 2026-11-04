@@ -74,7 +74,8 @@ function Metrics({ board }: { board: Scoreboard }) {
   );
 }
 
-function App({ account }: { account: Account | null }) {
+// guest: sign-in is on and nobody is signed in, so the landing page shows and every action leads to sign-in
+function App({ account, guest = false }: { account: Account | null; guest?: boolean }) {
   const [config, setConfig] = useState<Config | null>(null);
   const [mode, setMode] = useState<'screen' | 'demo'>('screen');
   const [demos, setDemos] = useState<Demo[]>([]);
@@ -134,11 +135,12 @@ function App({ account }: { account: Account | null }) {
       .catch((e) => {
         if (!controller.signal.aborted) fail(e);
       });
-    request<Demo[]>('/ui/demos', { signal: controller.signal })
-      .then(setDemos)
-      .catch((e) => {
-        if (!controller.signal.aborted) fail(e);
-      });
+    if (!guest)
+      request<Demo[]>('/ui/demos', { signal: controller.signal })
+        .then(setDemos)
+        .catch((e) => {
+          if (!controller.signal.aborted) fail(e);
+        });
     const id = new URLSearchParams(location.search).get('job');
     if (id && /^[0-9a-f]{32}$/.test(id))
       request<Job>(`/jobs/${id}`, { signal: controller.signal })
@@ -389,6 +391,7 @@ function App({ account }: { account: Account | null }) {
   }
 
   function openDemos() {
+    if (guest) return location.assign('/login');
     reset();
     setMode('demo');
   }
@@ -530,6 +533,7 @@ function App({ account }: { account: Account | null }) {
                   config?.uploads_closed ? PUBLIC_ERRORS[config.uploads_closed] : undefined
                 }
                 onFile={(file) => void screenFile(file)}
+                signIn={guest}
               />
               <div className="facts">
                 <details className="input-details">
@@ -913,9 +917,12 @@ function Gate() {
   if (!state) return null;
   const { config, account } = state;
   const accountPath = location.pathname === '/login' || location.pathname === '/signup';
-  // without sign-in, /login and /signup stay design previews; with it, every path uses the real sign-in
+  // without sign-in, /login and /signup stay design previews; with it, they are the real sign-in and
+  // every other path shows the landing page until the visitor signs in
   if (!config.auth && accountPath)
     return <AccountPage mode={location.pathname === '/signup' ? 'signup' : 'login'} />;
+  if (config.auth && !account.signed_in && !account.pending && !accountPath)
+    return <App account={null} guest />;
   if (config.auth && !account.signed_in)
     return (
       <Login

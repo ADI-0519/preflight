@@ -20,18 +20,27 @@ async function loginOn(page: Page, me: object) {
   await page.route('/auth/me', (route) => route.fulfill({ json: me }));
 }
 
-test('with sign-in on, the sign-in screen shows before any workspace request', async ({ page }) => {
+test('with sign-in on, a visitor sees the landing page and every action leads to sign-in', async ({
+  page,
+}) => {
   const workspace: string[] = [];
   await loginOn(page, { signed_in: false, email: null, login: true, pending: null });
   page.on('request', (r) => {
     if (/\/(ui\/demos|jobs|uploads|screenings)/.test(r.url())) workspace.push(r.url());
   });
   await page.goto('/');
+  await expect(page.getByRole('heading', { level: 1 })).toContainText('Good creative.');
+  await expect(page.getByLabel('Upload ad')).toHaveCount(0);
+  await page.getByRole('link', { name: /Log in to screen an ad/ }).click();
+  await expect(page).toHaveURL(/\/login$/);
   await expect(page.getByRole('heading', { name: 'Sign in' })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Continue with Google' })).toBeVisible();
   await page.getByRole('button', { name: 'Create an account' }).click();
   await expect(page.getByRole('heading', { name: 'Create an account' })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Explore demos' })).toHaveCount(0);
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Explore demos' }).click();
+  await expect(page).toHaveURL(/\/login$/);
   expect(workspace).toEqual([]);
 });
 
@@ -43,7 +52,7 @@ test('with sign-in off, the workspace opens with no sign-out button', async ({ p
 
 test('creating an account shows each password requirement as it is met', async ({ page }) => {
   await loginOn(page, { signed_in: false, email: null, login: true, pending: null });
-  await page.goto('/');
+  await page.goto('/login');
   await page.getByRole('button', { name: 'Create an account' }).click();
   await page.getByLabel('Email').fill('founder@example.com');
   const password = page.getByLabel('Password', { exact: true });

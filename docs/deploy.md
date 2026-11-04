@@ -23,7 +23,9 @@ request and costs nothing while scaled to zero. Building and storing the image c
 alert before the first deploy.
 
 Hosting being free does not make screening free: every screening calls the Meta model API on the team's key.
-The script refuses to deploy without `PREFLIGHT_ALLOWED_EMAILS` unless `ALLOW_ANYONE=1` is set.
+The script refuses to deploy without `PREFLIGHT_ALLOWED_EMAILS` unless `ALLOW_ANYONE=1` is set. With
+`ALLOW_ANYONE=1` the service gets an empty allowlist, so any Google or email account can sign in, whatever
+`.env` says.
 
 ## One-time setup
 

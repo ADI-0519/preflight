@@ -27,8 +27,12 @@ for name in META_API_KEY FIREBASE_PROJECT_ID FIREBASE_API_KEY FIREBASE_AUTH_DOMA
   [ -n "$(value "$name")" ] || fail "$name is empty in $ENV_FILE"
 done
 # every screening calls the paid model API, so a public deployment names who may sign in
-if [ -z "$(value PREFLIGHT_ALLOWED_EMAILS)" ] && [ "${ALLOW_ANYONE:-}" != "1" ]; then
-  fail "PREFLIGHT_ALLOWED_EMAILS is empty; set it, or run with ALLOW_ANYONE=1 to let any account in"
+# ALLOW_ANYONE=1 lets any account in and ignores the .env allowlist, which then only applies locally
+if [ "${ALLOW_ANYONE:-}" = "1" ]; then
+  ALLOWED=""
+else
+  ALLOWED=$(value PREFLIGHT_ALLOWED_EMAILS)
+  [ -n "$ALLOWED" ] || fail "PREFLIGHT_ALLOWED_EMAILS is empty; set it, or run with ALLOW_ANYONE=1 to let any account in"
 fi
 
 say "Copying the git-ignored ruling pages and demo files into the build"
@@ -85,7 +89,7 @@ env_vars=(
   "FIREBASE_API_KEY=$(value FIREBASE_API_KEY)"
   "FIREBASE_AUTH_DOMAIN=$(value FIREBASE_AUTH_DOMAIN)"
   "FIREBASE_APP_ID=$(value FIREBASE_APP_ID)"
-  "PREFLIGHT_ALLOWED_EMAILS=$(value PREFLIGHT_ALLOWED_EMAILS)"
+  "PREFLIGHT_ALLOWED_EMAILS=$ALLOWED"
   "PREFLIGHT_SMTP_HOST=$(value PREFLIGHT_SMTP_HOST)"
   "PREFLIGHT_SMTP_PORT=${port:-587}"
   "PREFLIGHT_SMTP_USER=$(value PREFLIGHT_SMTP_USER)"

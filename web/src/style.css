@@ -830,6 +830,11 @@ h1 {
 .upload-heading p {
   margin: 4px 0 12px;
 }
+/* signed out, the upload button is a link to sign-in */
+a.file-button {
+  text-decoration: none;
+}
+
 .file-button > span {
   margin-left: 14px;
 }

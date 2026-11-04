@@ -105,6 +105,7 @@ export type Date = string;
 export type RegisterId1 = string;
 export type Wording = string;
 export type Votes = number | null;
+export type Quotes = string[];
 export type Flags = Flag[];
 export type Notice =
   "PreFlight screens ads against the dated sources named in this report. It is not legal advice, and it does not decide whether an ad may run: a person makes that call.";
@@ -212,6 +213,7 @@ export interface Flag {
   sources: Sources;
   suggested_wording: SuggestedWording | null;
   votes: Votes;
+  quotes: Quotes;
 }
 export interface RegisterRef {
   kind: Kind6;

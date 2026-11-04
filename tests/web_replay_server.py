@@ -45,7 +45,7 @@ def replay_clients(directory):
             script = any((directory / f"media{suffix}").exists() for suffix in (".txt", ".md"))
             spark = Spark(store, api)
             if script:
-                source = next(directory.glob("media.*")).read_text(encoding="utf-8")
+                source = next(directory.glob("media.*")).read_text(encoding="utf-8-sig")
                 spark = BrowserScriptSpark(empty=source.startswith("SUPER: Orange flavour"),
                                            broken=source.startswith("VO: Synthetic incomplete"))
             yield Models(spark, VoiceTranscribe(store, "replay-only", http=http),

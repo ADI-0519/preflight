@@ -1,0 +1,168 @@
+{
+  "item_id": "A22-1154125",
+  "kind": "ruling",
+  "label": "positive",
+  "outcome": "upheld",
+  "claims": [
+    {
+      "claim": "CBD Oil UK: The 6 Best CBD Oils Reviewed (2021)",
+      "rules": [
+        "2.1",
+        "2.3",
+        "2.4",
+        "3.1"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "CBD Oil UK: 6 Best CBD Oil Brands in the UK Reviewed",
+      "rules": [
+        "2.1",
+        "2.3",
+        "2.4",
+        "3.1"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "CBD Oil UK: The 8 Best (& Tested) CBD Oils for 2022",
+      "rules": [
+        "2.1",
+        "2.3",
+        "2.4",
+        "3.1"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "Here Consumer Logic Research gives its verdict",
+      "rules": [
+        "2.1",
+        "2.3",
+        "2.4",
+        "3.1"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "In this article, Consumer Logic Research take you through the ins and outs of what they claim to be the UK’s eight best CBD oil brands",
+      "rules": [
+        "2.1",
+        "2.3",
+        "2.4",
+        "3.1"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "Here Consumer Logic Research takes a look at CBD oil and recommends what readers should buy",
+      "rules": [
+        "2.1",
+        "2.3",
+        "2.4",
+        "3.1"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "Blessed CBD also sells CBD creams for topical pain relief",
+      "rules": [
+        "12.1",
+        "12.11"
+      ],
+      "points": [
+        2
+      ]
+    },
+    {
+      "claim": "CBD has helped people the world over with issues like chronic pain, seizures, sleep disorders, and more",
+      "rules": [
+        "15.6.2"
+      ],
+      "points": [
+        3
+      ]
+    },
+    {
+      "claim": "the plant-derived substance possess natural healing properties that are said to treat a number of chronic neurological issues",
+      "rules": [
+        "15.6.2"
+      ],
+      "points": [
+        3
+      ]
+    },
+    {
+      "claim": "A natural way to manage chronic pain […] all can prove effective in alleviating the body from unwanted pain […] a safer alternative to traditional, hardcore prescription drugs",
+      "rules": [
+        "15.6.2"
+      ],
+      "points": [
+        3
+      ]
+    },
+    {
+      "claim": "the ability to include a good night’s sleep, which can prove quite helpful for those suffering from sleeping disorders",
+      "rules": [
+        "15.6.2"
+      ],
+      "points": [
+        3
+      ]
+    },
+    {
+      "claim": "its power to counter anxiety and stress […] many people use CBD to calm their nerves",
+      "rules": [
+        "15.6.2"
+      ],
+      "points": [
+        3
+      ]
+    },
+    {
+      "claim": "Studies have shown CBD may assist in alleviating various symptoms, such as anxiety, chronic pain relief, inflammation, sleep, and sports recovery",
+      "rules": [
+        "15.6.2",
+        "15.1",
+        "15.1.1",
+        "15.7"
+      ],
+      "points": [
+        3,
+        4
+      ]
+    },
+    {
+      "claim": "get the best effects of CBD, especially in the potential management of pain, epilepsy or anxiety",
+      "rules": [
+        "15.6.2"
+      ],
+      "points": [
+        3
+      ]
+    },
+    {
+      "claim": "taking care of your body and mind with the help of CBD",
+      "rules": [
+        "15.2"
+      ],
+      "points": [
+        5
+      ]
+    }
+  ],
+  "written_by": "draft: scripts/draft_split_v3.py",
+  "checked_by": "checker: checked 2026-11-04 by two independent checkers, differences settled against the ruling page"
+}

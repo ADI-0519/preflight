@@ -57,6 +57,12 @@ def script_result(**changes):
     return Screening(**(fields | changes))
 
 
+def test_script_report_does_not_display_media_dimensions():
+    report = render_html(script_result())
+    assert "None × None" not in report and "None &#215; None" not in report
+    assert "script, content" in report
+
+
 def test_parser_preserves_raw_quotes_channels_and_physical_line_numbers():
     lines = parse_script(b"\xef\xbb\xbfVO: Treats anxiety\r\n\r\n  super: Orange flavour\r\n# Literal <b>copy</b>\n")
     assert [(s.line_number, s.channel, s.text) for s in lines] == [

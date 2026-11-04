@@ -202,6 +202,8 @@ class Flag(_Record):
     suggested_wording: SuggestedWording | None = None
     # judge samples that flagged the claim when the check votes; none from a single sample
     votes: int | None = Field(default=None, ge=1)
+    # the phrases of the claim that carry the breach, copied from the claim's text; none when the whole claim does
+    quotes: tuple[Annotated[str, Field(min_length=1)], ...] = ()
 
     @model_validator(mode="after")
     def _sources_fit_kind(self) -> Self:
@@ -238,7 +240,7 @@ class Snapshots(_Record):
 
 
 class Screening(_Record):
-    # Historical media results remain readable; script evidence requires v3.
+    # v3 adds optional marked phrases and script evidence; historical media results remain readable.
     schema_version: Literal["1", "2", SCHEMA_VERSION] = SCHEMA_VERSION
     screening_id: str
     # the screening this one re-checks after a fix round
@@ -327,9 +329,13 @@ class Screening(_Record):
                 )
                 if not found:
                     raise ValueError(f"claim {claim.claim_id} points at evidence missing from the screening: {e!r}")
+        text = {c.claim_id: c.text for c in self.claims}
         for f in self.flags:
             if f.claim_id not in claims:
                 raise ValueError(f"flag {f.flag_id} is on unknown claim {f.claim_id}")
+            # rule 3: a flag points only at words the ad says
+            if any(q not in text[f.claim_id] for q in f.quotes):
+                raise ValueError(f"flag {f.flag_id} quotes words missing from claim {f.claim_id}")
         return self
 
 

@@ -45,6 +45,7 @@ test('script upload, numbered evidence, sources, report and reload stay script-o
   await page.getByRole('link', { name: 'Open full source report' }).click();
   const reportPage = await reportPageOpened;
   await expect(reportPage.locator('body')).toContainText('Script line 1');
+  await expect(reportPage.locator('body')).not.toContainText('None × None');
   await reportPage.close();
   await page.reload();
   await expect(page.getByRole('region', { name: 'Script source', exact: true })).toContainText(
@@ -59,7 +60,7 @@ test('script upload, numbered evidence, sources, report and reload stay script-o
 });
 
 test('script clean and incomplete results keep the finished-ad limitation', async ({ page }) => {
-  await uploadScript(page, 'SUPER: Orange flavour\n');
+  await uploadScript(page, '\uFEFFSUPER: Orange flavour\n');
   await expect(page.getByRole('region', { name: 'Script source', exact: true })).toBeVisible();
   await expect(page.getByText('No issues found against', { exact: false })).toBeVisible();
   await expect(page.locator('.script-source')).toContainText('Screen the finished ad separately');

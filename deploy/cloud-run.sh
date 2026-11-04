@@ -68,9 +68,10 @@ for name in META_API_KEY PREFLIGHT_SMTP_PASSWORD PREFLIGHT_SESSION_SECRET; do
     printf '%s' "$wanted" | gcloud secrets versions add "$secret" --data-file=- --project "$PROJECT" >/dev/null
     # the free tier covers six active versions, so older ones are destroyed
     latest=$(gcloud secrets versions list "$secret" --project "$PROJECT" --filter state=ENABLED \
-      --sort-by ~createTime --format 'value(name)' | head -n 1)
+      --sort-by ~createTime --format 'value(name.basename())' | tr -d '\r' | head -n 1)
+    # compare version numbers, not full names, without Windows carriage returns, or destroy picks the wrong one
     for old in $(gcloud secrets versions list "$secret" --project "$PROJECT" --filter 'state!=DESTROYED' \
-      --format 'value(name)'); do
+      --format 'value(name.basename())' | tr -d '\r'); do
       [ "$old" = "$latest" ] || gcloud secrets versions destroy "$old" --secret "$secret" --project "$PROJECT" --quiet >/dev/null
     done
     echo "  $secret updated"

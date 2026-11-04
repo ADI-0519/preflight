@@ -15,7 +15,7 @@ Built 31 Oct 2026 by `preflight.eval.reconstruct` from the 74 ruling items in sp
 
 ## Run of 31 Oct 2026
 
-| | |
+| checker: passes | checker: passes |
 |---|---|
 | Ruling items in split v1 | 74 |
 | Built | 74 (38 image, 36 video) |
@@ -35,53 +35,57 @@ Video items run longer than the prompt's 40 seconds when the quoted voiceover is
 
 ## Spot-check (product rule 8)
 
-Two founders check each item below before reconstructions are used in any run: the wording is carried exactly, nothing is added, and no real brand or person's likeness appears. The list is every item the automatic check flagged (26) plus 10 of the other 48 drawn at random (seed 15). Open `data/raw/reconstructions/<id>/` next to the ruling page, and put your GitHub name in a column when the item passes, or a note when it does not.
+Two checkers check each item below before reconstructions are used in any run: the wording is carried exactly, nothing is added, and no real brand or person's likeness appears. The list is from the rebuild of 3 Nov 2026: every item the automatic check flagged (31) plus the same 10 of the others drawn at random in the first build (seed 15). A checker is a founder, or an independent checker as in `docs/notes/decisions.md` (4 Nov 2026, P33). Open `data/raw/reconstructions/<id>/` next to the ruling page, and put your name in a column when the item passes, or a note when it does not.
 
-| Item | Split | Format | Claims carried | Why checked | Founder 1 | Founder 2 |
+| Item | Split | Format | Claims carried | Why checked | Checker 1 | Checker 2 |
 |---|---|---|---|---|---|---|
-| A24-1228813 | dev | video | 3 of 5 | 2 claim(s) missing | | |
-| A24-1231792 | dev | image | 4 of 6 | 2 claim(s) missing | | |
-| A24-1238193 | dev | video | 4 of 6 | 2 claim(s) missing | | |
-| A24-1239904 | dev | video | 23 of 24 | 1 claim(s) missing | | |
-| A24-1239905 | dev | video | 27 of 28 | 1 claim(s) missing | | |
-| A24-1241023 | dev | image | 12 of 13 | 1 claim(s) missing | | |
-| A24-1242030 | test | image | 3 of 4 | 1 claim(s) missing | | |
-| A24-1269415 | test | video | 6 of 6 | 1 added line(s) | | |
-| A25-1281257 | test | video | 23 of 25 | 2 claim(s) missing | | |
-| A25-1281265 | test | image | 11 of 13 | 2 claim(s) missing, 1 added line(s) | | |
-| A25-1281266 | test | video | 12 of 12 | 2 added line(s) | | |
-| A25-1303537 | test | image | 4 of 5 | 1 claim(s) missing | | |
-| A25-1303555 | test | video | 25 of 27 | 2 claim(s) missing | | |
-| A25-1303556 | test | image | 9 of 10 | 1 claim(s) missing | | |
-| A25-1303750 | test | image | 1 of 2 | 1 claim(s) missing | | |
-| A25-1313821 | test | image | 14 of 15 | 1 claim(s) missing | | |
-| A25-1313823 | test | video | 38 of 39 | 1 claim(s) missing | | |
-| A25-1317723 | test | image | 11 of 12 | 1 claim(s) missing | | |
-| A26-1325179 | test | video | 43 of 48 | 5 claim(s) missing, 1 added line(s) | | |
-| A26-1330390 | test | video | 11 of 12 | 1 claim(s) missing | | |
-| A26-1341476 | test | image | 4 of 4 | fallback picture | | |
-| G23-1215538 | dev | video | 4 of 5 | 1 claim(s) missing | | |
-| G24-1248968 | dev | video | 14 of 15 | 1 claim(s) missing | | |
-| G24-1252527 | test | image | 11 of 14 | 3 claim(s) missing, 2 added line(s) | | |
-| G25-1323444 | test | image | 16 of 18 | 2 claim(s) missing | | |
-| G26-1339905 | test | video | 2 of 3 | 1 claim(s) missing | | |
-| A23-1191380 | dev | image | 3 of 3 | random sample | | |
-| A23-1196136 | dev | video | 6 of 6 | random sample | | |
-| A23-1202159 | dev | video | 12 of 12 | random sample | | |
-| A23-1216841 | dev | image | 8 of 8 | random sample | | |
-| A24-1240828 | dev | image | 5 of 5 | random sample | | |
-| A24-1240834 | test | video | 7 of 7 | random sample | | |
-| A24-1241024 | dev | video | 6 of 6 | random sample | | |
-| A24-1243213 | dev | video | 10 of 10 | random sample | | |
-| A25-1279959 | test | image | 11 of 11 | random sample | | |
-| A25-1303746 | test | video | 7 of 7 | random sample | | |
+| A24-1228813 | dev | video | 3 of 5 | 2 claim(s) missing | checker: passes | checker: passes |
+| A24-1231792 | dev | image | 4 of 6 | 2 claim(s) missing | checker: passes | checker: passes |
+| A24-1238193 | dev | video | 4 of 6 | 2 claim(s) missing | checker: passes | checker: fails |
+| A24-1239904 | dev | video | 23 of 24 | 1 claim(s) missing | checker: passes | checker: passes |
+| A24-1239905 | dev | video | 27 of 28 | 1 claim(s) missing | checker: passes | checker: passes |
+| A24-1241022 | dev | image | 27 of 27 | 1 added line(s) | checker: passes | checker: passes |
+| A24-1241023 | dev | image | 12 of 13 | 1 claim(s) missing | checker: passes | checker: passes |
+| A24-1242030 | test | image | 3 of 4 | 1 claim(s) missing | checker: fails | checker: fails |
+| A24-1251814 | test | image | 8 of 10 | 2 claim(s) missing | checker: fails | checker: fails |
+| A24-1269415 | test | video | 5 of 6 | 1 claim(s) missing, 1 added line(s) | checker: passes | checker: passes |
+| A25-1279959 | test | image | 10 of 11 | 1 claim(s) missing | checker: fails | checker: fails |
+| A25-1281257 | test | video | 23 of 25 | 2 claim(s) missing | checker: fails | checker: fails |
+| A25-1281265 | test | image | 11 of 13 | 2 claim(s) missing | checker: fails | checker: fails |
+| A25-1281266 | test | video | 12 of 12 | 2 added line(s) | checker: passes | checker: passes |
+| A25-1289625 | test | image | 3 of 3 | 1 added line(s) | checker: passes | checker: passes |
+| A25-1303537 | test | image | 4 of 5 | 1 claim(s) missing | checker: passes | checker: passes |
+| A25-1303555 | test | video | 25 of 27 | 2 claim(s) missing | checker: passes | checker: passes |
+| A25-1303556 | test | image | 9 of 10 | 1 claim(s) missing | checker: fails | checker: passes |
+| A25-1303750 | test | image | 1 of 2 | 1 claim(s) missing | checker: passes | checker: passes |
+| A25-1313821 | test | image | 14 of 15 | 1 claim(s) missing | checker: passes | checker: passes |
+| A25-1313823 | test | video | 38 of 39 | 1 claim(s) missing | checker: passes | checker: passes |
+| A25-1317723 | test | image | 11 of 12 | 1 claim(s) missing | checker: passes | checker: passes |
+| A26-1325179 | test | video | 43 of 48 | 5 claim(s) missing, 1 added line(s) | checker: passes | checker: fails |
+| A26-1330390 | test | video | 11 of 12 | 1 claim(s) missing | checker: fails | checker: fails |
+| A26-1341476 | test | image | 4 of 4 | fallback picture | checker: passes | checker: passes |
+| G23-1215538 | dev | video | 4 of 5 | 1 claim(s) missing | checker: fails | checker: fails |
+| G24-1241706 | dev | video | 8 of 10 | 2 claim(s) missing, fallback picture | checker: passes | checker: passes |
+| G24-1248968 | dev | video | 14 of 15 | 1 claim(s) missing | checker: passes | checker: passes |
+| G24-1252527 | test | image | 11 of 14 | 3 claim(s) missing | checker: fails | checker: fails |
+| G25-1323444 | test | image | 16 of 18 | 2 claim(s) missing, 2 added line(s) | checker: fails | checker: fails |
+| G26-1339905 | test | video | 2 of 3 | 1 claim(s) missing | checker: passes | checker: passes |
+| A23-1191380 | dev | image | 3 of 3 | random sample | checker: fails | checker: fails |
+| A23-1196136 | dev | video | 6 of 6 | random sample | checker: passes | checker: passes |
+| A23-1202159 | dev | video | 12 of 12 | random sample | checker: passes | checker: passes |
+| A23-1216841 | dev | image | 8 of 8 | random sample | checker: passes | checker: passes |
+| A24-1240828 | dev | image | 5 of 5 | random sample | checker: passes | checker: passes |
+| A24-1240834 | test | video | 7 of 7 | random sample | checker: passes | checker: passes |
+| A24-1241024 | dev | video | 6 of 6 | random sample | checker: passes | checker: passes |
+| A24-1243213 | dev | video | 10 of 10 | random sample | checker: passes | checker: passes |
+| A25-1303746 | test | video | 7 of 7 | random sample | checker: passes | checker: passes |
 
 Reading reconstructions of test items means reading test-split ad wording, so the checkers should stay off prompt and few-shot work (rule 5), as for the ground truth.
 
 ## Still to do
 
 - **Gate 1:** `docs/notes/decisions.md` says the organisers' answer on gate 1 is needed before P15. It has not arrived. These reconstructions stay local and unpublished until it does.
-- **Spot-check** above, by two founders.
+- **Spot-check** above, by two checkers.
 - **Names that carry claims:** the decision above.
 
 ## Rebuild

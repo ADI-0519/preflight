@@ -1,5 +1,8 @@
 import argparse
+import csv
 import json
+import random
+import sys
 from collections import defaultdict
 from difflib import SequenceMatcher
 from pathlib import Path
@@ -131,14 +134,43 @@ def diagnose(run_id: str, directory: Path | None = None, baseline: str | None = 
     }
 
 
+GRADE_FIELDS = ("item_id", "screening_id", "claim_id", "tier", "text", "rules", "reasons", "grade")
+
+
+def grading_sheet(report: dict, n: int, out: Path) -> int:
+    """Write n unmatched lines, drawn with the run ID as seed, for a blind grade: breach, arguable or wrong.
+
+    The sheet holds each line's tier, rules and the judge's reasons but not the ruling, so a grader working from
+    the CAP rule pack is not steered by what the ASA said.
+    """
+    lines = report["unmatched_lines"]
+    drawn = random.Random(report["run"]["run_id"]).sample(lines, min(n, len(lines)))
+    out.parent.mkdir(parents=True, exist_ok=True)
+    with out.open("w", newline="", encoding="utf-8") as f:
+        w = csv.DictWriter(f, GRADE_FIELDS)
+        w.writeheader()
+        w.writerows({
+            "item_id": x["item_id"], "screening_id": x["screening_id"], "claim_id": x["claim_id"],
+            "tier": x["tier"], "text": x["text"], "rules": " ".join(x["primary_rules"] + x["other_rules"]),
+            "reasons": " | ".join(x["flags"]["reasons"]), "grade": "",
+        } for x in drawn)  # fmt: skip
+    return len(drawn)
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Diagnose saved dev misses and unmatched lines without model calls.")
     parser.add_argument("plain", metavar="PLAIN_RUN")
     parser.add_argument("stress", nargs="?", metavar="STRESS_RUN", help="compare losses against PLAIN_RUN")
     parser.add_argument("--screenings", type=Path, help="saved folder for the diagnosed run (not its baseline)")
     parser.add_argument("--json", action="store_true", help="include claim evidence and tiers as JSON on stdout")
+    parser.add_argument("--grade", type=int, metavar="N", help="write N unmatched lines for a blind grade")
+    parser.add_argument("--grade-out", type=Path, help="the grading sheet (default: data/work/grading/<run>.csv)")
     args = parser.parse_args()
     report = diagnose(args.stress or args.plain, args.screenings, args.plain if args.stress else None)
+    if args.grade:
+        out = args.grade_out or Path("data/work/grading") / f"{report['run']['run_id']}.csv"
+        n = grading_sheet(report, args.grade, out)
+        print(f"wrote {n} of {len(report['unmatched_lines'])} unmatched lines to {out}", file=sys.stderr)
     if args.json:
         print(json.dumps(report, indent=2))
         return

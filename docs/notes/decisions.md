@@ -26,6 +26,8 @@
   applies only to that copy; the finished ad requires a separate screening.
   The 4 November integration correction above moves the combined contract to v4.
 
+- **4 Nov 2026 (P66 follow-up, after the test run).** A judge sample whose answer breaks the output contract is asked once more, as sample number + 100 (`preflight.check.RETRY`), with its own rule order, before it abstains. Before this, two broken samples out of three failed the check and the screening showed Incomplete, and a single-sample check failed on one. The retry costs one judge call per broken answer and nothing otherwise. A run recorded before the retry has no second answer, so its replay abstains as it did and the registered runs, test runs included, reproduce unchanged. It is not part of the configuration frozen for the test run; new runs that use it are not compared with the test figures as like for like. Proposed by Yaseen; the other two to confirm.
+
 - **3 Nov 2026 (P43/dev integration).** At the user's request, incorporated the
   teammate's P43 commits through `50426a2` and merged dev `d026fca`. Retained the
   measured development-only triage path and the selected runtime/evaluation

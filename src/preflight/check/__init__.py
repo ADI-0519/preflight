@@ -11,7 +11,7 @@ from pydantic import BaseModel, ConfigDict, Field
 from preflight.check.precedents import PrecedentIndex
 from preflight.check.shortlist import Shortlist, shortlist
 from preflight.claims import PROMPTS, listing
-from preflight.models import Spark
+from preflight.models import CacheMiss, Spark
 from preflight.schema import (
     SCHEMA_VERSION,
     CapRuleRef,
@@ -40,6 +40,8 @@ EFFORT = "high"
 # judge samples per ad; when the check votes, a claim is flagged when two of three agree
 VOTE_SAMPLES = 3
 SAMPLES = VOTE_SAMPLES
+# a sample whose answer breaks the contract is asked again once, as sample number + RETRY
+RETRY = 100
 PRECEDENTS = 3
 # per-claim retrieval: each claim's closest ruling, the most shared first, up to this many in the call
 PRECEDENTS_PER_CLAIM_MAX = 5
@@ -313,7 +315,7 @@ def check(
         rulings, closest = precedents_for(claims, precedents, per_claim)
         schema = output_schema(claims, found, rules, rulings, quote=asks_quote(prompt))
 
-        def judge(sample: int):
+        def judge(sample: int, retry: bool = True):
             # the same wording with the rules in another fixed order; sample 0 keeps the pack's order
             order = random.Random(sample).sample(rules, len(rules)) if sample else rules
             text = question(screening, found, order, rulings, prompt, closest)
@@ -321,6 +323,18 @@ def check(
             try:
                 return r, parse(r.data, claims, found, rulings, rules)
             except ValueError as e:
+                if retry:
+                    # a broken answer is usually a one-off, so one more draw keeps the vote, or the single answer, whole
+                    log.warning(
+                        "judge sample %d broke the contract, asking again: %s",
+                        sample,
+                        type(e).__name__,
+                    )
+                    try:
+                        return judge(sample + RETRY, retry=False)
+                    except CacheMiss:
+                        # a run recorded before the retry has no second answer, so its replay abstains as it did
+                        pass
                 if samples == 1:
                     raise
                 # an answer that breaks the contract abstains from the vote; the samples left decide

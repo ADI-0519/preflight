@@ -4,8 +4,8 @@ from types import SimpleNamespace
 import pytest
 from pydantic import ValidationError
 
-from preflight.check import PROMPT_VERSION, asks_quote, check, output_schema
-from preflight.models import SparkResult
+from preflight.check import PROMPT_VERSION, RETRY, asks_quote, check, output_schema
+from preflight.models import CacheMiss, SparkResult
 from preflight.schema import Ad, Claim, Screening, Segment, Snapshots, StageRun, TranscriptEvidence
 from preflight.sources.register import load_register
 from preflight.sources.rulings import Ruling
@@ -289,17 +289,22 @@ def test_existing_check_is_not_overwritten():
 
 
 class SampledSpark:
-    def __init__(self, samples):
-        self.samples, self.calls = samples, []
+    def __init__(self, samples, retries=None):
+        self.samples, self.retries, self.calls = samples, retries or {}, []
 
     def ask(self, text, **kwargs):
         self.calls.append((text, kwargs))
-        verdicts = [{"claim_id": i, **v} for i, v in self.samples[kwargs["sample"]].items()]
+        n = kwargs["sample"]
+        # unless told otherwise, a sample asked again gives the same answer, so a lasting break still abstains
+        answer = self.retries[n] if n in self.retries else self.samples[n % RETRY]
+        if answer is None:
+            raise CacheMiss("no recorded response")
+        verdicts = [{"claim_id": i, **v} for i, v in answer.items()]
         return SparkResult("muse-spark-1.3", "", {"verdicts": verdicts}, {})
 
 
-def vote_on(samples, first_sample=0):
-    spark = SampledSpark(samples)
+def vote_on(samples, first_sample=0, retries=None):
+    spark = SampledSpark(samples, retries)
     out = check(screening(), spark, FakeIndex(), samples=3, first_sample=first_sample)
     return out, spark.calls
 
@@ -391,6 +396,33 @@ def test_malformed_vote_does_not_log_customer_text(caplog):
     out, _ = vote_on([clean, malformed, clean])
     assert out.stages[-1].samples == 2
     assert "abstains" in caplog.text and sensitive not in caplog.text
+
+
+def test_a_broken_sample_is_asked_again_once_and_its_new_answer_votes():
+    broken = {"claim-0": verdict(rules=["15.1.1"]), "claim-1": verdict(), "claim-2": verdict()}
+    flagged = {"claim-0": breach("15.1.1"), "claim-1": verdict(), "claim-2": verdict()}
+    out, calls = vote_on([broken, flagged, broken], retries={RETRY: flagged})
+    assert sorted(kw["sample"] for _, kw in calls) == [0, 1, 2, RETRY, RETRY + 2]
+    # sample 2's second answer is broken too, so it abstains and two answers decide
+    assert [(f.claim_id, f.votes) for f in out.flags] == [("claim-0", 2)] and out.stages[-1].samples == 2
+
+
+def test_a_single_broken_sample_is_asked_again_before_the_check_fails():
+    broken = {"claim-0": verdict(rules=["15.1.1"]), "claim-1": verdict(), "claim-2": verdict()}
+    flagged = {"claim-0": breach("15.1.1"), "claim-1": verdict(), "claim-2": verdict()}
+    spark = SampledSpark([broken], {RETRY: flagged})
+    out = check(screening(), spark, FakeIndex(), samples=1)
+    assert [kw["sample"] for _, kw in spark.calls] == [0, RETRY] and out.flags[0].claim_id == "claim-0"
+    with pytest.raises(ValueError):
+        check(screening(), SampledSpark([broken]), FakeIndex(), samples=1)
+
+
+def test_a_replay_recorded_before_the_retry_abstains_as_it_did():
+    broken = {"claim-0": verdict(rules=["15.1.1"]), "claim-1": verdict(), "claim-2": verdict()}
+    flagged = {"claim-0": breach("15.1.1"), "claim-1": verdict(), "claim-2": verdict()}
+    # the recording holds no second answer for sample 1, as in a run made before the retry
+    out, _ = vote_on([flagged, broken, flagged], retries={RETRY + 1: None})
+    assert [(f.claim_id, f.votes) for f in out.flags] == [("claim-0", 2)] and out.stages[-1].samples == 2
 
 
 def test_two_broken_samples_fail_the_check_rather_than_read_clean():

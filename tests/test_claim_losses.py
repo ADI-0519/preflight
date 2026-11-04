@@ -1,3 +1,4 @@
+import csv
 import importlib.util
 import json
 import socket
@@ -118,6 +119,26 @@ def test_diagnostic_guards_run_before_labels(tmp_path, monkeypatch, case):
     monkeypatch.setattr(run, "load_ground_truth", lambda *args: pytest.fail("guard opened labels"))
     with pytest.raises(SystemExit):
         losses.diagnose("screen-1")
+
+
+def test_grading_sheet_samples_unmatched_lines_without_the_ruling(tmp_path, monkeypatch):
+    s = screening("s", ["Reduced stress and anxiety", "Boosts energy", "Supports immunity"],
+                  {"Reduced stress and anxiety": ["15.6.2"], "Boosts energy": ["15.1"], "Supports immunity": ["15.1"]})
+    truth = GroundTruth(item_id="T1", kind="team", label="positive", outcome=None, written_by="synthetic",
+                        checked_by=None, claims=[BreachingClaim(claim=CLAIM, rules=RULES, points=[1])])
+    monkeypatch.setattr(losses, "saved", lambda *args: (
+        {"run_id": "screen-1", "split": "v2", "part": "dev", "stage": "screen"}, {"T1": [s]}, [truth],
+    ))
+    report = losses.diagnose("screen-1")
+    out = tmp_path / "sheet.csv"
+    assert losses.grading_sheet(report, 1, out) == 1
+    rows = list(csv.DictReader(out.open(encoding="utf-8")))
+    assert rows[0]["text"] in {"Boosts energy", "Supports immunity"} and rows[0]["grade"] == ""
+    # the same run always draws the same lines, and the ASA's claim never reaches the grader
+    again = tmp_path / "again.csv"
+    losses.grading_sheet(report, 1, again)
+    assert again.read_text(encoding="utf-8") == out.read_text(encoding="utf-8")
+    assert CLAIM not in out.read_text(encoding="utf-8").lower()
 
 
 def test_empty_target_is_not_covered_by_empty_pieces():

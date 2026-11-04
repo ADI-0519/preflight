@@ -1,5 +1,22 @@
 # Decisions
 
+- **4 Nov 2026 (P72 schema integration review).** P72 originally changed v2 to v3
+  for scripts, while dev independently used v3 for `Flag.quotes`. The combined
+  contract is now v4. New outputs use v4; historical v1/v2/v3 media results retain
+  their version and still require dimensions. Previously saved P72-v3 scripts are
+  normalised to v4 in memory when read, without rewriting their stored files or
+  changing their source/evidence. New script outputs never carry dev's v3 tag.
+  Scripts still require source lines and reject media evidence. Unreadable script
+  encoding/control bytes return HTTP 415 like unreadable media; readable but empty
+  or over-line-limit scripts remain 422, and byte-size limits remain 413.
+
+
+- **3 Nov 2026 (P72).** The user confirmed in this working session that all three
+  founders agreed to script-line evidence: a script flag shows its exact quoted
+  source line and physical line number, with the existing policy provenance.
+  Media evidence requirements remain unchanged. P72 initially used schema v3 for script input and
+  script-line evidence; v1/v2 media results remain readable. A script screening
+  applies only to that copy; the finished ad requires a separate screening.
 - **4 Nov 2026 (P66 follow-up, after the test run).** A judge sample whose answer breaks the output contract is asked once more, as sample number + 100 (`preflight.check.RETRY`), with its own rule order, before it abstains. Before this, two broken samples out of three failed the check and the screening showed Incomplete, and a single-sample check failed on one. The retry costs one judge call per broken answer and nothing otherwise. A run recorded before the retry has no second answer, so its replay abstains as it did and the registered runs, test runs included, reproduce unchanged. It is not part of the configuration frozen for the test run; new runs that use it are not compared with the test figures as like for like. Proposed by Yaseen; the other two to confirm.
 
 - **3 Nov 2026 (P43/dev integration).** At the user's request, incorporated the

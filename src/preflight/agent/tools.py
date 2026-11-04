@@ -31,7 +31,8 @@ TOOLS = [
             "type": "object",
             "properties": {
                 "target": {
-                    "type": "string", "description": "a path to a video or image file, or an http(s) URL of a page",
+                    "type": "string",
+                    "description": "a path to a video, image or UTF-8 .txt/.md script, or an http(s) page URL",
                 },
             },
             "required": ["target"],
@@ -81,6 +82,8 @@ def source_text(source: SourceRef) -> str:
 
 def evidence_text(screening: Screening, evidence: Evidence) -> str:
     match evidence.kind:
+        case "script":
+            return f"script line {evidence.line_number}: {evidence.text}"
         case "transcript":
             found = next(s for s in screening.segments if s.segment_id == evidence.segment_id)
             return f"transcript {found.start}–{found.end} s"

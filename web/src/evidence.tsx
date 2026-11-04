@@ -49,6 +49,7 @@ export function TierSummary({ tiers, flags }: { tiers: TierCounts; flags: number
 
 // a still has no time axis, and an untimed caption must not read as 0:00.0
 function when(e: Evidence, still: boolean) {
+  if (e.line_number) return `Script line ${e.line_number}`;
   if (still) return `${e.kind} (still)`;
   if (!e.timed) return `${e.kind}, time not read`;
   return e.end > e.start
@@ -89,7 +90,12 @@ export function ClaimTrack({
       )}
       {claims.map((c) => {
         const mark = markOf(c);
-        const at = c.start === null ? untimed(still) : timestamp(c.start);
+        const scriptLine = c.evidence.find((e) => e.line_number)?.line_number;
+        const at = scriptLine
+          ? `Line ${scriptLine}`
+          : c.start === null
+            ? untimed(still)
+            : timestamp(c.start);
         return (
           <button
             key={c.claim_id}

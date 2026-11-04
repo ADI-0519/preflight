@@ -10,8 +10,9 @@ from urllib.parse import urlsplit
 
 from pydantic import BaseModel, ConfigDict
 
+from preflight.ingest.script import SCRIPT_SUFFIXES, parse_script, script_bytes
 from preflight.models.store import digest
-from preflight.schema import Ad
+from preflight.schema import Ad, ScriptLine
 
 # the transcription limit is 10 minutes
 MAX_SECONDS = 600
@@ -43,6 +44,7 @@ class Ingested(BaseModel):
     keyframes: tuple[int, ...]
     url: str | None = None
     text: Path | None = None
+    script_lines: tuple[ScriptLine, ...] = ()
 
 
 def run(*cmd: str, cwd: Path | None = None) -> str:
@@ -168,6 +170,21 @@ def ingest(
     rate: float = 2.0,
     threshold: float = 0.3,
 ) -> Ingested:
+    if path.suffix.lower() in SCRIPT_SUFFIXES:
+        if media is not None:
+            raise ValueError("a script cannot be ingested as a page")
+        raw = script_bytes(path)
+        lines = parse_script(raw)
+        key = digest(raw)
+        directory = out_root.resolve() / key
+        directory.mkdir(parents=True, exist_ok=True)
+        source = directory / "script.txt"
+        if source.resolve() != path.resolve():
+            source.write_bytes(raw)
+        done = Ingested(ad=Ad(content_hash=key, media="script"), source=source,
+                        audio=None, video=None, rate=None, threshold=0, frames=(), keyframes=(), script_lines=lines)
+        (directory / MANIFEST).write_text(done.model_dump_json(), encoding="utf-8")
+        return done
     return ingest_file(path, out_root, media, rate, threshold)
 
 
@@ -175,7 +192,9 @@ def ingest_cards(
     cards: list[Path], out_root: Path = Path("data/work"), *, rate: float = 2.0, threshold: float = 0.3
 ) -> Ingested:
     if len(cards) == 1:
-        return ingest_file(cards[0], out_root, None, rate, threshold)
+        return ingest(cards[0], out_root, rate=rate, threshold=threshold)
+    if any(p.suffix.lower() in SCRIPT_SUFFIXES for p in cards):
+        raise ValueError("a script is screened on its own, not as a carousel card")
     # one ad's cards are read together, so a claim split across two cards reaches the screening whole
     return ingest_file(slideshow(cards, out_root), out_root, None, rate, threshold)
 

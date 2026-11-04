@@ -1141,3 +1141,28 @@ footer {
 .tier-summary p {
   margin: 0;
 }
+.script-source {
+  width: 100%;
+  max-height: 30rem;
+  overflow: auto;
+  padding: 1.5rem;
+  background: var(--sheet);
+  color: var(--ink);
+  text-align: left;
+}
+.script-source ol {
+  padding-left: 3rem;
+}
+.script-source li {
+  padding: 0.5rem;
+  border-bottom: 1px solid var(--line);
+}
+.script-source li.selected {
+  background: var(--hl);
+  color: var(--on-hl);
+}
+.script-source code {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font: inherit;
+}

@@ -1,6 +1,7 @@
 import type { Screening } from './screening';
 
 export interface Evidence {
+  line_number?: number | null;
   kind: string;
   start: number;
   end: number;
@@ -140,6 +141,13 @@ export const NOTICE =
   'PreFlight screens ads against the dated sources named in this report. It is not legal advice, and it does not decide whether an ad may run: a person makes that call.';
 
 export const PUBLIC_ERRORS: Record<string, string> = {
+  empty_script: 'The script needs at least one nonblank line of ad copy.',
+  invalid_script_encoding: 'Save the script as UTF-8 text and try again.',
+  invalid_script_content: 'The script contains binary or unsupported control characters.',
+  script_too_large: 'The script is too large. Use at most 64 KiB of UTF-8 text.',
+  script_too_many_lines: 'The script is too long. Use at most 1,000 lines.',
+  script_fix_not_supported:
+    'Edit the source script and screen it again. Media regeneration is not available for scripts.',
   rate_limited:
     'This workspace allows a few uploads, screenings and fixes an hour. Try again later.',
   daily_cap_reached: 'Uploads are closed for today. The labelled demos still run.',
@@ -182,7 +190,13 @@ export function post<T>(url: string, fields: unknown): Promise<T> {
 export async function upload(file: File): Promise<{ upload_id: string }> {
   return request('/uploads', {
     method: 'POST',
-    headers: { 'Content-Type': file.type },
+    headers: {
+      'Content-Type': /\.md$/i.test(file.name)
+        ? 'text/markdown'
+        : /\.txt$/i.test(file.name)
+          ? 'text/plain'
+          : file.type,
+    },
     body: file,
   });
 }

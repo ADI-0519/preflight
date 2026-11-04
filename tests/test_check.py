@@ -321,7 +321,7 @@ def test_two_of_three_samples_flag_a_claim_and_one_does_not():
     ])
     (flag,) = out.flags
     assert (flag.claim_id, flag.votes) == ("claim-0", 3)
-    assert out.schema_version == "3"
+    assert out.schema_version == "4"
 
 
 def test_rules_cited_by_two_samples_are_kept():
@@ -389,6 +389,15 @@ def test_a_sample_that_breaks_the_contract_abstains():
     assert [(f.claim_id, f.votes) for f in out.flags] == [("claim-0", 2)] and out.stages[-1].samples == 2
 
 
+def test_malformed_vote_does_not_log_customer_text(caplog):
+    clean = {f"claim-{n}": verdict() for n in range(3)}
+    sensitive = "private script wording must not enter logs"
+    malformed = {sensitive: verdict(), "claim-1": verdict(), "claim-2": verdict()}
+    out, _ = vote_on([clean, malformed, clean])
+    assert out.stages[-1].samples == 2
+    assert "abstains" in caplog.text and sensitive not in caplog.text
+
+
 def test_a_broken_sample_is_asked_again_once_and_its_new_answer_votes():
     broken = {"claim-0": verdict(rules=["15.1.1"]), "claim-1": verdict(), "claim-2": verdict()}
     flagged = {"claim-0": breach("15.1.1"), "claim-1": verdict(), "claim-2": verdict()}
@@ -443,6 +452,13 @@ def quoted(*quotes, rules=("15.1.1",)):
 def test_a_flag_marks_only_phrases_its_claim_holds(quotes, kept):
     out, _ = run({"claim-0": quoted(*quotes), "claim-1": verdict(), "claim-2": verdict()})
     assert out.flags[0].quotes == kept
+
+
+def test_rejected_quote_does_not_log_customer_text(caplog):
+    sensitive = "private submitted wording"
+    out, _ = run({"claim-0": quoted(sensitive), "claim-1": verdict(), "claim-2": verdict()})
+    assert out.flags[0].quotes == ()
+    assert "not in the claim" in caplog.text and sensitive not in caplog.text
 
 
 def test_only_prompts_that_ask_for_quotes_get_the_field():

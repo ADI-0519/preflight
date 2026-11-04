@@ -56,7 +56,11 @@ test('a refused revision keeps the original evidence and can be retried', async 
   await page.route('**/fixes', (route) =>
     route.fulfill({ status: 503, json: { error: 'worker_unavailable' } }),
   );
+  const declined = page.waitForResponse(
+    (response) => response.url().endsWith('/fixes') && response.request().method() === 'POST',
+  );
   await page.getByRole('button', { name: 'Run fix and re-screen' }).click();
+  await declined;
   await expect(page.getByRole('alert')).toContainText('HTTP 503');
   await expect(page.getByRole('link', { name: 'Open full source report' })).toHaveAttribute(
     'href',

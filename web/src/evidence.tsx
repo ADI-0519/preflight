@@ -1,6 +1,6 @@
 import type { ClaimView, Evidence, FlagView, MaySay, Tier, TierCounts } from './api';
 import { allFlags, TIER_LABEL, timestamp } from './api';
-import { MAY_SAY, MaySayList, Preview } from './workspace';
+import { MAY_SAY, MaySayList, NO_SUGGESTION, Preview } from './workspace';
 
 type Mark = 'none' | 'breach' | 'hold';
 
@@ -282,7 +282,7 @@ export function Inspector({
         <div className="inspector-body" key={claim.claim_id}>
           <div className="pair">
             <div className="pair-said">
-              <p className="pair-label">The ad says</p>
+              <p className="pair-label">Claim identified in the ad</p>
               {claim.tier && <TierChip tier={claim.tier} />}
               <h3 className="said">
                 {flagged ? <span className="hl">“{claim.text}”</span> : <>“{claim.text}”</>}
@@ -318,9 +318,7 @@ export function Inspector({
               flagged && (
                 <div className="pair-register empty">
                   <p className="pair-label">Register wording</p>
-                  <p className="none">
-                    No register wording matches this claim. A person must decide what to change.
-                  </p>
+                  <p className="none">{NO_SUGGESTION}</p>
                 </div>
               )
             )}

@@ -163,7 +163,7 @@ export const PUBLIC_ERRORS: Record<string, string> = {
   script_fix_not_supported:
     'Edit the source script and screen it again. Media regeneration is not available for scripts.',
   rate_limited:
-    'This workspace allows a few uploads, screenings and fixes an hour. Try again later.',
+    'An hourly limit for uploads, screenings or revisions has been reached. Try again later.',
   daily_cap_reached: 'Uploads are closed for today. The labelled demos still run.',
   uploads_paused: 'Uploads are paused. The labelled demos still run.',
   media_too_long: 'The video is too long. Choose a shorter one.',

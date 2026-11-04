@@ -19,8 +19,9 @@ from preflight.api.storage import APIError, Settings, write_json
 MODE_ENV = "PREFLIGHT_PUBLIC_MODE"
 HOUR = 3600
 UPLOAD_NOTICE = (
-    "Your ad is sent to the Meta Model API in Standard mode, which does not use it for training. It is deleted "
-    "after {hours:g} hours. Do not upload confidential ads."
+    "Your ad is sent to the Meta Model API in Standard mode, which does not use it for training. "
+    "Uploads expire after {hours:g} hours. Local deletion runs while the server is on and may wait for active jobs. "
+    "Do not upload confidential ads."
 )
 
 Mode = Literal["off", "on", "replay"]

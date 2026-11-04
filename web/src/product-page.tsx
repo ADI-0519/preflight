@@ -261,7 +261,8 @@ export function ProductSections() {
   );
 }
 
-export function SiteFooter() {
+// with real sign-in on, the account links to the preview pages are hidden
+export function SiteFooter({ signedIn = false }: { signedIn?: boolean }) {
   return (
     <footer className="site-footer">
       <div className="footer-main">
@@ -284,11 +285,13 @@ export function SiteFooter() {
           <a href="/#data-handling">Data handling</a>
           <a href="/docs">API documentation</a>
         </nav>
-        <nav aria-label="Account">
-          <h2>Account</h2>
-          <a href="/login">Log in</a>
-          <a href="/signup">Sign up</a>
-        </nav>
+        {!signedIn && (
+          <nav aria-label="Account">
+            <h2>Account</h2>
+            <a href="/login">Log in</a>
+            <a href="/signup">Sign up</a>
+          </nav>
+        )}
       </div>
       <div className="footer-bottom">
         <span>PreFlight / Built for considered decisions</span>

@@ -885,7 +885,7 @@ function App({ account }: { account: Account | null }) {
         )}
         {mode === 'demo' && config && <Metrics board={config.scoreboard} />}
       </main>
-      <SiteFooter />
+      <SiteFooter signedIn={account !== null} />
     </>
   );
 }

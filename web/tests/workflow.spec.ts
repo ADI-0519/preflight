@@ -12,7 +12,9 @@ test('three labelled demo states, honest scoreboard and explicit reveal', async 
   await expect(page.getByText('Network-blocked synthetic replay.', { exact: false })).toBeVisible();
   await expect(page.getByRole('note')).toContainText('a person makes that call');
   // P67: the upload notice shows before anything can be uploaded
-  await expect(page.getByText('Do not upload confidential ads.')).toBeVisible();
+  await expect(page.getByRole('region', { name: 'Upload workspace' })).toContainText(
+    'Do not upload confidential ads.',
+  );
   await expect(page.getByText('not use it for training', { exact: false })).toBeVisible();
   await page.getByRole('button', { name: 'Explore demos' }).click();
   await expect(page.getByRole('heading', { name: 'Registered test scoreboard' })).toBeVisible();
@@ -76,8 +78,11 @@ test('fresh upload uses SSE, compares fix rounds, records an explicit synthetic 
     .fill('Magnesium tablets\nBeats fatigue in seven days');
   const report = page.getByRole('link', { name: 'Open full source report' });
   const originalReport = await report.getAttribute('href');
+  const revision = page.waitForRequest(
+    (request) => request.url().endsWith('/fixes') && request.method() === 'POST',
+  );
   await page.getByRole('button', { name: 'Run fix and re-screen' }).click();
-  await expect(page.getByRole('status')).toContainText('Job running');
+  await revision;
   await expect(report).toHaveAttribute('href', originalReport!);
   await expect(page.getByRole('heading', { name: 'Round 0', exact: true })).toBeVisible({
     timeout: 30000,

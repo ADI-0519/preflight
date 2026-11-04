@@ -115,7 +115,8 @@ class Service:
             source = self.storage.job(source_id)
             if source["kind"] != "screening":
                 raise APIError(409, "screening_required")
-            self.result(source_id)
+            if self.result(source_id).ad.media == "script":
+                raise APIError(409, "script_fix_not_supported")
             upload_ids = [source["upload_ids"][0], *(s["upload_id"] for s in fields["scenes"])]
             scenes = []
             for scene in fields["scenes"]:

@@ -50,6 +50,21 @@ def gather(
     second_pass: bool = False,
     on_stage: Callable[[StageRun], None] | None = None,
 ) -> Screening:
+    if done.ad.media == "script":
+        skipped = tuple(StageRun(stage=stage, status="skipped") for stage in ("transcribe", "on_screen", "regions"))
+        if on_stage:
+            for run in skipped:
+                on_stage(run)
+        claims, run = attempt(
+            "claims", SPARK, f"{prompt}+script-v1", [],
+            lambda: extract_claims(done, spark or models.spark, [], [], [], prompt=prompt, effort=effort,
+                                   second_pass=second_pass),
+        )
+        if on_stage:
+            on_stage(run)
+        return Screening(screening_id=screening_id, ad=done.ad, snapshots=SNAPSHOTS,
+                         stages=(*skipped, run), screened_at=datetime.now(UTC), script_lines=done.script_lines,
+                         claims=claims)
     with ThreadPoolExecutor(max_workers=3) as pool:
         heard = pool.submit(
             attempt, "transcribe", TRANSCRIBE, None, [], lambda: transcribe(done, models.transcribe, align)
@@ -119,7 +134,7 @@ def screen_target(
     out.mkdir(parents=True, exist_ok=True)
     stem = out / screening.screening_id
     stem.with_suffix(".json").write_text(screening.model_dump_json(indent=1), encoding="utf-8")
-    crops = done.frames[0].path.parent.parent
+    crops = done.frames[0].path.parent.parent if done.frames else done.source.parent
     stem.with_suffix(".html").write_text(render_html(screening, crops), encoding="utf-8")
     stem.with_suffix(".view.json").write_text(json.dumps(build_view(screening), indent=1), encoding="utf-8")
     return screening, stem.with_suffix(".json"), stem.with_suffix(".html")

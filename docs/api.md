@@ -35,7 +35,7 @@ See [the web guide](./web.md) for the build, demo manifest and scoreboard contra
 | Method | Path | Behavior |
 |---|---|---|
 | GET | `/health` | Service liveness, not proof of model/account availability |
-| POST | `/uploads` | Stream one raw image/video body; return opaque upload ID and expiry |
+| POST | `/uploads` | Stream one raw image/video or UTF-8 script body; return opaque upload ID and expiry |
 | POST | `/screenings` | Queue `screen()` for `{ "upload_id": "...", "align": false }` |
 | GET | `/jobs/{id}` | Job kind/status: queued, running, completed, incomplete or failed |
 | GET | `/jobs/{id}/events` | Ordered metadata-only SSE progress; supports Last-Event-ID |
@@ -143,8 +143,9 @@ to that process. Filesystem backups and remote-provider storage are not managed 
 
 Public error bodies contain generic codes and the screening notice. Validation does
 not echo private input, and worker exceptions are not included in events or info logs.
-HTTP statuses include 413 for body limits, 415 for unsupported/unreadable media, 422
-for invalid request structure, 404/410 for unavailable/expired resources, 409 for an
+HTTP statuses include 413 for body limits, 415 for unsupported/unreadable media or
+script encoding/control bytes, 422 for invalid request structure or readable scripts
+with no ad copy or too many lines, 404/410 for unavailable/expired resources, 409 for an
 unavailable result/decision and 429 when the job queue is full. Responses use no-store.
 
 ## Verification
@@ -163,3 +164,61 @@ replay command; they are a contract test, not evidence of single-upload live acc
 Fix tests replay P41's recorded synthetic rounds through the real fix/approval logic.
 CI installs the API extra. Tests cover expiry, failed-deletion retries, active leases,
 restart, request limits, invalid media, private errors, forged wording and approval.
+## Script input (P72)
+
+Upload UTF-8 `.txt` or `.md` copy using `text/plain` or `text/markdown` on the existing upload endpoint,
+then start the normal screening job. Scripts are limited to 64 KiB and 1,000 physical lines, subject to
+any lower configured upload limit. An optional UTF-8 BOM and LF/CRLF line endings are accepted.
+Blank lines keep their physical numbering; nonblank lines are retained exactly. Leading `VO:` and
+`SUPER:` hints (case-insensitive) distinguish spoken and on-screen copy. Other lines are unlabelled.
+Markdown remains literal text: links and HTML-like content are not fetched or executed.
+
+```powershell
+curl.exe -X POST http://127.0.0.1:8000/uploads -H "Content-Type: text/plain" --data-binary "@synthetic-script.txt"
+```
+
+The CLI accepts the same files: `uv run preflight screen synthetic-script.txt --no-align`.
+Scripts skip transcription, on-screen reading and region detection. The existing extraction and checker
+run on script lines, with a separate extraction cache/version tag; adopted media prompts are unchanged.
+Schema v4 adds `ad.media = "script"`, `script_lines` and evidence with `kind: "script"`, `line_number` and
+exact original line `text`. The schema rejects mismatched source text, unknown lines and evidence from
+the wrong input mode. Scripts have no fake frame dimensions or timestamps. Existing v1/v2 media results
+remain readable, and source and suggested-wording verification still applies.
+
+The web workspace displays the numbered source and moves to the evidence line when a claim is selected.
+The report and `screen_ad` return the same quoted evidence. Every result says that the script alone was
+screened and the finished ad needs a separate check. A failed stage remains incomplete. Script results
+do not offer media regeneration; a direct media-fix request returns `409 script_fix_not_supported`.
+Text previews are served as `text/plain` with `nosniff`, never interpreted as HTML.
+
+Dev's v3 introduced marked claim phrases while P72 independently used v3 for scripts.
+The integrated contract now writes v4. Historical v1/v2/v3 media results remain
+readable under their original version and still require dimensions. Earlier P72-v3
+script results are normalised to v4 on read, in memory only; stored files and evidence
+are not rewritten. Consumers must handle `ad.media = "script"` before using dimensions.
+
+Original script bytes, parsed lines, results and model cache share the private per-upload retention
+boundary. Existing public quotas, progress/event privacy, expiry and restart handling apply. No source
+text is put in journals, progress events or application logs. Invalid UTF-8, whitespace-only scripts and
+binary control characters fail before inference with a content-free error code.
+
+The paired development evaluator is `uv run python -m preflight.eval.scripts <media-run-id> --check-inputs`.
+It validates the original v2 development cohort and retained copy before labels or clients, exports only
+ad wording, and requires the same snapshots and adopted prompt/voting settings. Omitting `--check-inputs`
+makes model calls and registers a separate script run linked to the baseline. Missing original baseline
+screenings or reconstruction shot lists block measurement. An observed script/media gap also includes
+modality, visual context, input presentation and run variation; it is not pure perception loss.
+No P72 development comparison or held-out run has yet been measured locally. The registered v2
+development run `screen-20261103T172541` is present, but its complete retained screening bundle is not
+available under `data/work/runs/`; the input-only validation therefore stops before any model client is
+created. Do not infer a comparison result from this blocker.
+
+### Script browser verification (3 Nov 2026)
+
+`npm --prefix web run test:browser` passed 21 Chromium scenarios against a fresh local Uvicorn replay
+server at `127.0.0.1:8011`. The two script scenarios cover upload, completed stage progress, numbered
+source-line selection, policy-source display, opening the full report, saved-result reload, literal
+HTML-like copy, the script-only limitation, clean and incomplete outputs, and a narrow viewport. The
+remaining scenarios exercise the existing media, recovery and demo workflows. The replay server blocks
+model-provider HTTP; script responses are synthetic. This verifies the UI and API flow, not live model
+quality or a paired script-versus-media result.

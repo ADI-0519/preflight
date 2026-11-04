@@ -282,4 +282,4 @@ def test_a_v1_screening_still_reads():
     assert saved["schema_version"] == "1"
     assert Screening.model_validate(saved).schema_version == "1"
     with pytest.raises(ValidationError):
-        Screening.model_validate(saved | {"schema_version": "4"})
+        Screening.model_validate(saved | {"schema_version": "99"})

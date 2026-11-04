@@ -1,7 +1,40 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { ClaimView, MaySay, Round } from './api';
 import { allFlags, complete } from './api';
 import type { Screening } from './screening';
+
+export function ScriptPreview({
+  lines,
+  selected,
+}: {
+  lines: Screening['script_lines'];
+  selected: number[];
+}) {
+  const root = useRef<HTMLElement>(null);
+  const first = selected[0];
+  useEffect(() => {
+    if (first)
+      root.current?.querySelector(`[data-line="${first}"]`)?.scrollIntoView({ block: 'nearest' });
+  }, [first]);
+  return (
+    <section className="script-source" aria-label="Script source" ref={root}>
+      <h2>Source script</h2>
+      <p>Script only. Screen the finished ad separately.</p>
+      <ol aria-label="Script source lines">
+        {lines.map((line) => (
+          <li
+            key={line.line_number}
+            value={line.line_number}
+            data-line={line.line_number}
+            className={selected.includes(line.line_number) ? 'selected' : ''}
+          >
+            <code>{line.text}</code>
+          </li>
+        ))}
+      </ol>
+    </section>
+  );
+}
 
 export function Preview({
   src,

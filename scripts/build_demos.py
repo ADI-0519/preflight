@@ -90,11 +90,15 @@ def build(run_id: str, items: list[str], *, work: Path = WORK, out: Path = DEMO,
         crops = [r.crop for t in screening.tracks for r in t.regions if r.crop]
         for name in crops:
             # crops sit in the ingest folder of the screened file, named relative to it
-            src = work / screening.ad.content_hash / name
+            ingest = (work / screening.ad.content_hash).resolve()
+            src, dst = (ingest / name).resolve(), (folder / name).resolve()
+            if (Path(name).is_absolute() or not src.is_relative_to(ingest)
+                    or not dst.is_relative_to(folder.resolve())):
+                raise SystemExit(f"{item_id}: crop path must stay inside the screened ad's folder")
             if not src.is_file():
                 raise SystemExit(f"{item_id}: crop {name} missing under {work / screening.ad.content_hash}")
-            (folder / name).parent.mkdir(parents=True, exist_ok=True)
-            shutil.copyfile(src, folder / name)
+            dst.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(src, dst)
         entry = {"id": item_id.lower(), "title": title(item_id, run),
                  "kind": "reconstruction" if RULING_ID.match(item_id) else "synthetic",
                  "screening": f"{item_id.lower()}/screening.json", "media": f"{item_id.lower()}/media{ad.suffix}",

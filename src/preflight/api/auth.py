@@ -40,6 +40,7 @@ CODE_ATTEMPTS = 5
 RESEND_SECONDS = 60
 JWKS_URL = "https://www.googleapis.com/service_accounts/v1/jwk/securetoken@system.gserviceaccount.com"
 # open without a session: the page and its assets, its configuration, health and the sign-in routes themselves
+PAGES = ("/", "/login", "/signup")  # each serves the page, which shows the sign-in screen itself
 OPEN = ("/health", "/ui/config", "/auth/", "/assets/", "/docs", "/openapi.json")
 
 
@@ -220,7 +221,7 @@ class Auth:
         return User(fields["uid"], fields["email"])
 
     def required(self, path: str) -> bool:
-        return self.enabled and path != "/" and not path.startswith(OPEN)
+        return self.enabled and path not in PAGES and not path.startswith(OPEN)
 
     def page_policy(self) -> str:
         # the sign-in popup loads Google's script, frames the project's auth domain and calls Google's token APIs

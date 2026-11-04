@@ -134,7 +134,7 @@ def test_load_roundtrip(video, tmp_path):
 
 
 def test_rejects_non_media(tmp_path):
-    text = tmp_path / "notes.txt"
+    text = tmp_path / "notes.bin"
     text.write_text("not an ad")
     with pytest.raises(ValueError):
         ingest(text, tmp_path / "work")

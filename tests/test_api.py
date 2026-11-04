@@ -71,6 +71,8 @@ def replay_models():
 def replay_ingest(path, out_root):
     # Existing synthetic recordings combine the clip and separate speech fixture.
     done = ingest(path, out_root)
+    if done.ad.media == "script":
+        return done
     return done.model_copy(update={"video": MEDIA / "captions.mp4", "audio": MEDIA / "speech.wav"})
 
 

@@ -59,9 +59,9 @@ What the runs show:
 
 - Most of judge_v8's gain sits in one ad, as most of judge_v7's sat in one menopause ad (`docs/notes/noise-lines.md`), so its size on the test split depends on how many test ads are framed around a condition other than menopause.
 - The `split_cuts` render cuts a line holding two claims more than once and puts alternate pieces on each scene (`preflight.eval.stress.split_line`). For 32 of the 104 claims lost on `stress-split_cuts-20261103T013804`, the pieces reach the screen out of order or glued to another claim's piece, which no real ad does and no prompt can rejoin. The other 69 are cut into two pieces in reading order and 3 were lost at other steps. The `split_cuts` figures above understate recall on real split ads by an amount this set cannot measure until the render keeps each claim's pieces in order.
-- With one judge sample, judge_v8 broke its output contract on one item (N02: a `no_issue` verdict citing sources), which fails the check stage. Voting, the default since P66, lets that sample abstain. Since 3 Nov a sample that breaks the contract is asked once more before it abstains (`docs/notes/decisions.md`).
+- With one judge sample, judge_v8 broke its output contract on one item (N02: a `no_issue` verdict citing sources), which fails the check stage. Voting, the default since P66, lets that sample abstain.
 
 ## Open questions
 
 - **Sign-off and defaults (done 3 Nov).** Both prompts are signed off and are the defaults in `preflight.claims` and `preflight.check`. The replay fixtures in `tests/fixtures/models/` gained the new prompts' answers for the fixture clip (one claims call, three judge samples), and the replay screening, API and web tests pass on them.
-- **The `split_cuts` render (fixed in code 3 Nov).** `split_line` now keeps each claim's pieces in reading order, one piece to a scene. The set still has to be re-rendered and rescreened; until then the `split_cuts` figures above come from the old render.
+- **The `split_cuts` render.** Whether to fix `split_line` so each claim's pieces stay in reading order, and re-render and rescreen the set. That changes a measurement, so the stress figures in `docs/notes/stress-set.md` would be quoted from the new runs.

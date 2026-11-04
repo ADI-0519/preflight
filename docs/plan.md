@@ -89,7 +89,7 @@ Checked by calling each model in P03; details in `docs/notes/meta-model-api-find
 | Find claim-bearing visuals and track them | SAM 3.1 (`sam-3.1`) | One call tracks objects with stable IDs across a whole clip: pack shots, labels, before/after shots, boxed captions. It does not find text as such, so prompts name objects and shapes | $0.20 per 1,000 video frames (every decoded frame, minimum 50), $2.50 per 1,000 images |
 | Extract claims, judge them, drive the agent | Muse Spark 1.3, Standard mode (`muse-spark-1.3`, never `-contributor`) | Structured output with strict JSON schema, tool calls, 1M context; Standard mode does not train on inputs | as above; reasoning effort set per stage |
 | Rebuild ruled ads; regenerate a fixed still | Muse Image (`muse-image-1.0`) | Reconstructions for the benchmark and the fix loop; no block on supplement health claims | $0.01 per image |
-| First-pass triage that can run on an agency's own hardware | Muse Glimmer (open weights, via partner inference) | Confidentiality story and the open-weights bonus; optional; not on Model API | partner credits |
+| Experimental first-pass text triage | Muse Spark Open (open weights, Baseten) | Dev measurement only; terms confirmation and recall/cost evidence precede any product gate | partner credits |
 
 Measured in P03: a 30-second 720p ad costs about $0.15 in SAM at 25 fps (about $0.03 if re-encoded at 5 fps before upload) and about $0.02–0.05 in Spark at low or medium reasoning effort, so a 60-item benchmark run stays under $15.
 
@@ -158,7 +158,7 @@ Tasks in lane `all` need every founder: reading logged-in pages, contacting part
 | P33 | Error analysis on dev, then the final test run | A | P31 | 2 Nov |
 | P41 | Agent fix loop with audit log | C | P22, P28 | 1 Nov |
 | P42 | Expose screen and fix as a tool agents can call | C | P41 | 2 Nov |
-| P43 | Glimmer confidential triage (optional, cut first) | B | P22, P28 | 1 Nov |
+| P43 | Muse Spark Open triage via Baseten (optional, dev-only experiment; [guide](p43.md)) | B | P22, P28 | 3 Nov |
 | P51 | FastAPI service with progress events and retention | C | P28 | 1 Nov |
 | P52 | Web page with demo mode | C | P51 | 2 Nov |
 | P53 | Demo assets: replay rulings and a fresh ad | C | P33, P41, P52 | 3 Nov |
@@ -166,7 +166,7 @@ Tasks in lane `all` need every founder: reading logged-in pages, contacting part
 | P55 | README, benchmark write-up, repo public | C | P33 | 3 Nov |
 | P56 | Submit with every teammate | all | P54, P55 | 4 Nov |
 
-**Cut order if behind:** P43 (Glimmer), then P42 (tool interface), then the image-regeneration step of P41, then product-page input in P23. P14, P15, P31, P33 and the register-wording rewrite in P41 are never cut.
+**Cut order if behind:** P43 (open-weights triage), then P42 (tool interface), then the image-regeneration step of P41, then product-page input in P23. P14, P15, P31, P33 and the register-wording rewrite in P41 are never cut.
 
 ## Open decisions
 

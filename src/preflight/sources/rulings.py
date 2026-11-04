@@ -8,6 +8,7 @@ holds metadata only: ID, date, advertiser, media, outcome, rules cited, URL.
 """
 
 import argparse
+import hashlib
 import html
 import json
 import re
@@ -17,7 +18,7 @@ from datetime import date, datetime
 from pathlib import Path
 from typing import Literal
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 ROOT = Path(__file__).resolve().parents[3]
 RAW_DIR = ROOT / "data" / "raw" / "rulings"
@@ -90,6 +91,7 @@ class RulingMeta(BaseModel):
     cap_rules: list[str]
     bcap_rules: list[str]
     topics: list[str]
+    content_sha256: str | None = Field(default=None, pattern=r"^[0-9a-f]{64}$")
 
 
 # Keyword topics for counting. A ruling can have several; this is a count aid, not a classifier.
@@ -203,8 +205,14 @@ def in_scope(ruling: Ruling) -> bool:
     return "supplement" in f"{ruling.background or ''}\n{ruling.ad_description}".lower()
 
 
+def ruling_fingerprint(ruling: Ruling) -> str:
+    payload = json.dumps(ruling.model_dump(mode="json"), sort_keys=True, separators=(",", ":")).encode()
+    return hashlib.sha256(payload).hexdigest()
+
+
 def meta(ruling: Ruling) -> RulingMeta:
-    return RulingMeta(**ruling.model_dump(include=set(RulingMeta.model_fields)), topics=topics(ruling))
+    return RulingMeta(**ruling.model_dump(include=set(RulingMeta.model_fields)), topics=topics(ruling),
+                      content_sha256=ruling_fingerprint(ruling))
 
 
 # Fetching

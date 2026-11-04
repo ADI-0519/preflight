@@ -327,7 +327,8 @@ def saved_run(tmp_path, monkeypatch, part="dev"):
     truths = {"A24-1": truth("A24-1", [("cures anxiety fast", ["15.6.2"])]), "T16": truth("T16", [])}
     monkeypatch.setattr(run, "load_ground_truth", lambda split, i: truths[i])
     monkeypatch.setattr(run, "load_split", lambda split: SimpleNamespace(dev=["T16", "A24-1"]))
-    register({"run_id": "screen-1", "split": "v2", "part": part, "prompt": "judge_v5"}, [("ad_recall", 0, 1)])
+    register({"run_id": "screen-1", "split": "v2", "part": part, "stage": "screen", "prompt": "judge_v5"},
+             [("ad_recall", 0, 1)])
     registry.write_rows(tmp_path / "runs" / "screen-1.csv", [{"item_id": i, "media": 1} for i in ("T16", "A24-1")])
     (work / "screen-1").mkdir(parents=True)
     for name, s in [("screen-1-A24-1-reconstruction", screening("a", ["Cures anxiety fast"], {0: ["15.6"]})),
@@ -364,6 +365,48 @@ def test_rescore_refuses_a_void_run(tmp_path, monkeypatch):
     (tmp_path / "void.csv").write_text("run_id,reason\nscreen-1,leak\n", encoding="utf-8")
     with pytest.raises(SystemExit, match=r"void \(leak\)"):
         run.rescore("screen-1")
+
+
+def test_saved_stress_run_excludes_only_explicitly_skipped_dev_items(tmp_path, monkeypatch):
+    runs, work = saved_run(tmp_path, monkeypatch)
+    runs.write_text(runs.read_text().replace(",screen,", ",stress,"), encoding="utf-8")
+    registry.write_rows(tmp_path / "runs" / "screen-1.csv", [
+        {"item_id": "A24-1", "media": 1, "skipped": ""},
+        {"item_id": "T16", "media": "", "skipped": "no claim line to cut"},
+    ])
+    (work / "screen-1" / "screen-1-T16-ad.json").unlink()
+    _, screenings, truths = run.saved("screen-1")
+    assert list(screenings) == ["A24-1"]
+    assert [t.item_id for t in truths] == ["A24-1"]
+
+
+@pytest.mark.parametrize("case", ["not-stress", "foreign-skip", "media-on-skip"])
+def test_skipped_rows_cannot_hide_invalid_cohorts(tmp_path, monkeypatch, case):
+    runs, _ = saved_run(tmp_path, monkeypatch)
+    if case != "not-stress":
+        runs.write_text(runs.read_text().replace(",screen,", ",stress,"), encoding="utf-8")
+    registry.write_rows(tmp_path / "runs" / "screen-1.csv", [
+        {"item_id": "A24-1", "media": 1, "skipped": ""},
+        {"item_id": "held-out" if case == "foreign-skip" else "T16",
+         "media": 1 if case == "media-on-skip" else "", "skipped": "skipped"},
+    ])
+    monkeypatch.setattr(run, "load_ground_truth", lambda *args: pytest.fail("guard opened labels"))
+    with pytest.raises(SystemExit):
+        run.saved("screen-1")
+
+
+def test_saved_bundle_may_be_restored_to_another_directory(tmp_path, monkeypatch):
+    _, work = saved_run(tmp_path, monkeypatch)
+    restored = tmp_path / "restored"
+    (work / "screen-1").rename(restored)
+    assert set(run.saved("screen-1", restored)[1]) == {"A24-1", "T16"}
+
+
+@pytest.mark.parametrize("run_id", ["../screen-1", "screen-1/*", "C:/screen-1"])
+def test_saved_rejects_path_run_ids_before_opening_the_registry(run_id, monkeypatch):
+    monkeypatch.setattr(run, "RUNS", Path("missing-registry"))
+    with pytest.raises(SystemExit, match="filename component"):
+        run.saved(run_id)
 
 
 def test_void_runs_are_registered_runs():
@@ -518,3 +561,13 @@ def test_a_flag_every_answering_sample_gave_is_unanimous():
     s = s.model_copy(update={"stages": (StageRun(stage="check", status="done", samples=2),)})
     item = score_item(truth("A1", [("cures anxiety fast", ["15.6.2"])]), [s])
     assert (item.unanimous_flags, item.split_flags) == (1, 0)
+
+
+@pytest.mark.parametrize(
+    "quotes, caught", [(("calming herbs", "Sleep deeper every night"), 1), (("calming herbs",), 0), ((), 0)]
+)
+def test_a_long_claims_marked_phrases_can_carry_the_catch(quotes, caught):
+    long = "Sleep deeper every night with our unique blend of calming herbs, picked by hand and dried slowly"
+    s = screening("s6", [long], {0: ["15.1"]})
+    s = s.model_copy(update={"flags": (s.flags[0].model_copy(update={"quotes": quotes}),)})
+    assert score_item(truth("A4", [("sleep deeper", ["15.1"])]), [s]).caught == caught

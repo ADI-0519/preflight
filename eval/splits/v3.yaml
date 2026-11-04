@@ -1,0 +1,101 @@
+# Split v3: a rule-selection check set of rulings in neither v1 nor v2. The test list repeats v2's so its
+# rulings stay out of the precedent pools (rule 5); only the dev part is run.
+version: v3
+frozen: true
+created: '2026-11-04'
+status: 'frozen 4 Nov 2026: ground truth corrected by two independent checkers, differences settled against the ruling pages'
+sources:
+  rulings: '2026-11-02'
+  register: '2026-05-19'
+topics: supplement and health-product rulings citing CAP section 12, or 3.1 and 3.7 without section 15
+counts:
+  dev:
+    positive: 6
+    negative: 0
+dev:
+- A26-1333913
+- G22-1172031
+- A22-1154125
+- A21-1136893
+- A26-1325741
+- A20-1083951
+test:
+- A26-1341476
+- G26-1339905
+- A26-1345353
+- A26-1338353
+- A26-1337420
+- A26-1330390
+- A26-1325179
+- A25-1317723
+- G25-1323444
+- A25-1313834
+- A25-1313823
+- A25-1313822
+- A25-1313821
+- A25-1313816
+- A25-1315087
+- A24-1261050
+- A25-1310999
+- A25-1310978
+- A25-1305207
+- A25-1306897
+- A25-1303989
+- A25-1303986
+- A25-1303750
+- A25-1303746
+- A25-1303742
+- A25-1303556
+- A25-1303555
+- A25-1303538
+- A25-1303537
+- A25-1291498
+- A25-1289625
+- A25-1285794
+- A25-1281271
+- A25-1281266
+- A25-1281265
+- A25-1281264
+- A25-1281257
+- A24-1251814
+- A25-1277097
+- A24-1269415
+- A25-1284063
+- A25-1282503
+- A25-1274162
+- A25-1279959
+- A24-1253730
+- G24-1252527
+- A24-1253019
+- A24-1242030
+- A24-1240834
+- T02
+- T03
+- T04
+- T06
+- T07
+- T08
+- T10
+- T11
+- T13
+- T14
+- T26
+- T27
+- T28
+- T29
+- T30
+- T31
+- T32
+- T33
+- T34
+- T35
+- N11
+- N12
+- N13
+- N14
+- N15
+- N16
+- N17
+- N18
+- N19
+- N20

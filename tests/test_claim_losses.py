@@ -1,8 +1,17 @@
+import csv
 import importlib.util
+import json
+import socket
+import sys
 from datetime import UTC, datetime
 from pathlib import Path
-from types import SimpleNamespace
 
+import pytest
+from test_eval import saved_run
+
+from preflight.eval import registry, run
+from preflight.eval.score import line_counts
+from preflight.eval.split import BreachingClaim, GroundTruth
 from preflight.schema import (
     Ad,
     CapRuleRef,
@@ -70,32 +79,99 @@ def test_a_whole_claim_flagged_under_an_unrelated_rule_is_the_judge_missing_it()
     assert losses.lost_at(CLAIM, RULES, s) == "not flagged"
 
 
-def test_a_second_card_is_filed_under_its_item(tmp_path, monkeypatch):
-    monkeypatch.setattr(losses, "WORK", tmp_path)
-    (tmp_path / "run").mkdir()
-    for name in ("A24-1239908-reconstruction", "A24-1239908-reconstruction-1", "N01-ad"):
-        s = screening(f"run-{name}", [], {})
-        (tmp_path / "run" / f"{s.screening_id}.json").write_text(s.model_dump_json(), encoding="utf-8")
-    # a team ad's media is ad.mp4 or ad.png, so its stem is ad
-    assert {k: len(v) for k, v in losses.saved_screenings("run").items()} == {"A24-1239908": 2, "N01": 1}
+def test_a_second_card_is_filed_under_its_registered_item(tmp_path, monkeypatch):
+    _, work = saved_run(tmp_path, monkeypatch)
+    registry.write_rows(tmp_path / "runs" / "screen-1.csv", [{"item_id": "A24-1", "media": 2}])
+    for path in (work / "screen-1").glob("*.json"):
+        path.unlink()
+    for stem in ("reconstruction", "reconstruction-1"):
+        s = screening(f"screen-1-A24-1-{stem}", [], {})
+        (work / "screen-1" / f"{s.screening_id}.json").write_text(s.model_dump_json(), encoding="utf-8")
+    assert {k: len(v) for k, v in run.saved("screen-1")[1].items()} == {"A24-1": 2}
 
 
-def test_unmatched_lines_are_counted_by_tier_and_sampled_without_the_ruling(tmp_path, monkeypatch, capsys):
-    scripts = Path(__file__).parents[1] / "scripts"
-    spec = importlib.util.spec_from_file_location("unmatched", scripts / "unmatched_lines.py")
-    unmatched = importlib.util.module_from_spec(spec)
-    monkeypatch.syspath_prepend(str(scripts))
-    spec.loader.exec_module(unmatched)
-    ruled = screening("run-A1-ad", ["Reduced stress and anxiety", "Boosts energy"],
-                      {"Reduced stress and anxiety": ["15.6.2"], "Boosts energy": ["15.1"]})
-    clean = screening("run-N1-ad", ["Supports immunity"], {"Supports immunity": ["15.1"]})
-    truths = {"A1": SimpleNamespace(label="positive", claims=[SimpleNamespace(claim=CLAIM, rules=RULES)]),
-              "N1": SimpleNamespace(label="negative", claims=[])}  # fmt: skip
-    monkeypatch.setattr(unmatched, "saved_screenings", lambda run: {"A1": [ruled], "N1": [clean]})
-    monkeypatch.setattr(unmatched, "load_ground_truth", lambda split, item: truths[item])
-    counts, lines = unmatched.tally("run")
-    assert counts["positive", "high", "matched"] == 1 and counts["positive", "medium", "unmatched"] == 1
-    assert counts["negative", "medium", "unmatched"] == 1
-    assert sorted(x["text"] for x in lines) == ["Boosts energy", "Supports immunity"]
-    # the grading sheet holds the flag, never the ASA's claim it failed to match
-    assert all(CLAIM not in " ".join(x.values()) for x in lines)
+def test_single_run_cli_reports_all_misses_without_network_or_registry_writes(tmp_path, monkeypatch, capsys):
+    runs, work = saved_run(tmp_path, monkeypatch)
+    # Replace the positive ad with an extracted, unflagged claim and an unrelated flagged line.
+    s = screening("screen-1-A24-1-reconstruction", ["Cures anxiety fast", "Orange flavour"],
+                  {"Cures anxiety fast": [], "Orange flavour": ["15.1"]})
+    (work / "screen-1" / f"{s.screening_id}.json").write_text(s.model_dump_json(), encoding="utf-8")
+    monkeypatch.setattr(losses, "kept", lambda _: None)
+    monkeypatch.setattr(socket.socket, "connect", lambda *args: pytest.fail("diagnostics used the network"))
+    before = runs.read_bytes()
+    monkeypatch.setattr(sys, "argv", ["claim_losses.py", "screen-1", "--json"])
+    losses.main()
+    report = json.loads(capsys.readouterr().out)
+    assert (report["caught"], report["carried"], len(report["misses"])) == (0, 1, 1)
+    assert report["misses_by_step"]["not flagged"] == 1
+    assert report["unmatched_by_tier"] == {"high": 0, "medium": 1, "low": 0, "unchecked": 0}
+    assert report["unmatched_lines"][0]["text"] == "Orange flavour"
+    assert runs.read_bytes() == before
+
+
+@pytest.mark.parametrize("case", ["missing", "test", "foreign"])
+def test_diagnostic_guards_run_before_labels(tmp_path, monkeypatch, case):
+    _, work = saved_run(tmp_path, monkeypatch, part="test" if case == "test" else "dev")
+    if case == "missing":
+        (work / "screen-1" / "screen-1-T16-ad.json").unlink()
+    elif case == "foreign":
+        (work / "screen-1" / "screen-1-held-out-ad.json").write_text("must not open")
+    monkeypatch.setattr(run, "load_ground_truth", lambda *args: pytest.fail("guard opened labels"))
+    with pytest.raises(SystemExit):
+        losses.diagnose("screen-1")
+
+
+def test_grading_sheet_samples_unmatched_lines_without_the_ruling(tmp_path, monkeypatch):
+    s = screening("s", ["Reduced stress and anxiety", "Boosts energy", "Supports immunity"],
+                  {"Reduced stress and anxiety": ["15.6.2"], "Boosts energy": ["15.1"], "Supports immunity": ["15.1"]})
+    truth = GroundTruth(item_id="T1", kind="team", label="positive", outcome=None, written_by="synthetic",
+                        checked_by=None, claims=[BreachingClaim(claim=CLAIM, rules=RULES, points=[1])])
+    monkeypatch.setattr(losses, "saved", lambda *args: (
+        {"run_id": "screen-1", "split": "v2", "part": "dev", "stage": "screen"}, {"T1": [s]}, [truth],
+    ))
+    report = losses.diagnose("screen-1")
+    out = tmp_path / "sheet.csv"
+    assert losses.grading_sheet(report, 1, out) == 1
+    rows = list(csv.DictReader(out.open(encoding="utf-8")))
+    assert rows[0]["text"] in {"Boosts energy", "Supports immunity"} and rows[0]["grade"] == ""
+    # the same run always draws the same lines, and the ASA's claim never reaches the grader
+    again = tmp_path / "again.csv"
+    losses.grading_sheet(report, 1, again)
+    assert again.read_text(encoding="utf-8") == out.read_text(encoding="utf-8")
+    assert CLAIM not in out.read_text(encoding="utf-8").lower()
+
+
+def test_empty_target_is_not_covered_by_empty_pieces():
+    assert not losses.covered("", [])
+
+
+def test_folded_child_with_matching_rule_keeps_whole_line_out_of_unmatched_report(monkeypatch):
+    text = "Reduced stress and anxiety"
+    s = screening("s", [text], {text + " through a calmer daily routine": ["3.7"], text: ["15.6.2"]})
+    truth = GroundTruth(item_id="T1", kind="team", label="positive", outcome=None, written_by="synthetic",
+                        checked_by=None, claims=[BreachingClaim(claim=text, rules=RULES, points=[1])])
+    monkeypatch.setattr(losses, "saved", lambda *args: (
+        {"run_id": "screen-1", "split": "v2", "part": "dev", "stage": "screen"}, {"T1": [s]}, [truth],
+    ))
+    report = losses.diagnose("screen-1")
+    assert line_counts(truth.claims, [s]) == (1, 0)
+    assert report["unmatched_lines"] == []
+
+
+def test_baseline_comparison_counts_only_claims_previously_caught(monkeypatch):
+    text = "Reduced stress and anxiety"
+    truth = GroundTruth(item_id="T1", kind="team", label="positive", outcome=None, written_by="synthetic",
+                        checked_by=None, claims=[BreachingClaim(claim=text, rules=RULES, points=[1])])
+    plain = screening("plain", [text], {text: ["15.6.2"]})
+    after = screening("after", [text], {text: []})
+    def saved(run_id, directory=None):
+        return ({"run_id": run_id, "split": "v2", "part": "dev",
+                 "stage": "screen" if run_id == "plain" else "stress"},
+                {"T1": [plain if run_id == "plain" else after]}, [truth])
+    monkeypatch.setattr(losses, "saved", saved)
+    report = losses.diagnose("stress", baseline="plain")
+    assert report["miss_scope"] == "lost against baseline"
+    assert report["misses_by_step"]["not flagged"] == 1
+    assert report["misses"][0]["format"] == "stills"
+    plain = plain.model_copy(update={"flags": ()})
+    assert losses.diagnose("stress", baseline="plain")["misses"] == []

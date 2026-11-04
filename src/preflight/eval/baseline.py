@@ -119,7 +119,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Screen a split part with the keyword baseline and register it.")
     parser.add_argument("--split", default="v2")
     parser.add_argument("--part", choices=["dev", "test"], default="dev")
-    parser.add_argument("--only", nargs="*", help="item IDs to run (default: the whole part)")
+    parser.add_argument("--only", nargs="+", help="item IDs to run (default: the whole part)")
     args = parser.parse_args()
     if args.part == "test" and args.only:
         raise SystemExit("the test part runs whole")
@@ -127,8 +127,13 @@ def main() -> None:
     if args.part == "test" and not split.frozen:
         # rule 5: the test part is run once, on a split that can no longer change
         raise SystemExit(f"split {args.split} is not frozen; check and freeze it before a test run")
+    selected = getattr(split, args.part)
+    if not selected or len(set(split.items)) != len(split.items):
+        parser.error("split needs nonempty selected and unique, disjoint partitions")
+    if args.only and set(args.only) - set(selected):
+        parser.error("selection contains IDs outside the selected partition")
     sha = revision(args.part)
-    items = [i for i in getattr(split, args.part) if not args.only or i in args.only]
+    items = [i for i in selected if not args.only or i in args.only]
     truths = [load_ground_truth(args.split, i) for i in items]
     scores = [score_item(t, [screen_item(t.item_id)], kept(t)) for t in truths]
     created = datetime.now(UTC)

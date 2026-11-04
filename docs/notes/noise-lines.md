@@ -72,6 +72,13 @@ Both judge_v7 runs used turn timing (`--no-align`), as the judge_v6 run did, so 
 
 Blind read of cited rulings: 40 citations sampled from each run were shuffled together and graded by a reader who saw only the claim and the start of the ruling's ad description (2 similar claim, 1 same broad area, 0 unrelated). judge_v6 scored 49 of 80 with 3 unrelated citations; judge_v7 scored 52 of 80 with 1. The difference in the share is within what 40 citations can resolve, but judge_v7 also cites rulings 315 times against 485, so it makes fewer unrelated citations overall. Six rulings still carry 70% of citations, since claims in one ad cite the same on-topic ruling.
 
-## Counting by tier, and a blind grade
+## Labels on the frozen configuration (P33)
 
-`scripts/unmatched_lines.py RUN_ID` counts a saved dev run's flagged lines by review tier, split into lines that match a ruled claim and lines that do not, and every line on a clean ad, with no model calls. It answers whether the unmatched lines sit mostly in the medium and low tiers, below the lines a reviewer reads first. `--sample N` writes N unmatched lines, drawn at random with the run ID as seed, to `data/work/grading/<run>.csv` with each line's tier, rules and the judge's reasons but not the ruling, so a grader working from the CAP rule pack marks each breach, arguable or wrong without seeing what the ASA said. `scripts/claim_losses.py RUN_ID` (one run) breaks down a plain run's own missed claims by the step at which each dropped out.
+Twenty of the 75 flagged lines on positive dev ads in `screen-20261103T204921` that match no ruled claim were drawn at random (seed 33) and labelled "defensible" (a careful reviewer would raise it under the cited rules) or "noise" by two independent checkers, each working alone from the CAP rule pack, the register, the ruling's ad description and the ad's own text, without the judge's prompt or reasons (`docs/notes/decisions.md`, 4 Nov 2026).
+
+| | Checker 1 | Checker 2 |
+|---|---|---|
+| Defensible | 14 | 15 |
+| Noise | 6 | 5 |
+
+They agree on 19 of the 20 lines (Cohen's kappa 0.88); the one split is a cosmetic phrase attached to a wrinkle claim. The noise share is 5 or 6 of 20. Three of the noise lines cite 15.6.2 for claims that name no disease (metabolism, fat, sleep), one is close to authorised bone wording, and one is a testimonial that claims no effect. Most lines the ASA did not rule on are breaches a reviewer would also raise, mostly unauthorised claims for a substance with no register entry, efficacy claims needing evidence, and testimonials implying treatment.

@@ -155,15 +155,29 @@ def main() -> None:
     parser.add_argument("--effort", default=EFFORT)
     parser.add_argument("--cap-rules", default=SNAPSHOTS.cap_rules, help="CAP rule pack snapshot")
     parser.add_argument("--per-ad-precedents", action="store_true", help="retrieve rulings per ad, as before v4")
-    parser.add_argument("--only", nargs="*", help="dev item IDs to run (default: all of dev)")
+    parser.add_argument("--only", nargs="+", help="dev item IDs to run (default: all of dev)")
     parser.add_argument("--cache-dir", help="a fresh model cache, so a repeat run calls the model again")
     parser.add_argument("--rescore", metavar="RUN_ID", help="score a saved check run again; no model calls")
     args = parser.parse_args()
     if args.rescore:
         return rescore(args.rescore, args.claims_run, args.split)
     # rule 5: dev only; the test part runs once, in P33
-    items = [i for i in load_split(args.split).dev if not args.only or i in args.only]
+    split = load_split(args.split)
+    if not split.dev or len(set(split.items)) != len(split.items):
+        parser.error("split needs nonempty development and unique, disjoint partitions")
+    if args.only and set(args.only) - set(split.dev):
+        parser.error("selection contains IDs outside development")
+    items = [i for i in split.dev if not args.only or i in args.only]
     truths = {i: load_ground_truth(args.split, i) for i in items}
+    saved_inputs = {}
+    for item in items:
+        if truths[item].kind == "team":
+            saved_inputs[item] = [team_screening(item)]
+        else:
+            paths = sorted((WORK / args.claims_run).glob(f"{item}-*.json"))
+            if not paths:
+                parser.error("restore selected development extraction screenings before running")
+            saved_inputs[item] = [Screening.model_validate_json(p.read_bytes()) for p in paths]
     precedents = {i: load_precedents(args.rulings, args.split, i) for i in items}
     sha = revision(PART)
     created = datetime.now(UTC)
@@ -174,13 +188,7 @@ def main() -> None:
     snapshots = SNAPSHOTS.model_copy(update={"rulings": args.rulings, "cap_rules": args.cap_rules})
 
     def judge(item_id: str) -> list[Screening]:
-        if truths[item_id].kind == "team":
-            saved = [team_screening(item_id)]
-        else:
-            paths = sorted((WORK / args.claims_run).glob(f"{item_id}-*.json"))
-            if not paths:
-                raise FileNotFoundError(f"no saved screening for {item_id} in {args.claims_run}")
-            saved = [Screening.model_validate_json(p.read_text(encoding="utf-8")) for p in paths]
+        saved = saved_inputs[item_id]
         out = []
         for s in saved:
             checked = check(

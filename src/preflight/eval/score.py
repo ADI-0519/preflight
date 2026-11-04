@@ -87,17 +87,24 @@ def _chance(k: int, claim_rules: list[str], pack: tuple[str, ...]) -> float:
 def caught(truth: list[BreachingClaim], screenings: list[Screening], item_id: str = "") -> Caught:
     rules: dict[tuple[str, str], list[str]] = {}
     votes: dict[tuple[str, str], bool | None] = {}
+    quotes: dict[tuple[str, str], list[str]] = {}
     for s in screenings:
         for f in s.flags:
             rules.setdefault((s.screening_id, f.claim_id), []).extend(r.rule for r in f.sources if r.kind == "cap_rule")
             votes[s.screening_id, f.claim_id] = None if f.votes is None else f.votes == voters(s)
+            quotes.setdefault((s.screening_id, f.claim_id), []).extend(f.quotes)
     keys = [(s.screening_id, c.claim_id, c.text) for s in screenings for c in s.claims
             if (s.screening_id, c.claim_id) in rules]  # fmt: skip
     flagged = [(words(text), rules[s, c]) for s, c, text in keys]
     voted = [votes[s, c] for s, c, _ in keys]
     wanted = [current(t.rules, item_id) for t in truth]
     # the ground-truth claims each flag matches: one extracted phrase can carry two claims with different rules
-    matched = [[i for i, t in enumerate(truth) if matches(t.claim, said, tight=True)] for said, _ in flagged]
+    # a flag's marked words narrow a long claim, so it also counts when they quote the ground-truth claim tightly
+    marks = [[words(q) for q in quotes.get((s, c), [])] for s, c, _ in keys]
+    matched = [
+        [i for i, t in enumerate(truth) if any(matches(t.claim, text, tight=True) for text in [said, *mark])]
+        for (said, _), mark in zip(flagged, marks, strict=True)
+    ]
     # a flag's rules are judged against the rules of every claim it carries, so citing both claims' rules is right
     union = [[r for i in m for r in wanted[i]] for m in matched]
     hits = [[k for k, m in enumerate(matched) if i in m] for i in range(len(truth))]
@@ -216,25 +223,21 @@ class ItemScore:
     split_matched: int = 0
 
 
-def matched_lines(truth: list[BreachingClaim], s: Screening, item_id: str = "") -> dict[str, bool]:
-    """Each flagged line, keyed by its top claim, and whether it matches an objected claim with a related rule."""
-    wanted = [current(t.rules, item_id) for t in truth]
-    cited = {f.claim_id: [] for f in s.flags}
-    for f in s.flags:
-        cited[f.claim_id].extend(r.rule for r in f.sources if r.kind == "cap_rule")
-    return {
-        top.claim_id: any(
-            holds(t.claim, words(c.text))
-            and any(related(r, g) for r in cited[c.claim_id] for g in w)
-            for c in [top, *nested] for t, w in zip(truth, wanted, strict=True)
-        )
-        for top, nested in fold(s)
-    }  # fmt: skip
-
-
 def line_counts(truth: list[BreachingClaim], screenings: list[Screening], item_id: str = "") -> tuple[int, int]:
-    matched = [m for s in screenings for m in matched_lines(truth, s, item_id).values()]
-    return len(matched), matched.count(False)
+    wanted = [current(t.rules, item_id) for t in truth]
+    total = unmatched = 0
+    for s in screenings:
+        cited = {f.claim_id: [] for f in s.flags}
+        for f in s.flags:
+            cited[f.claim_id].extend(r.rule for r in f.sources if r.kind == "cap_rule")
+        for top, nested in fold(s):
+            total += 1
+            unmatched += not any(
+                holds(t.claim, words(c.text))
+                and any(related(r, g) for r in cited[c.claim_id] for g in w)
+                for c in [top, *nested] for t, w in zip(truth, wanted, strict=True)
+            )  # fmt: skip
+    return total, unmatched
 
 
 def score_item(truth: GroundTruth, screenings: list[Screening], kept: list[bool] | None = None) -> ItemScore:

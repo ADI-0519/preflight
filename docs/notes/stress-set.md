@@ -11,7 +11,7 @@ Each of the 25 ruled ads in split v2 dev was rendered again in five ways, from i
 | `music` | a synthetic chord bed made by ffmpeg, 12 dB under the voiceover's mean level | the 13 video ads |
 | `speech_only` | every on-screen line carrying a ground-truth claim leaves the screen and joins that scene's voiceover | 12 video ads (A24-1241024 shows no claim on screen) |
 | `small_text` | captions at 14 points (about 40% of the plain size), no box, lower left; on video one line a second, on a still every line at once | all 25 |
-| `split_cuts` | each claim line is cut in the middle of each claim it carries, and each piece goes on its own consecutive scene with the same still, in reading order (until 3 Nov the pieces alternated between two scenes; see Open) | 24 (A24-1241024 has no line to cut) |
+| `split_cuts` | each claim line is cut in the middle of each claim it carries, and the pieces alternate between two consecutive scenes with the same still | 24 (A24-1241024 has no line to cut) |
 | `compressed` | the plain render re-encoded at 480 lines: video at 300 kb/s, stills as low-quality JPEG | all 25 |
 
 A kind that cannot apply to an ad is skipped and listed in the run's CSV, so it is never read as a catch or a miss. `split_cuts` leaves 34 claims whole on some screen across 15 ads (one-word claims such as "Focus", hashtags, claims repeated elsewhere); they are listed in each ad's `whole_claims.txt`.
@@ -120,7 +120,131 @@ The test reconstructions are built the same way as the plain dev renders, so the
 
 ## Open
 
-- **The `split_cuts` render (fixed in code 3 Nov, not yet re-rendered).** The first render dealt a line's pieces alternately onto two scenes, so a line holding two claims reached the screen out of order or glued to another claim's piece, which no real ad does (32 of the 104 claims lost on `stress-split_cuts-20261103T013804`). `split_line` now keeps the pieces in reading order, one to a scene. Every `split_cuts` figure in this note and in `docs/notes/claims-v5-judge-v8.md` comes from the old render, so it is quoted only until the set is re-rendered and rescreened.
 - The API upload and the web page still take one file; a carousel is screened from the command line or the eval harness only. Evidence on a carousel is reported by time, not by card.
 - Whether claim extraction should rejoin a claim shown in pieces within one screening (87 claims once a carousel is read as one ad). That is a prompt change, written from dev material only.
 - Scoring a split claim as caught when every piece of it is flagged, with the P70 line match (`docs/notes/noise-lines.md`), and whether an over-long quote of a whole claim counts (37 and 12 lost claims). Either changes a measurement.
+
+## Offline diagnostics on the current defaults
+
+The latest defaults and their registered figures are in [claims-v5-judge-v8.md](claims-v5-judge-v8.md).
+The older loss breakdowns above do not establish the current mix of misses.
+[claim_losses.py](../../scripts/claim_losses.py) now also accepts one registered run to diagnose every
+carried miss, and reports unmatched positive-ad review lines by the same folded lines and risk tiers as the UI:
+
+```powershell
+uv run python scripts/claim_losses.py screen-20261103T032900
+uv run python scripts/claim_losses.py screen-20261103T032900 --json
+uv run python scripts/claim_losses.py screen-20261103T032900 stress-split_cuts-20261103T032906 --json
+```
+
+With two run IDs, only claims caught by the first and missed by the second enter the loss breakdown.
+The JSON includes the missed claim IDs, rule families, flagged-piece coverage and unmatched review lines
+with evidence, cited sources and displayed tiers. Piece coverage is an unordered word-coverage diagnostic;
+it does not establish that the pieces form a coherent claim. It adds no catches to registered recall.
+Unmatched lines are not labelled false flags. The report makes no model calls and writes no registered results.
+
+`--grade N` also writes N of the unmatched lines, drawn with the run ID as seed, to `data/work/grading/<run>.csv`
+(git-ignored) for a blind grade of breach, arguable or wrong. Each row holds the line, its tier, its rules and the
+judge's reasons, but not the ruling, so a grader working from the CAP rule pack is not steered by what the ASA said:
+
+```powershell
+uv run python scripts/claim_losses.py screen-20261103T204921 --grade 40
+```
+
+Restore each complete original screening bundle under `data/work/runs/<run_id>/`, plus the original dev
+reconstruction shot lists under `data/raw/reconstructions/<item_id>/shotlist.json` for carried-claim masks.
+`--screenings <folder>` accepts another location for the diagnosed run's bundle; a comparison's baseline
+still comes from its standard location. Raw reconstruction media is not needed. The loader validates the
+registered development cohort, media counts, stage completion and source snapshots before opening labels.
+It permits explicitly skipped stress items but rejects unexpected or missing screenings and held-out runs.
+A missing bundle now fails with an error instead of silently printing an empty breakdown.
+
+As of the local 3 Nov audit, neither current run's screening bundle was available here, so no new 38-miss
+breakdown, tier distribution or independent adjudication has been measured. The committed item CSVs confirm
+210/248 carried claims caught, 67 unmatched lines on 35 positive ads, and 0/15 negatives flagged for
+`screen-20261103T032900`. Its registered exact 95% interval for negative ads flagged is [0, 0.219].
+That is a false-alarm estimate on these fixtures, not precision across all flagged claims.
+
+Before quoting an independent review of extra flags, retain a fixed dev sample and rubric, separate the
+reviewer from the prompt-tuning discussion, and record each assessment, cited policy and uncertainty.
+Give that reviewer the ad evidence and the repository's relevant register entries and conditions as well as
+the CAP pack; CAP wording alone cannot resolve whether a particular health claim is authorised in context.
+An agent's assessment is a screening opinion, not regulator ground truth. Separate clear policy-supported
+concerns, arguable concerns and unsupported flags; report their counts as adjudication results, not model precision.
+The existing 32 renderer artefacts refer to the older 104-loss analysis and cannot be subtracted from the
+current miss count. A corrected renderer needs a separate version/output directory and fresh paired runs;
+historical renders and figures must remain identifiable. The initial diagnostic update changed no renderer,
+prompt, metric, split or held-out-test configuration. The separate renderer update below follows it.
+
+Verification of the diagnostic update on 3 Nov:
+
+- `uv run --offline pytest tests/test_claim_losses.py tests/test_eval.py tests/test_pr82_gaps.py -q --tb=short`:
+  89 passed, including an offline CLI run that checks no network connection or registry write occurs.
+- Full suite, using a fresh short temporary path for the ffmpeg fixtures:
+
+  ```powershell
+  $diagnosticTestRoot = 'C:/Users/adirj/AppData/Local/Temp/pfd-' + [guid]::NewGuid().ToString('N').Substring(0,8)
+  uv run --offline pytest -m "not live" -q --basetemp $diagnosticTestRoot --tb=short
+  ```
+
+  613 passed, 2 skipped, 7 deselected.
+- `uv run --offline ruff check`: passed.
+- `& 'C:/Users/adirj/GitHub/preflight/.venv/Scripts/python.exe' scripts/verify_agent_setup.py`: passed.
+- `git diff --check` and editor diagnostics for the changed Python files: passed.
+- The real latest-run invocation fails with the expected missing-screenings error. No new live model,
+  browser or held-out-test run was performed; this change affects offline evaluation tooling only.
+
+## Ordered split renderer, version 1
+
+`split_ordered_v1` is a separate stress variant. The historical `split_cuts` algorithm and its files remain
+unchanged. For each caption, the new renderer cuts at the midpoint of each carried multi-word claim and
+shows the resulting contiguous fragments in sequence. It never alternates disjoint fragments or glues
+them together. Captions from different source lines stay separate; non-claim lines appear once, and each
+scene's original voiceover plays once on its first fragment. One-word claims and claims repeated elsewhere
+can remain whole. Those claims are listed in the render manifest rather than assumed to be split.
+
+A caption containing three disjoint claims can now require four scenes instead of the historical two.
+Each fragment gets at least two seconds in a rendered video; speech can extend the first fragment. A
+carousel still plays at the existing three seconds per card. This can lengthen an ad and change exposure.
+It is a distinct stress condition, not a correction factor for historical recall or proof of a model gain.
+Compare it against a plain run with the same prompts and voting settings, and report its denominator,
+remaining whole claims and duration changes alongside recall.
+
+```powershell
+uv run python -m preflight.eval.stress split_ordered_v1 --render-only
+uv run python -m preflight.eval.stress split_ordered_v1 --baseline screen-20261103T032900
+```
+
+The second command makes model calls and requires the full retained baseline bundle, reconstruction shot
+lists and scene images. No new benchmark run has been made locally because those inputs are still missing.
+Render-only needs no baseline or screening client; video speech uses Piper and its voice model. Voice setup
+is deferred until a video actually needs speech, so cached renders and stills do not trigger a voice download.
+The held-out split is never selected by this command.
+
+Each completed ordered render has a `render.json` manifest containing the variant, original shot-list and
+scene-image hashes, claim list, output media hashes, transformed shot-list hash, scene-to-source mapping,
+remaining whole claims and planned/rendered duration. Screening CSV rows record the manifest's hash.
+Reusing an ordered render verifies these inputs and outputs; missing, modified or partial renders fail
+instead of being silently reused or overwritten. `--render-root <fresh-root>` selects a fresh location when
+preserving a rejected render. Hashes establish the retained bytes; they do not promise byte-identical
+encoding across different FFmpeg, font or Piper installations.
+
+Verification includes synthetic multi-claim and multi-line captions, unchanged historical output, stale
+and partial cache rejection, a dev-only CLI invocation with network connections blocked, actual FFmpeg
+still/video rendering and ingestion, and visual inspection of consecutive rendered cards. Caption-only
+changes are not necessarily shot keyframes: ingestion retains all sampled frames, and extraction receives
+the video. The integration tests check frame coverage rather than assuming each caption creates a shot cut.
+
+Final verification of the renderer update on 3 Nov:
+
+```powershell
+$orderedRetestRoot = 'C:/Users/adirj/AppData/Local/Temp/pfo-' + [guid]::NewGuid().ToString('N').Substring(0,8)
+uv run --offline pytest tests/test_stress.py tests/test_ingest.py tests/test_claim_losses.py -q --basetemp $orderedRetestRoot --tb=short
+$orderedFullTestRoot = 'C:/Users/adirj/AppData/Local/Temp/pff-' + [guid]::NewGuid().ToString('N').Substring(0,8)
+uv run --offline pytest -m "not live" -q --basetemp $orderedFullTestRoot --tb=short
+```
+
+Focused checks: 58 passed. Full suite: 627 passed, 2 skipped, 7 deselected. Ruff, setup verification, CLI help,
+editor diagnostics and `git diff --check` also passed. This establishes synthetic rendering and integration
+behaviour, not a new recall or false-alarm figure. No production UI, provider, prompt, scoring rule or split
+changed. Graphify was queried for the reconstruction path; its existing graph was not rebuilt for this update.

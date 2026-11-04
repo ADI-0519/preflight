@@ -1,0 +1,70 @@
+{
+  "item_id": "A26-1333913",
+  "kind": "ruling",
+  "label": "positive",
+  "outcome": "upheld",
+  "claims": [
+    {
+      "claim": "Take control of your cravings",
+      "rules": [
+        "12.1",
+        "12.11"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "Reduce hunger naturally",
+      "rules": [
+        "12.1",
+        "12.11"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "Stay fuller for longer",
+      "rules": [
+        "12.1",
+        "12.11"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "the GLP-1 Patch - your smarter path to weight management",
+      "rules": [
+        "12.1",
+        "12.11"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "those sharp things once a week",
+      "rules": [
+        "12.1",
+        "12.11"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "your [sic] a breastfeeding mom who wants to be snatched",
+      "rules": [
+        "1.3",
+        "4.9"
+      ],
+      "points": [
+        2
+      ]
+    }
+  ],
+  "written_by": "draft: scripts/draft_split_v3.py",
+  "checked_by": "checker: checked 2026-11-04 by two independent checkers, differences settled against the ruling page"
+}

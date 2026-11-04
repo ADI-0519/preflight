@@ -128,7 +128,9 @@ def question(
         found_near = closest.get(c.claim_id) if closest else None
         near = f"; closest past rulings: {', '.join(found_near)}" if found_near else ""
         claims.append(f'{c.claim_id} ({c.kind}, substance: {c.substance or "none named"}{near}): "{c.text}"')
-    evidence = [listing(list(screening.segments), list(screening.on_screen), list(screening.tracks))]
+    evidence = [listing(
+        list(screening.segments), list(screening.on_screen), list(screening.tracks), screening.script_lines,
+    )]
     reference = ["CAP Code rules:"]
     reference += [f"{r.rule}: {r.summary} Breach looks like: {r.breach_evidence}" for r in rules]
     reference += ["", "Register entries:"]
@@ -240,7 +242,7 @@ def marked(claim: Claim, quote: str) -> str | None:
     found = re.search(pattern, claim.text, re.IGNORECASE)
     if not found:
         # a quote the claim does not hold is dropped; the flag still points at the whole claim
-        log.warning("quote for %s is not in the claim's text: %r", claim.claim_id, quote)
+        log.warning("judge quote is not in the claim's text; dropping it")
         return None
     # the whole claim is no narrower than no quote
     return found[0] if found[0] != claim.text else None
@@ -323,7 +325,11 @@ def check(
             except ValueError as e:
                 if retry:
                     # a broken answer is usually a one-off, so one more draw keeps the vote, or the single answer, whole
-                    log.warning("judge sample %d broke the contract, asking again: %s", sample, e)
+                    log.warning(
+                        "judge sample %d broke the contract, asking again: %s",
+                        sample,
+                        type(e).__name__,
+                    )
                     try:
                         return judge(sample + RETRY, retry=False)
                     except CacheMiss:
@@ -332,7 +338,7 @@ def check(
                 if samples == 1:
                     raise
                 # an answer that breaks the contract abstains from the vote; the samples left decide
-                log.warning("judge sample %d abstains: %s", sample, e)
+                log.warning("judge sample %d abstains: %s", sample, type(e).__name__)
                 return r, None
 
         with ThreadPoolExecutor(max_workers=samples) as pool:

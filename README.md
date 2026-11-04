@@ -1,5 +1,11 @@
 # PreFlight
 
+Script screening (P72): `uv run preflight screen script.txt --out data/work/screenings --no-align`
+accepts UTF-8 `.txt` or `.md` copy, with optional `VO:` and `SUPER:` prefixes. Flags quote numbered source
+lines and cite the existing policy sources. The web page accepts the same files. Scripts are limited to
+64 KiB and 1,000 physical lines; blank-line gaps are preserved. A result covers the script only: screen the
+finished ad separately. See [the input contract and verification limits](docs/api.md#script-input-p72).
+
 PreFlight screens a health or supplement ad before it goes live. Give it a video, an image or a product-page screenshot and it finds every claim the ad makes, including claims implied by imagery: health claims, and claims about the product or its rivals that could mislead. It checks each against the GB nutrition and health claims register, the CAP Code and past ASA rulings, and shows for every flag the evidence (a transcript timestamp or an on-screen region) and the source it conflicts with. Where the register authorises a claim on the same substance, PreFlight quotes that wording exactly as the fix.
 
 It is screening, not legal advice. It flags and explains; a person decides whether the ad runs. The rules the product follows are in [docs/product-rules.md](docs/product-rules.md).

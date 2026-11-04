@@ -75,6 +75,8 @@ def test_api_routes_need_a_session_but_the_page_and_its_config_do_not(signed):
         assert client.post("/uploads", content=b"x", headers={"Content-Type": "image/png"}).status_code == 401
         assert client.get("/health").status_code == 200
         assert client.get("/auth/me").json()["signed_in"] is False
+        for page in ("/", "/login", "/signup"):
+            assert client.get(page).status_code != 401
 
 
 def test_signing_in_sets_a_session_that_lets_the_workspace_run(signed):

@@ -4,6 +4,26 @@ The React/TypeScript page uses the P51 API. It makes no model calls itself and s
 no keys, ad content or decisions in browser storage. FastAPI serves the Vite build.
 This remains a localhost, single-process prototype without authentication.
 
+The product page includes an illustrative synthetic evidence example, supported
+creative types, a review walkthrough, data handling, FAQs and a closing action.
+The footer links to these sections, the API documentation and the account pages.
+Content uses PreFlight's actual capabilities; it does not borrow another site's
+copy, artwork, customer endorsements or performance claims.
+
+`/login` and `/signup` are directly addressable account **page previews**, served
+with the same build checks and content security policy as `/`. They do not implement
+authentication, create accounts or protect uploads. Their forms are disabled, explain
+that accounts are not connected, and do not collect credentials. They link to one
+another and back to the local desk. A real account rollout needs an agreed identity
+provider plus ownership/access controls for uploads, jobs, reports and revisions;
+adding a sign-in screen alone must not be described as private account isolation.
+
+The entry screen accepts one file through the chooser or drag-and-drop, explains
+the review workflow and keeps upload terms visible. Format/retention details
+expand on demand. The media and evidence panels use the same source-backed data
+as the report; appearance changes do not change screening results. See the
+[4 November design research](notes/p52-design-research.md#workspace-refresh-4-november-2026).
+
 ## Run
 
 Requires Node 24, Python 3.12, uv, FFmpeg and FFprobe.
@@ -21,7 +41,7 @@ the API remains available at `/docs`. Build before starting the server so its as
 mount exists. For frontend development, `npm --prefix web run dev` serves Vite on
 localhost and proxies API/SSE requests to port 8000. Keep the backend local.
 
-Upload an image or video, follow server-sent stage events and choose a claim in the
+Upload an image, video or UTF-8 script, follow server-sent stage events and choose a claim in the
 timeline. Selection seeks the video and shows the exact cited evidence, crop where
 available, dated source provenance and verbatim suggested register wording. Missing
 assets are labelled unavailable. Incomplete screens never become clean results.
@@ -47,11 +67,21 @@ register's authorised entries for every flagged substance.
 Completed fixes open **Compare rounds**, where a selector on each column exposes every
 saved round and changed caption/voiceover lines are underlined. The Evidence view
 continues to show the final saved screening. The full source report is available from
-every review view. The page opens in the browser's preferred colour scheme, and the
+every review view. The page opens in light appearance, and the
 header switches between dark and light appearance for the page session; no ad data or
 preference is persisted locally. The design is described in
-[the redesign plan](./notes/p52-redesign-plan.md); its two typefaces are self-hosted
-under `web/src/fonts/` with their SIL Open Font Licence texts.
+[the design research](./notes/p52-design-research.md). Inter Variable v4.1 is self-hosted
+from the [upstream Inter project](https://github.com/rsms/inter/tree/v4.1), with its
+SIL Open Font Licence under `web/src/fonts/`. It is loaded locally, without a runtime
+font-provider request. Source Serif 4, already licensed and bundled in the repository,
+is used for entry headings; evidence and controls remain in Inter. Light appearance
+uses chalk/white surfaces, ink text and a deep petrol accent, with fine borders and
+shallow shadows. Dark appearance retains steel surfaces and a copper accent.
+Evidence highlights remain distinct from the labelled red/amber review tiers.
+Dark appearance remains available through the header. The split entry layout puts
+the introduction beside the upload desk, with the workflow underneath; phones
+stack these sections and omit the decorative illustration to keep the upload action
+within the initial viewport. The interface does not use background glow or backdrop blur.
 The full screening notice stays in a sticky header with the top bar while scrolling.
 Native EventSource reconnect resumes progress after a dropped connection. Invalid
 progress data shows a recovery message and releases controls; reload the retained

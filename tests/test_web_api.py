@@ -33,13 +33,14 @@ def replay_app(request, tmp_path_factory):
                       ingester=replay_ingest, draft_screener=recorded_screener)
 
 
-def test_web_build_is_served_without_exposing_workspace(tmp_path):
+@pytest.mark.parametrize("route", ["/", "/login", "/signup"])
+def test_web_build_is_served_without_exposing_workspace(tmp_path, route):
     web = tmp_path / "web"
     (web / "assets").mkdir(parents=True)
     (web / "index.html").write_text("<title>PreFlight</title>")
     (web / "assets/app.js").write_text("/* public bundle */")
     with TestClient(create_app(Settings(root=tmp_path / "uploads"), web_root=web)) as client:
-        response = client.get("/")
+        response = client.get(route)
         assert response.status_code == 200 and "PreFlight" in response.text
         assert "default-src 'self'" in response.headers["content-security-policy"]
         assert client.get("/assets/app.js").status_code == 200
@@ -50,9 +51,10 @@ def test_web_build_is_served_without_exposing_workspace(tmp_path):
         assert config["verification_label"] is None
 
 
-def test_missing_build_has_a_clear_status(tmp_path):
+@pytest.mark.parametrize("route", ["/", "/login", "/signup"])
+def test_missing_build_has_a_clear_status(tmp_path, route):
     with TestClient(create_app(Settings(root=tmp_path / "uploads"), web_root=tmp_path / "absent")) as client:
-        assert client.get("/").status_code == 503
+        assert client.get(route).status_code == 503
 
 
 def test_private_media_ranges_and_expiry(tmp_path):

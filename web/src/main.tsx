@@ -14,7 +14,16 @@ import type { Account, Config, Demo, Fix, Job, Result, Reveal, Round, Scoreboard
 import { Login, signOutEverywhere } from './login';
 import './style.css';
 import { ClaimTrack, Inspector, TierSummary } from './evidence';
-import { FlagCount, FlaggedList, RoundComparison, StageList, StillStage } from './workspace';
+import { UploadPanel } from './upload-panel';
+import { AccountPage, Brand, ProductSections, SiteFooter } from './product-page';
+import {
+  FlagCount,
+  FlaggedList,
+  RoundComparison,
+  ScriptPreview,
+  StageList,
+  StillStage,
+} from './workspace';
 
 function mebibytes(bytes: number): number {
   return Math.round((bytes / 1024 / 1024) * 10) / 10;
@@ -65,12 +74,6 @@ function Metrics({ board }: { board: Scoreboard }) {
   );
 }
 
-function initialAppearance(): 'dark' | 'light' {
-  return window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
-}
-
-document.documentElement.dataset.appearance = initialAppearance();
-
 function App({ account }: { account: Account | null }) {
   const [config, setConfig] = useState<Config | null>(null);
   const [mode, setMode] = useState<'screen' | 'demo'>('screen');
@@ -98,7 +101,7 @@ function App({ account }: { account: Account | null }) {
   const [voiceover, setVoiceover] = useState('');
   const [still, setStill] = useState<File | null>(null);
   const [view, setView] = useState<'evidence' | 'edit' | 'compare'>('evidence');
-  const [appearance, setAppearance] = useState<'dark' | 'light'>(initialAppearance);
+  const [appearance, setAppearance] = useState<'dark' | 'light'>('light');
   const [chosen, setChosen] = useState<{ name: string; video: boolean } | null>(null);
   const chrome = useRef<HTMLDivElement>(null);
   const [currentTime, setCurrentTime] = useState(0);
@@ -324,6 +327,7 @@ function App({ account }: { account: Account | null }) {
     event.preventDefault();
     if (!source || !still) return;
     setBusy(true);
+    setStatus('Uploading revision…');
     setError('');
     setConfirmed(false);
     try {
@@ -370,6 +374,7 @@ function App({ account }: { account: Account | null }) {
   }
 
   const claim = result?.claims.find((c) => c.claim_id === selected);
+  const script = result?.screening.ad.media === 'script';
   function select(id: string, seconds: number | null) {
     setSelected(id);
     if (seconds === null) return;
@@ -431,23 +436,8 @@ function App({ account }: { account: Account | null }) {
   return (
     <>
       <div className="chrome" ref={chrome}>
-        <header className="bar">
-          <a className="brand" href="/">
-            <svg width="22" height="22" viewBox="0 0 22 22" aria-hidden="true">
-              <rect
-                x="1"
-                y="1"
-                width="20"
-                height="20"
-                rx="3"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.6"
-              />
-              <path d="M6 16V6h10" fill="none" stroke="currentColor" strokeWidth="2.4" />
-            </svg>
-            PreFlight
-          </a>
+        <header className={`bar${entry ? ' with-account' : ''}`}>
+          <Brand />
           <nav className="modes" aria-label="Workspace mode">
             <button aria-pressed={mode === 'screen'} disabled={active} onClick={openScreen}>
               Screen an ad
@@ -456,6 +446,14 @@ function App({ account }: { account: Account | null }) {
               Explore demos
             </button>
           </nav>
+          {entry && !account && (
+            <nav className="account-nav" aria-label="Account">
+              <a href="/login">Log in</a>
+              <a className="outline" href="/signup">
+                Sign up
+              </a>
+            </nav>
+          )}
           <button
             className="appearance outline"
             aria-label={appearance === 'dark' ? 'Light appearance' : 'Dark appearance'}
@@ -479,7 +477,7 @@ function App({ account }: { account: Account | null }) {
           {config?.notice ?? NOTICE}
         </aside>
       </div>
-      <main id="workspace">
+      <main id="workspace" className={entry ? 'entry' : undefined}>
         {config?.verification_label && <p className="replay">{config.verification_label}</p>}
         {error && (
           <div className="error" role="alert">
@@ -506,58 +504,62 @@ function App({ account }: { account: Account | null }) {
         {mode === 'demo' && result && demoChoices}
         {entry && (
           <>
-            <div className="title-row">
+            <div className="title-row entry-title">
               <div className="what">
-                <h1>Screen an ad</h1>
+                <p className="eyebrow">PreFlight / The creative review desk</p>
+                <h1>
+                  Good creative.
+                  <br />
+                  <em>A second look.</em>
+                </h1>
                 <p className="lead">
-                  Upload one ad. Each claim is checked against the GB register, the CAP Code and ASA
-                  rulings, and every flag shows its evidence.
+                  Screen health and supplement ads before they go live. Find the claims, follow the
+                  evidence, and decide what needs a rethink.
+                </p>
+                <p className="entry-sources">
+                  GB health claims register <span aria-hidden="true">/</span> CAP Code{' '}
+                  <span aria-hidden="true">/</span> ASA rulings
                 </p>
               </div>
             </div>
-            <div className="work">
-              <div className="slot">
-                <p className="upload-notice">{config?.upload_notice ?? 'Loading upload terms…'}</p>
-                {config?.uploads_closed && (
-                  <p role="status">{PUBLIC_ERRORS[config.uploads_closed]}</p>
-                )}
-                <span>Nothing uploaded yet.</span>
-                <label className="file-button primary">
-                  Choose image or video
-                  <input
-                    aria-label="Upload ad"
-                    type="file"
-                    accept="image/png,image/jpeg,image/webp,video/mp4,video/webm,video/quicktime"
-                    disabled={active || !config || Boolean(config.uploads_closed)}
-                    onChange={(e) => {
-                      const file = e.target.files?.[0];
-                      e.target.value = '';
-                      if (file) void screenFile(file);
-                    }}
-                  />
-                </label>
-              </div>
+            <div className="work entry-work">
+              <UploadPanel
+                disabled={active || !config || Boolean(config.uploads_closed)}
+                notice={config?.upload_notice ?? 'Loading upload terms…'}
+                closedReason={
+                  config?.uploads_closed ? PUBLIC_ERRORS[config.uploads_closed] : undefined
+                }
+                onFile={(file) => void screenFile(file)}
+              />
               <div className="facts">
-                <h2>Formats</h2>
-                <p>
-                  PNG, JPEG, WebP, MP4, WebM or QuickTime, up to{' '}
-                  {config ? mebibytes(config.max_upload_bytes) : 100} MiB
-                  {config ? `, and video up to ${config.max_seconds} seconds` : ''}.
-                </p>
-                <h2>Retention</h2>
-                <p>
-                  Uploads are deleted after {config ? config.retention_seconds / 3600 : 24} hours,
-                  or later if a job is still using them. Screening spends model credits.
-                </p>
-                <h2>Demos</h2>
-                <p>
-                  <button className="link" onClick={openDemos}>
-                    Explore labelled demos
-                  </button>
-                  . Their ASA outcomes stay hidden until you reveal them.
-                </p>
+                <details className="input-details">
+                  <summary>Supported formats & retention</summary>
+                  <h2>Formats</h2>
+                  <p>
+                    PNG, JPEG, WebP, MP4, WebM or QuickTime, up to{' '}
+                    {config ? mebibytes(config.max_upload_bytes) : 100} MiB
+                    {config ? `, and video up to ${config.max_seconds} seconds` : ''}. Scripts:
+                    UTF-8 .txt or .md, up to 64 KiB and 1,000 lines. Use VO: or SUPER: to
+                    distinguish spoken and on-screen copy.
+                  </p>
+                  <h2>Retention</h2>
+                  <p>
+                    Uploads are deleted after {config ? config.retention_seconds / 3600 : 24} hours,
+                    or later if a job is still using them. Screening spends model credits.
+                  </p>
+                </details>
+                <div>
+                  <h2>Demos</h2>
+                  <p>
+                    <button className="link" onClick={openDemos}>
+                      Explore labelled demos
+                    </button>
+                    . Their ASA outcomes stay hidden until you reveal them.
+                  </p>
+                </div>
               </div>
             </div>
+            <ProductSections />
           </>
         )}
         {processing && (
@@ -573,7 +575,11 @@ function App({ account }: { account: Account | null }) {
             <div className="work">
               <section className="stage-col">
                 <div className="stage">
-                  {media && unavailableMedia !== media ? (
+                  {/\.(txt|md)$/i.test(chosen?.name ?? '') ? (
+                    <p>
+                      Reading your script. The numbered source lines will appear with the result.
+                    </p>
+                  ) : media && unavailableMedia !== media ? (
                     chosen?.video ? (
                       <video src={media} controls preload="metadata" aria-label="Uploaded ad" />
                     ) : (
@@ -619,7 +625,7 @@ function App({ account }: { account: Account | null }) {
                   <button aria-pressed={view === 'evidence'} onClick={() => setView('evidence')}>
                     Evidence
                   </button>
-                  {mode === 'screen' && source && !fix && complete(result.screening) && (
+                  {mode === 'screen' && source && !fix && !script && complete(result.screening) && (
                     <button aria-pressed={view === 'edit'} onClick={() => setView('edit')}>
                       Prepare revision
                     </button>
@@ -670,8 +676,26 @@ function App({ account }: { account: Account | null }) {
             )}
             <div className="workspace" hidden={view !== 'evidence'}>
               <section className="viewer" aria-label="Ad and claim timeline">
+                <div className="panel-heading">
+                  <span>{script ? 'Source script' : 'Your creative'}</span>
+                  <span className="panel-meta">
+                    {script
+                      ? 'Numbered copy'
+                      : result.screening.ad.media === 'video'
+                        ? 'Video review'
+                        : 'Image review'}
+                  </span>
+                </div>
                 <div className="stage">
-                  {media && unavailableMedia !== media ? (
+                  {script ? (
+                    <ScriptPreview
+                      lines={result.screening.script_lines}
+                      selected={
+                        claim?.evidence.map((e) => e.line_number).filter((n): n is number => !!n) ??
+                        []
+                      }
+                    />
+                  ) : media && unavailableMedia !== media ? (
                     (fix ? fix.draft.format === 'video' : result.screening.ad.media === 'video') ? (
                       <video
                         ref={player}
@@ -724,7 +748,7 @@ function App({ account }: { account: Account | null }) {
             </div>
           </>
         )}
-        {mode === 'screen' && source && !fix && result && complete(result.screening) && (
+        {mode === 'screen' && source && !fix && result && !script && complete(result.screening) && (
           <div className="work editor" hidden={view !== 'edit'}>
             <section className="stage-col">
               <StillStage file={still} />
@@ -861,9 +885,7 @@ function App({ account }: { account: Account | null }) {
         )}
         {mode === 'demo' && config && <Metrics board={config.scoreboard} />}
       </main>
-      <footer>
-        <a href="/docs">API documentation</a>
-      </footer>
+      <SiteFooter />
     </>
   );
 }
@@ -890,6 +912,10 @@ function Gate() {
     );
   if (!state) return null;
   const { config, account } = state;
+  const accountPath = location.pathname === '/login' || location.pathname === '/signup';
+  // without sign-in, /login and /signup stay design previews; with it, every path uses the real sign-in
+  if (!config.auth && accountPath)
+    return <AccountPage mode={location.pathname === '/signup' ? 'signup' : 'login'} />;
   if (config.auth && !account.signed_in)
     return (
       <Login
@@ -898,6 +924,7 @@ function Gate() {
         onSignedIn={(a) => setState({ config, account: a })}
       />
     );
+  if (accountPath) history.replaceState(null, '', '/');
   return <App account={config.auth ? account : null} />;
 }
 

@@ -1,5 +1,134 @@
 # P52 design research and proposed direction
 
+## Chalk and petrol light appearance, 4 November 2026
+
+At the user's request before committing/pushing, refined light appearance to chalk
+and white surfaces, ink text and a deep petrol accent. This supersedes the vermilion
+light palette below. The neutral background is lighter and less blue-grey; the
+accent is concentrated in headings, identity and actions. Dark appearance keeps its
+steel/copper palette, including its previous evidence-highlight colours. Review-tier
+red/amber remain separate. No layout, model, authentication or screening behaviour
+was changed in this follow-up.
+
+## Porcelain, graphite and vermilion, 4 November 2026
+
+Following the user's request for a different, more futuristic colourway, replaced
+the editorial pass's olive/cream palette with cool porcelain, graphite and a
+controlled vermilion action accent. Dark appearance uses blue-black steel surfaces
+and a lighter copper accent. Evidence highlights use muted steel blue, separate
+from both the action colour and the labelled red/amber review tiers. No glow,
+neon gradients, additional decoration or new dependency was introduced. Typography,
+layout and all screening behaviour remain as in the editorial pass below.
+
+## Editorial direction, 4 November 2026
+
+This supersedes the Linear visual direction below, following the user's request
+for a more individual interface inspired by Granola and Chris Williams Art Gallery.
+Inspected both live websites and their actual typography in Chromium:
+
+- [Granola](https://www.granola.ai/) pairs its Quadrant display face with Melange
+  body text, quiet white surfaces, an olive action colour and a prominent product
+  workspace. The useful principle is the distinction between expressive introduction
+  and readable working content. Neither proprietary typeface is copied.
+- [Chris Williams Art Gallery](https://www.chriswilliamsart.com/) uses generous
+  negative space, fine grid lines, small captions and asymmetrically placed artwork.
+  Its WebGL presentation took a long time to load during inspection. Adopt the
+  restraint and content hierarchy; keep the ad review desk directly usable with
+  ordinary HTML controls, no loading gate, canvas navigation or borrowed artwork.
+
+Implemented warm paper/ink surfaces, a restrained olive accent and a split entry
+composition: a large Source Serif 4 headline beside an upload desk, then three
+short workflow steps. Source Serif is already licensed and bundled; Inter remains
+the working typeface for evidence and controls. The small document illustration
+is original SVG built in the component. No third-party image, font request, new
+framework or animation dependency is required. Light starts by default and a
+quiet dark palette remains available. Removed the purple glow and backdrop blur.
+Mobile stacks the same sections and keeps the upload notice and file input intact.
+
+This is presentation work: the model configuration, evidence, source wording,
+retention contract, report and evaluation split are unchanged. The merged P73
+scoreboard selector is checked against the actual registry as well as fixtures;
+the live page identifies `screen-20261104T052428`, v2 test, with all five metrics.
+Retained source screenings/media for building that run's demo gallery are not
+present locally, so a public gallery build remains unverified here.
+
+## Linear visual direction, 4 November 2026
+
+The user rejected the conservative initial refresh and explicitly requested Linear's
+type/background style and glass-like elegance. Inspected the live Linear page's
+computed styles: body/headings use Inter Variable with system fallbacks, on an
+`rgb(8, 9, 10)` background. Also read Linear's
+[redesign account](https://linear.app/now/how-we-redesigned-the-linear-ui), which
+describes improving application chrome and views while bounding navigation changes.
+
+The revised implementation uses Inter Variable v4.1 from the
+[font's official repository](https://github.com/rsms/inter/tree/v4.1), self-hosted
+with its SIL Open Font Licence. It replaces the previous Atkinson face in the active
+stylesheet. Dark appearance now opens by default, including for light-system users;
+an explicit light toggle is retained. The document declares the dark appearance
+before React starts. Existing source, policy, retention and review wording remains.
+
+The new appearance uses near-black charcoal, low-intensity background lighting,
+translucent blurred panels, thin edge highlights and soft shadows. The entry surface
+centres the primary task and groups the three explanatory steps below it. Loaded
+results retain the two-panel evidence workflow. No copied Linear assets, new
+framework or new model behaviour was introduced.
+
+Built the actual page and inspected desktop entry/review captures, phone evidence
+after scrolling, and light appearance. A separate Chromium capture confirmed the
+Inter face was loaded rather than falling back, and measured a 390-pixel document
+at a 390-pixel viewport. The full-page screenshot of an offscreen blurred surface
+can omit compositor content; inspected its scrolled viewport capture as well.
+Build, 8 unit tests, 23 browser scenarios (including contrast, keyboard and updated
+dark-default/light-toggle checks), 696 non-live Python tests, Ruff and formatting
+passed. Two Python tests skipped for environmental reasons; seven live tests were
+deselected. No additional provider requests or benchmark changes were made.
+
+This direction supersedes the typography, palette and system-preference default
+described in the initial refresh below.
+
+## Workspace refresh, 4 November 2026
+
+The user asked for a more intuitive, contemporary product interface. Reviewed the
+current [Lovable homepage](https://lovable.dev/) in the browser and visually inspected
+its entry surface, [Linear's product features](https://linear.app/features), and
+[Vercel's interface guidelines](https://vercel.com/design/guidelines). These are
+references, not evidence that a particular appearance wins the hackathon.
+
+Applied principles: make the starting action obvious; separate navigation from
+content; give the media and evidence their own surfaces; disclose secondary input
+details without hiding the screening or upload notices. Adopted a restrained cobalt
+accent, cool neutral surfaces, sans-serif claim typography, clearer selected states
+and rounded panels. Kept evidence-risk colours distinct from interface accents.
+No copied assets, new font download, framework or dependency was introduced.
+
+The entry screen now explains three actions (bring creative, follow evidence,
+make the call) alongside one upload panel. The panel supports file selection and
+drag-and-drop through the same existing upload function, rejects multiple dropped
+files with a recoverable message and respects disabled/public-mode controls.
+Format and retention details expand on demand; the upload terms stay visible.
+The loaded workspace has a labelled creative panel, pill review navigation,
+sans-serif quoted claims and separate evidence inspector. Mobile navigation uses
+two rows and the video height leaves more room for claim selection.
+
+Verification: production build, 8 frontend unit cases, 23 full browser scenarios,
+696 non-live Python tests (2 environmental skips, 7 live tests deselected), Ruff
+and formatting passed. The browser checks include contrast in both appearances,
+keyboard selection, 200% content scaling, phone layout, recovery, revisions,
+reports, script evidence and two new upload scenarios. Ten focused presentation
+and upload scenarios also passed after mobile target sizing changes.
+
+Direct inspection used the retained real-model video result on the restarted live
+application: selected claims, changed appearance, opened the revision form and
+returned to evidence. A separate browser capture at 390 pixels measured document
+width 390, without horizontal overflow; inspected entry and review screenshots.
+The final visual pass found wrapped step numbers on phones; gave their column a
+fixed minimum width. This is engineering/exploratory verification, not a usability
+study with representative agency reviewers. No new provider calls, benchmark
+changes, fake dashboard metrics or public deployment were part of this refresh.
+
+The earlier research below remains a historical account of the previous design.
+
 Researched 1 November 2026 against implementation `dd0ba9b`. This note is the
 research record and the proposal as it stood then; the direction was implemented in
 `4b09f25`, and the shipped behaviour is described in [web.md](../web.md).

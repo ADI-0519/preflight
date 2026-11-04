@@ -34,6 +34,8 @@ def span(start: float, end: float) -> str:
 
 
 def evidence_key(e) -> str:
+    if e.kind == "script":
+        return f"script-line-{e.line_number}"
     if e.kind == "transcript":
         return e.segment_id
     if e.kind == "on_screen":
@@ -95,6 +97,9 @@ def _evidence(screening: Screening, e) -> dict:
         "kind": e.kind, "start": None, "end": None, "frame_time": None, "text": None, "track_id": None, "crop": None,
         "timing": None, "timed": True,
     }  # fmt: skip
+    if e.kind == "script":
+        return out | {"label": f"Script line {e.line_number}", "text": e.text,
+                      "line_number": e.line_number, "timed": False}
     if e.kind == "region":
         track = next(t for t in screening.tracks if t.track_id == e.track_id)
         cited = next(r for r in track.regions if r.frame_time == e.frame_time)

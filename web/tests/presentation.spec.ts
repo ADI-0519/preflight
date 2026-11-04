@@ -9,9 +9,19 @@ async function checkTextContrast(page: import('@playwright/test').Page) {
   const tokens = await page.evaluate(() => {
     const style = getComputedStyle(document.documentElement);
     return Object.fromEntries(
-      ['ink', 'graphite', 'paper', 'sheet', 'raised', 'blue', 'on-ink', 'hl', 'on-hl'].map(
-        (name) => [name, style.getPropertyValue(`--${name}`).trim()],
-      ),
+      [
+        'ink',
+        'graphite',
+        'paper',
+        'sheet',
+        'raised',
+        'blue',
+        'on-ink',
+        'hl',
+        'on-hl',
+        'accent',
+        'on-accent',
+      ].map((name) => [name, style.getPropertyValue(`--${name}`).trim()]),
     );
   });
   const luminance = (hex: string) => {
@@ -33,6 +43,8 @@ async function checkTextContrast(page: import('@playwright/test').Page) {
     ['blue', 'sheet'],
     ['on-ink', 'ink'],
     ['on-hl', 'hl'],
+    ['accent', 'paper'],
+    ['on-accent', 'accent'],
   ]) {
     const a = luminance(tokens[text]),
       b = luminance(tokens[surface]);
@@ -60,16 +72,16 @@ test('loaded evidence leads on desktop and appearance preserves the selected cla
   expect(frame!.y + 100).toBeLessThan(800);
   const title = await evidence.locator('h3').innerText();
   await checkTextContrast(page);
-  const theme = page.getByRole('button', { name: 'Light appearance', exact: true });
+  const theme = page.getByRole('button', { name: 'Dark appearance', exact: true });
   await theme.focus();
   await page.keyboard.press('Enter');
-  await expect(page.locator('html')).toHaveAttribute('data-appearance', 'light');
+  await expect(page.locator('html')).toHaveAttribute('data-appearance', 'dark');
   await checkTextContrast(page);
   await expect(evidence.locator('h3')).toHaveText(title);
   await expect(page.getByRole('note')).toBeInViewport();
-  await page.screenshot({ path: testInfo.outputPath('evidence-light.png'), fullPage: true });
-  await page.getByRole('button', { name: 'Dark appearance', exact: true }).click();
   await page.screenshot({ path: testInfo.outputPath('evidence-dark.png'), fullPage: true });
+  await page.getByRole('button', { name: 'Light appearance', exact: true }).click();
+  await page.screenshot({ path: testInfo.outputPath('evidence-light.png'), fullPage: true });
   expect(errors).toEqual([]);
 });
 
@@ -169,10 +181,14 @@ test('a heading scrolled into view is not covered by the sticky header', async (
 test.describe('light system preference', () => {
   test.use({ colorScheme: 'light' });
 
-  test('initial appearance follows prefers-color-scheme', async ({ page }) => {
+  test('light workspace is the starting appearance and dark remains available', async ({
+    page,
+  }) => {
     await page.goto('/');
     await expect(page.locator('html')).toHaveAttribute('data-appearance', 'light');
-    expect(await page.evaluate(() => document.documentElement.dataset.appearance)).toBe('light');
-    await expect(page.getByRole('button', { name: 'Dark appearance', exact: true })).toBeVisible();
+    await page.getByRole('button', { name: 'Dark appearance', exact: true }).click();
+    await expect(page.locator('html')).toHaveAttribute('data-appearance', 'dark');
+    expect(await page.evaluate(() => document.documentElement.dataset.appearance)).toBe('dark');
+    await expect(page.getByRole('button', { name: 'Light appearance', exact: true })).toBeVisible();
   });
 });

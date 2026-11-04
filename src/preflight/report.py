@@ -208,7 +208,9 @@ def render_html(screening: Screening, crops: Path | None = None) -> str:
         ("ASA rulings index", s.rulings),
     ]
     sources = "".join(f"<tr><td>{name}</td><td>{version}</td></tr>" for name, version in versions)
-    facts = f"{escape(ad.media)}, {ad.width} \u00d7 {ad.height}"
+    facts = escape(ad.media)
+    if ad.width is not None and ad.height is not None:
+        facts += f", {ad.width} \u00d7 {ad.height}"
     if ad.duration is not None:
         facts += f", {ad.duration:g} s"
     facts += f", content {ad.content_hash[:12]}, screened {screening.screened_at:%Y-%m-%d %H:%M} UTC"

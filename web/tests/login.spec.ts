@@ -108,5 +108,6 @@ test('a sign-in waiting for its code asks for the 6 digits and then opens the wo
   await expect(page.getByRole('alert')).toHaveText(/That code is not right/);
   await code.fill('246810');
   await expect(page.getByRole('button', { name: 'Sign out' })).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Log in', exact: true })).toHaveCount(0);
   expect(tries).toEqual(['135792', '246810']);
 });

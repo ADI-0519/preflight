@@ -27,11 +27,13 @@ from preflight.api.service import Service
 from preflight.api.storage import TERMINAL, APIError, Settings
 from preflight.api.web import ROOT, install_web
 from preflight.ingest import MAX_SECONDS, probe, run
+from preflight.ingest.script import MAX_SCRIPT_BYTES, SCRIPT_TYPES, ScriptError, read_script
 from preflight.schema import NOTICE, Screening
 
 log = logging.getLogger(__name__)
 
 MEDIA = {
+    **SCRIPT_TYPES,
     "image/png": ".png", "image/jpeg": ".jpg", "image/webp": ".webp",
     "video/mp4": ".mp4", "video/webm": ".webm", "video/quicktime": ".mov",
 }
@@ -225,6 +227,8 @@ def create_app(
             raise APIError(415, "unsupported_media_type")
         with public.admit(client(request), "upload"):
             limit = public.max_upload_bytes()
+            if media_type in SCRIPT_TYPES:
+                limit = min(limit, MAX_SCRIPT_BYTES)
             fields = storage.begin(media_type, MEDIA[media_type])
             saved, size = False, 0
             try:
@@ -237,12 +241,20 @@ def create_app(
                         stream.write(chunk)
                 if not size:
                     raise APIError(422, "empty_upload")
-                try:
-                    info = await asyncio.to_thread(validate_media, path, public.max_seconds(MAX_SECONDS))
-                except (ValueError, RuntimeError):
-                    raise APIError(415, "unreadable_media") from None
-                if info["still"] != media_type.startswith("image/"):
-                    raise APIError(415, "media_type_mismatch")
+                if media_type in SCRIPT_TYPES:
+                    try:
+                        await asyncio.to_thread(read_script, path)
+                    except ScriptError as exc:
+                        code = str(exc)
+                        status = 415 if code in {"invalid_script_encoding", "invalid_script_content"} else 422
+                        raise APIError(status, code) from None
+                else:
+                    try:
+                        info = await asyncio.to_thread(validate_media, path, public.max_seconds(MAX_SECONDS))
+                    except (ValueError, RuntimeError):
+                        raise APIError(415, "unreadable_media") from None
+                    if info["still"] != media_type.startswith("image/"):
+                        raise APIError(415, "media_type_mismatch")
                 fields = storage.finish(fields, size)
                 saved = True
                 keys = ("upload_id", "media_type", "bytes", "expires_at")

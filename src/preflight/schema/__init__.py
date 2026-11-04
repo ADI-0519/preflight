@@ -11,7 +11,8 @@ from preflight.sources.on_hold import load_on_hold
 from preflight.sources.register import RegisterEntry, load_register
 from preflight.sources.rulings import load_ruling_index
 
-SCHEMA_VERSION = "3"
+SCHEMA_VERSION = "4"
+SCRIPT_NOTICE = "Script only. Screen the finished ad separately."
 
 # rules 1 and 4: shown with every screening; no wording here may suggest the ad is cleared to run
 NOTICE = (
@@ -59,14 +60,20 @@ class _Span(_Record):
 
 class Ad(_Record):
     content_hash: str = Field(pattern=r"^[0-9a-f]{64}$")
-    media: Literal["video", "image", "page"]
-    width: int = Field(gt=0)
-    height: int = Field(gt=0)
+    media: Literal["video", "image", "page", "script"]
+    width: int | None = Field(default=None, gt=0)
+    height: int | None = Field(default=None, gt=0)
     duration: Seconds | None = None
     fps: float | None = Field(default=None, gt=0, allow_inf_nan=False)
 
     @model_validator(mode="after")
     def _timed_if_video(self) -> Self:
+        if self.media == "script":
+            if any(v is not None for v in (self.width, self.height, self.duration, self.fps)):
+                raise ValueError("scripts have no dimensions, duration or frame rate")
+            return self
+        if self.width is None or self.height is None:
+            raise ValueError("media ads require dimensions")
         if (self.media == "video") != (self.duration is not None and self.fps is not None):
             raise ValueError("duration and fps are set for video ads and only for them")
         return self
@@ -110,6 +117,18 @@ class TranscriptEvidence(_Record):
     segment_id: str
 
 
+class ScriptLine(_Record):
+    line_number: int = Field(gt=0, strict=True)
+    text: str = Field(min_length=1)
+    channel: Literal["voiceover", "super", "plain"] = "plain"
+
+
+class ScriptEvidence(_Record):
+    kind: Literal["script"] = "script"
+    line_number: int = Field(gt=0, strict=True)
+    text: str = Field(min_length=1)
+
+
 class OnScreenEvidence(_Record):
     kind: Literal["on_screen"] = "on_screen"
     text_id: str
@@ -121,7 +140,9 @@ class RegionEvidence(_Record):
     frame_time: Seconds
 
 
-Evidence = Annotated[TranscriptEvidence | OnScreenEvidence | RegionEvidence, Field(discriminator="kind")]
+Evidence = Annotated[
+    TranscriptEvidence | OnScreenEvidence | RegionEvidence | ScriptEvidence, Field(discriminator="kind"),
+]
 
 
 class RegisterRef(_Record):
@@ -219,8 +240,8 @@ class Snapshots(_Record):
 
 
 class Screening(_Record):
-    # v2 added Flag.votes and StageRun.samples and v3 Flag.quotes, all optional, so earlier screenings still read
-    schema_version: Literal["1", "2", SCHEMA_VERSION] = SCHEMA_VERSION
+    # Dev's v3 added marked phrases; v4 adds script input. Earlier media results still read.
+    schema_version: Literal["1", "2", "3", SCHEMA_VERSION] = SCHEMA_VERSION
     screening_id: str
     # the screening this one re-checks after a fix round
     previous_id: str | None = None
@@ -229,6 +250,7 @@ class Screening(_Record):
     stages: tuple[StageRun, ...] = Field(min_length=1)
     screened_at: AwareDatetime
     segments: tuple[Segment, ...] = ()
+    script_lines: tuple[ScriptLine, ...] = ()
     on_screen: tuple[OnScreenText, ...] = ()
     tracks: tuple[Track, ...] = ()
     claims: tuple[Claim, ...] = ()
@@ -238,6 +260,7 @@ class Screening(_Record):
     @computed_field
     @property
     def headline(self) -> str:
+        scope = f"{SCRIPT_NOTICE} " if self.ad.media == "script" else ""
         s = self.snapshots
         sources = (
             f"the GB register ({s.gb_register}), the on-hold list ({s.on_hold}), "
@@ -251,14 +274,14 @@ class Screening(_Record):
         failed = [r.stage for r in self.stages if r.status == "failed"]
         if failed:
             so_far = f"{found} so far, against {sources}." if found else "No result is given."
-            return f"Incomplete: {', '.join(failed)} failed. {so_far}"
+            return f"{scope}Incomplete: {', '.join(failed)} failed. {so_far}"
         if not any(r.stage == "check" and r.status == "done" for r in self.stages):
             so_far = f"{found} so far, against {sources}." if found else "No result is given."
-            return f"Incomplete: check did not finish. {so_far}"
+            return f"{scope}Incomplete: check did not finish. {so_far}"
         if found:
-            return f"{found}, checked against {sources}."
+            return f"{scope}{found}, checked against {sources}."
         # rule 1: the clean result names every dated source it was checked against
-        return f"No issues found against {sources}."
+        return f"{scope}No issues found against {sources}."
 
     # a saved screening carries its headline; it is recomputed on load
     @model_validator(mode="before")
@@ -266,10 +289,28 @@ class Screening(_Record):
     def _drop_headline(cls, fields):
         if isinstance(fields, dict):
             fields = {k: v for k, v in fields.items() if k != "headline"}
+            # P72 and dev independently used v3 before integration. Normalise only
+            # the old script variant in memory; never emit a script as dev's v3.
+            ad = fields.get("ad")
+            media = ad.get("media") if isinstance(ad, dict) else getattr(ad, "media", None)
+            if fields.get("schema_version") == "3" and media == "script":
+                fields["schema_version"] = SCHEMA_VERSION
         return fields
 
     @model_validator(mode="after")
     def _consistent(self) -> Self:
+        script = self.ad.media == "script"
+        numbers = [line.line_number for line in self.script_lines]
+        if len(set(numbers)) != len(numbers) or numbers != sorted(numbers):
+            raise ValueError("script lines must be unique and in source order")
+        if script:
+            if self.schema_version != SCHEMA_VERSION or not self.script_lines:
+                raise ValueError("script screenings require v4 and source lines")
+            if self.segments or self.on_screen or self.tracks:
+                raise ValueError("script screenings cannot contain media evidence")
+        elif self.script_lines:
+            raise ValueError("media screenings cannot contain script lines")
+        script_text = {line.line_number: line.text for line in self.script_lines}
         _unique("stage", [r.stage for r in self.stages])
         segments = _unique("segment", [s.segment_id for s in self.segments])
         texts = _unique("on-screen text", [t.text_id for t in self.on_screen])
@@ -284,10 +325,13 @@ class Screening(_Record):
                 raise ValueError(f"evidence runs past the end of the ad ({self.ad.duration} s)")
         for claim in self.claims:
             for e in claim.evidence:
+                if script != (e.kind == "script"):
+                    raise ValueError("evidence must match the input mode")
                 found = (
                     (e.kind == "transcript" and e.segment_id in segments)
                     or (e.kind == "on_screen" and e.text_id in texts)
                     or (e.kind == "region" and e.frame_time in tracks.get(e.track_id, ()))
+                    or (e.kind == "script" and script_text.get(e.line_number) == e.text)
                 )
                 if not found:
                     raise ValueError(f"claim {claim.claim_id} points at evidence missing from the screening: {e!r}")

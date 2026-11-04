@@ -18,6 +18,7 @@ from preflight.agent.fix import read_log
 from preflight.api.public import UPLOAD_NOTICE
 from preflight.api.storage import APIError
 from preflight.ingest import MAX_SECONDS
+from preflight.ingest.script import SCRIPT_SUFFIXES
 from preflight.schema import NOTICE, Screening, register_entries, verify_sources
 from preflight.sources.cap import CapRule, load_cap_rules
 from preflight.sources.on_hold import OnHoldClaim, load_on_hold
@@ -37,7 +38,9 @@ def inside(root: Path, name: str) -> Path:
 def media_response(path: Path, request: Request) -> Response:
     size = path.stat().st_size
     headers = {"Accept-Ranges": "bytes", "X-Content-Type-Options": "nosniff"}
-    media_type = mimetypes.guess_type(path)[0] or "application/octet-stream"
+    media_type = "text/plain" if path.suffix.lower() in SCRIPT_SUFFIXES else (
+        mimetypes.guess_type(path)[0] or "application/octet-stream"
+    )
     value = request.headers.get("range")
     start, end, status = 0, size - 1, 200
     if value:
@@ -94,7 +97,7 @@ def presentation(screening: Screening, crop_base: str) -> dict:
         ruling = rulings[ref.ruling_id]
         return {"label": f"ASA {ref.ruling_id} · {ruling.date}", "text": ruling.advertiser, "url": ruling.url}
 
-    kinds = {"transcript": "Spoken", "on_screen": "On screen", "region": "Image region"}
+    kinds = {"transcript": "Spoken", "on_screen": "On screen", "region": "Image region", "script": "Script line"}
 
     def evidence(item: dict) -> dict:
         crop_url = None
@@ -105,6 +108,7 @@ def presentation(screening: Screening, crop_base: str) -> dict:
         start = item["start"] if item["frame_time"] is None else item["frame_time"]
         end = item["end"] if item["frame_time"] is None else item["frame_time"]
         return {"kind": kinds[item["kind"]], "start": start, "end": end, "text": item["text"],
+                "line_number": item.get("line_number"),
                 "timing": item["timing"], "timed": item["timed"], "crop_url": crop_url}
 
     flags = {f.flag_id: f for f in screening.flags}
@@ -356,6 +360,8 @@ def install_web(app, service, *, web_root: Path, demo_root: Path, results_root: 
         return {"kind": "reconstruction", "ruling_id": ruling.ruling_id, "date": str(ruling.date),
                 "outcome": ruling.outcome, "rules": ruling.cap_rules, "url": ruling.url}
 
+    @app.get("/login", include_in_schema=False)
+    @app.get("/signup", include_in_schema=False)
     @app.get("/", include_in_schema=False)
     def index():
         if not (web_root / "index.html").is_file():

@@ -1,6 +1,7 @@
 import asyncio
 import json
 import logging
+import os
 from contextlib import asynccontextmanager, suppress
 from pathlib import Path
 
@@ -83,7 +84,10 @@ def create_app(
     demo_root: Path | None = None, results_root: Path | None = None, auth: Auth | None = None, **dependencies,
 ) -> FastAPI:
     """Single-process app; sign-in is on when FIREBASE_PROJECT_ID is set (preflight.api.auth)."""
-    settings = settings or Settings()
+    if settings is None:
+        cap = os.environ.get("PREFLIGHT_DAILY_CAP_USD", "").strip()
+        # public mode's daily model spend cap; a deployment open to anyone sets it below the default
+        settings = Settings(daily_cap_usd=float(cap)) if cap else Settings()
     auth = auth or Auth.from_env()
     service = Service(settings, **dependencies)
     storage, public = service.storage, service.public
@@ -115,7 +119,9 @@ def create_app(
     app.state.service = service
     app.state.auth = auth
     app.add_middleware(BodyLimit, settings=settings, public=public)
-    app.add_middleware(TrustedHostMiddleware, allowed_hosts=["localhost", "127.0.0.1", "testserver"])
+    # a deployment names its public host names (PREFLIGHT_ALLOWED_HOSTS, comma-separated); local runs need none
+    hosts = [h.strip() for h in os.environ.get("PREFLIGHT_ALLOWED_HOSTS", "").split(",") if h.strip()]
+    app.add_middleware(TrustedHostMiddleware, allowed_hosts=["localhost", "127.0.0.1", "testserver", *hosts])
 
     @app.middleware("http")
     async def private_errors(request, call_next):
@@ -189,8 +195,8 @@ def create_app(
         user = waiting(request)
         auth.check(user, fields.code)
         response = JSONResponse({"signed_in": True, "email": user.email, "login": True, "pending": None})
+        # replaces the half-signed-in cookie, which has the same name
         set_cookie(response, request, COOKIE, auth.cookie(user), SESSION_SECONDS)
-        response.delete_cookie(PENDING, path="/")
         return response
 
     @app.post("/auth/code/resend")
@@ -202,7 +208,6 @@ def create_app(
     def sign_out():
         response = JSONResponse({"signed_in": False, "email": None, "login": auth.enabled, "pending": None})
         response.delete_cookie(COOKIE, path="/")
-        response.delete_cookie(PENDING, path="/")
         return response
 
     @app.get("/auth/me")

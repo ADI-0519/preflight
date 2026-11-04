@@ -5,15 +5,19 @@ export function UploadPanel({
   notice,
   closedReason,
   onFile,
+  signIn = false,
 }: {
   disabled: boolean;
   notice: string;
   closedReason?: string;
   onFile: (file: File) => void;
+  /** nobody is signed in: the button leads to sign-in instead of opening a file */
+  signIn?: boolean;
 }) {
   const [dragging, setDragging] = useState(false);
   const [error, setError] = useState('');
   function choose(files: FileList | null) {
+    if (signIn) return location.assign('/login');
     if (disabled || !files?.length) return;
     if (files.length !== 1) {
       setError('Choose one ad or script at a time.');
@@ -69,20 +73,34 @@ export function UploadPanel({
         <h2>Upload an ad</h2>
         <p>Choose a script, image or video to screen.</p>
       </div>
-      <label className="file-button primary">
-        Choose ad or script <span aria-hidden="true">↗</span>
-        <input
-          aria-label="Upload ad"
-          type="file"
-          accept=".txt,.md,text/plain,text/markdown,image/png,image/jpeg,image/webp,video/mp4,video/webm,video/quicktime"
-          disabled={disabled}
-          onChange={(event) => {
-            choose(event.target.files);
-            event.target.value = '';
-          }}
-        />
-      </label>
-      <p className="drop-hint">or drag one file here</p>
+      {signIn ? (
+        <a className="file-button primary" href="/login">
+          Log in to screen an ad <span aria-hidden="true">↗</span>
+        </a>
+      ) : (
+        <label className="file-button primary">
+          Choose ad or script <span aria-hidden="true">↗</span>
+          <input
+            aria-label="Upload ad"
+            type="file"
+            accept=".txt,.md,text/plain,text/markdown,image/png,image/jpeg,image/webp,video/mp4,video/webm,video/quicktime"
+            disabled={disabled}
+            onChange={(event) => {
+              choose(event.target.files);
+              event.target.value = '';
+            }}
+          />
+        </label>
+      )}
+      <p className="drop-hint">
+        {signIn ? (
+          <>
+            New here? <a href="/signup">Create an account</a>
+          </>
+        ) : (
+          'or drag one file here'
+        )}
+      </p>
       <p className="upload-notice">{notice}</p>
       {closedReason && <p role="status">{closedReason}</p>}
       {error && <p role="alert">{error}</p>}

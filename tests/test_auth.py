@@ -153,9 +153,8 @@ def test_a_sign_in_waits_for_the_emailed_code(signed):
         assert response.json() == {"signed_in": False, "email": None, "login": True, "pending": "founder@example.com"}
         assert client.get("/ui/demos").status_code == 401
         assert client.get("/auth/me").json()["pending"] == "founder@example.com"
-        # the half-signed-in cookie is not a session
-        client.cookies.set(COOKIE, client.cookies[PENDING])
-        assert client.get("/ui/demos").status_code == 401
+        # the half-signed-in cookie, under the session's name, is not a session
+        assert signed.state.auth.user(client.cookies[COOKIE]) is None
         to, code = signed.state.auth.outbox[-1]
         assert to == "founder@example.com" and len(code) == 6 and code.isdigit()
         wrong = f"{(int(code) + 1) % 10**6:06d}"
@@ -163,8 +162,11 @@ def test_a_sign_in_waits_for_the_emailed_code(signed):
         assert client.post("/auth/code", json={"code": "12ab56"}).status_code == 422
         assert client.post("/auth/code", json={"code": code}).json()["signed_in"] is True
         assert client.get("/ui/demos").status_code == 200
-        assert PENDING not in client.cookies
+        # the session replaced the half-signed-in cookie under the one name Firebase Hosting passes through
+        assert COOKIE == PENDING == "__session"
+        assert signed.state.auth.user(client.cookies[COOKIE]) is not None
         # a code works once
+        client.cookies.clear()
         client.cookies.set(PENDING, signed.state.auth.cookie(User("u1", "founder@example.com"), "code"))
         assert client.post("/auth/code", json={"code": code}).json()["error"] == "code_expired"
 

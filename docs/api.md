@@ -16,10 +16,11 @@ Live screening also needs the team's cached ASA ruling HTML pages under
 snapshots contain metadata only. With an empty cache, the precedent loader fails
 before model screening; `/health` alone does not verify this prerequisite. Keep
 downloaded ruling pages ignored rather than adding them to Git.
-The service is a local, single-process prototype. Firebase sign-in can gate the
-workspace when configured, but uploads and jobs have no per-user ownership or tenant
-isolation. Keep it bound to localhost; production access needs separate work.
-An approval's `by` value is a person's supplied name, not an authenticated identity.
+The service is a single-process prototype. Locally it runs open on localhost. With
+`FIREBASE_PROJECT_ID` set it requires sign-in, and an approval's `by` value is then the
+signed-in account's email; without sign-in it is a supplied name. Uploads and jobs have no
+per-user ownership or tenant isolation: any signed-in account can open a job by its ID.
+To run it on Google Cloud Run, see [deploy.md](./deploy.md).
 
 Creating or starting the app does not load credentials or call a model. Starting a
 screen/fix job uses the configured Standard-mode clients and can consume model credit.

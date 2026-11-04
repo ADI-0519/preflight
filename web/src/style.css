@@ -830,6 +830,11 @@ h1 {
 .upload-heading p {
   margin: 4px 0 12px;
 }
+/* signed out, the upload button is a link to sign-in */
+a.file-button {
+  text-decoration: none;
+}
+
 .file-button > span {
   margin-left: 14px;
 }
@@ -842,6 +847,10 @@ h1 {
   margin: 0 auto;
   padding-top: 72px;
   padding-bottom: 64px;
+  /* max-width and auto margins already centre the entry page; main's --pad would centre it a second
+     time and squeeze the content on screens wider than 1440px */
+  padding-left: var(--gutter);
+  padding-right: var(--gutter);
   align-items: center;
 }
 .entry > .replay,

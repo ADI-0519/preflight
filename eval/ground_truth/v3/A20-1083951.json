@@ -1,0 +1,60 @@
+{
+  "item_id": "A20-1083951",
+  "kind": "ruling",
+  "label": "positive",
+  "outcome": "upheld",
+  "claims": [
+    {
+      "claim": "Liposomal Vitamin C",
+      "rules": [
+        "3.1",
+        "3.7"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "Our Liposomes protect the Vitamin C through the gastro-intestinal tract and deliver the Vitamin C directly to cells",
+      "rules": [
+        "3.1",
+        "3.7"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "Liposomal technology",
+      "rules": [
+        "3.1",
+        "3.7"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "liposomal encapsulation technology",
+      "rules": [
+        "3.1",
+        "3.7"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "we can wrap Vitamin C in something called ‘Liposomes’",
+      "rules": [
+        "3.1",
+        "3.7"
+      ],
+      "points": [
+        1
+      ]
+    }
+  ],
+  "written_by": "draft: scripts/draft_split_v3.py",
+  "checked_by": "checker: checked 2026-11-04 by two independent checkers, differences settled against the ruling page"
+}

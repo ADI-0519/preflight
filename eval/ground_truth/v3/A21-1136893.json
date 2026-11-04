@@ -1,0 +1,73 @@
+{
+  "item_id": "A21-1136893",
+  "kind": "ruling",
+  "label": "positive",
+  "outcome": "upheld",
+  "claims": [
+    {
+      "claim": "Effective In Treating Vitamin D deficiency",
+      "rules": [
+        "12.1",
+        "15.6",
+        "15.6.2",
+        "15.9"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "Hux D3 20 000 Unit Capsules are used to treat vitamin D deficiency conditions in adults",
+      "rules": [
+        "12.1",
+        "15.6",
+        "15.6.2",
+        "15.9"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "You may be suffering from a vitamin D deficiency and benefit from using Hux D3 20 000 Unit Capsules if you have the following symptoms: Fatigue; Bone pain; Muscle weakness, muscle aches, or muscle cramps; Mood changes, like depression",
+      "rules": [
+        "12.1",
+        "15.6",
+        "15.6.2",
+        "15.9"
+      ],
+      "points": [
+        1
+      ]
+    },
+    {
+      "claim": "medicine",
+      "rules": [
+        "3.1"
+      ],
+      "points": [
+        2
+      ]
+    },
+    {
+      "claim": "Whilst Hux D3 20 000 Capsules are available from other commercial stores like Hux D3 20 000unit [sic] Capsules Boots, most of those will require you to bring in your prescription before you can order the medicine",
+      "rules": [
+        "3.1"
+      ],
+      "points": [
+        2
+      ]
+    },
+    {
+      "claim": "From My Pharmacy you can purchase your prescription treatments online without ever having to leave your home",
+      "rules": [
+        "3.1"
+      ],
+      "points": [
+        2
+      ]
+    }
+  ],
+  "written_by": "draft: scripts/draft_split_v3.py",
+  "checked_by": "checker: checked 2026-11-04 by two independent checkers, differences settled against the ruling page"
+}

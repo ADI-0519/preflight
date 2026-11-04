@@ -561,3 +561,13 @@ def test_a_flag_every_answering_sample_gave_is_unanimous():
     s = s.model_copy(update={"stages": (StageRun(stage="check", status="done", samples=2),)})
     item = score_item(truth("A1", [("cures anxiety fast", ["15.6.2"])]), [s])
     assert (item.unanimous_flags, item.split_flags) == (1, 0)
+
+
+@pytest.mark.parametrize(
+    "quotes, caught", [(("calming herbs", "Sleep deeper every night"), 1), (("calming herbs",), 0), ((), 0)]
+)
+def test_a_long_claims_marked_phrases_can_carry_the_catch(quotes, caught):
+    long = "Sleep deeper every night with our unique blend of calming herbs, picked by hand and dried slowly"
+    s = screening("s6", [long], {0: ["15.1"]})
+    s = s.model_copy(update={"flags": (s.flags[0].model_copy(update={"quotes": quotes}),)})
+    assert score_item(truth("A4", [("sleep deeper", ["15.1"])]), [s]).caught == caught

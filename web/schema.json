@@ -231,6 +231,15 @@
           ],
           "default": null,
           "title": "Votes"
+        },
+        "quotes": {
+          "default": [],
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "title": "Quotes",
+          "type": "array"
         }
       },
       "required": [
@@ -240,7 +249,8 @@
         "reason",
         "sources",
         "suggested_wording",
-        "votes"
+        "votes",
+        "quotes"
       ],
       "title": "Flag",
       "type": "object"
@@ -707,10 +717,11 @@
   "additionalProperties": false,
   "properties": {
     "schema_version": {
-      "default": "2",
+      "default": "3",
       "enum": [
         "1",
-        "2"
+        "2",
+        "3"
       ],
       "title": "Schema Version",
       "type": "string"

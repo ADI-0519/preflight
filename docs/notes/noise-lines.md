@@ -71,3 +71,14 @@ Class A guidance is unchanged. The prompt holds no ruling ID and no three-word p
 Both judge_v7 runs used turn timing (`--no-align`), as the judge_v6 run did, so every stage but the check came from the cache. Carried recall rose by 25 claims while recall by chance fell, so the gain does not come from citing more rules; rule precision rose from 446/594 to 494/543. The two judge_v7 runs agree within one claim. About 20 of the 25 extra claims come from one menopause ad (A24-1241022), and 4 from the joint ad (G24-1241706), so the size of the gain on another split depends on how many of its ads are framed around a condition.
 
 Blind read of cited rulings: 40 citations sampled from each run were shuffled together and graded by a reader who saw only the claim and the start of the ruling's ad description (2 similar claim, 1 same broad area, 0 unrelated). judge_v6 scored 49 of 80 with 3 unrelated citations; judge_v7 scored 52 of 80 with 1. The difference in the share is within what 40 citations can resolve, but judge_v7 also cites rulings 315 times against 485, so it makes fewer unrelated citations overall. Six rulings still carry 70% of citations, since claims in one ad cite the same on-topic ruling.
+
+## Labels on the frozen configuration (P33)
+
+Twenty of the 75 flagged lines on positive dev ads in `screen-20261103T204921` that match no ruled claim were drawn at random (seed 33) and labelled "defensible" (a careful reviewer would raise it under the cited rules) or "noise" by two independent checkers, each working alone from the CAP rule pack, the register, the ruling's ad description and the ad's own text, without the judge's prompt or reasons (`docs/notes/decisions.md`, 4 Nov 2026).
+
+| | Checker 1 | Checker 2 |
+|---|---|---|
+| Defensible | 14 | 15 |
+| Noise | 6 | 5 |
+
+They agree on 19 of the 20 lines (Cohen's kappa 0.88); the one split is a cosmetic phrase attached to a wrinkle claim. The noise share is 5 or 6 of 20. Three of the noise lines cite 15.6.2 for claims that name no disease (metabolism, fat, sleep), one is close to authorised bone wording, and one is a testimonial that claims no effect. Most lines the ASA did not rule on are breaches a reviewer would also raise, mostly unauthorised claims for a substance with no register entry, efficacy claims needing evidence, and testimonials implying treatment.

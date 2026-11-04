@@ -1,0 +1,20 @@
+{
+  "item_id": "A26-1325741",
+  "kind": "ruling",
+  "label": "positive",
+  "outcome": "upheld",
+  "claims": [
+    {
+      "claim": "95% agreed it delivers Vitamin D quickly and efficiently",
+      "rules": [
+        "3.1",
+        "3.7"
+      ],
+      "points": [
+        1
+      ]
+    }
+  ],
+  "written_by": "draft: scripts/draft_split_v3.py",
+  "checked_by": "checker: checked 2026-11-04 by two independent checkers, differences settled against the ruling page"
+}

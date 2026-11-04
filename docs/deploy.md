@@ -56,17 +56,43 @@ After the first deploy, add that host name in Firebase > Authentication > Settin
 Google sign-in refuses it.
 
 Run the same command to deploy a new version. The service only answers on the host names in
-`PREFLIGHT_ALLOWED_HOSTS`, which the script sets to that address; a custom domain would need adding there.
+`PREFLIGHT_ALLOWED_HOSTS`, which the script sets to that address, plus `<SITE>.web.app` and
+`<SITE>.firebaseapp.com` when `SITE` names a Firebase Hosting site.
+
+The team's deployment runs open to any account, under public mode's per-account limits:
+
+```bash
+ALLOW_ANYONE=1 SITE=preflight-ai PROJECT=preflight-513720 bash deploy/cloud-run.sh
+```
+
+`PUBLIC_MODE` (default `on`) sets `PREFLIGHT_PUBLIC_MODE`: each signed-in account may start 3 screenings,
+1 fix and 10 uploads an hour, with uploads up to 25 MiB and 60 seconds. `DAILY_CAP_USD` (default 10) sets
+`PREFLIGHT_DAILY_CAP_USD`, the day's model spend across everyone, after which new screenings are refused until
+midnight UTC.
+
+## A free web.app address
+
+Cloud Run's own address cannot be renamed, and a custom domain costs money. Firebase Hosting gives a free
+`<name>.web.app` address that forwards every path to the service. A Hosting rewrite only reaches Cloud Run in
+the same Google Cloud project, so Firebase was added to `preflight-513720` and the site `preflight-ai` created
+there, with a release whose only config is a rewrite of `**` to the service `preflight` in `europe-west1`.
+`preflight-ai.web.app` and `preflight-ai.firebaseapp.com` are authorized domains in the sign-in Firebase
+project.
+
+Hosting forwards only a cookie named `__session`, which is why the session and the half-signed-in state share
+that name. It also ends a forwarded request after 60 seconds, so a screening's progress stream reconnects
+during long screenings; the run.app address has no such limit.
 
 ## Checks
 
 - `https://<address>/health` answers `ready`.
-- The page shows the sign-in screen, and a sign-in emails a code.
+- The page opens on the landing page signed out; a sign-in emails a code.
 - Logs: `gcloud run services logs read preflight --region europe-west1 --project <project>`.
 
 ## What the image holds
 
 `src`, `prompts`, `results`, `eval/splits` (the split lists that keep held-out rulings out of the precedent
 pool), `data/snapshots`, and the git-ignored `data/raw/rulings` and `data/raw/demo`. It holds no `.env`, test
-items, ground truth, team media or reconstructions. The ruling pages reach Google's private build storage and
+items, ground truth or team media; the only reconstructions are the labelled demos the manifest in
+`data/raw/demo` names. The ruling pages reach Google's private build storage and
 image registry in the team's project; they are never committed or published.

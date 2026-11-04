@@ -31,10 +31,12 @@ from preflight.api.storage import APIError
 
 log = logging.getLogger(__name__)
 
-COOKIE = "preflight_session"
+# Firebase Hosting passes only a cookie named __session to Cloud Run, so the session and the half-signed-in
+# state share it; the signed stage inside tells them apart (Auth.user)
+COOKIE = "__session"
 SESSION_SECONDS = 12 * 3600
 # the half-signed-in state between a Firebase sign-in and the emailed code
-PENDING = "preflight_pending"
+PENDING = COOKIE
 CODE_SECONDS = 10 * 60
 CODE_ATTEMPTS = 5
 RESEND_SECONDS = 60

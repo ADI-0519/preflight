@@ -95,7 +95,10 @@ env_vars=(
   "PREFLIGHT_SMTP_PORT=${port:-587}"
   "PREFLIGHT_SMTP_USER=$(value PREFLIGHT_SMTP_USER)"
   "PREFLIGHT_MAIL_FROM=$(value PREFLIGHT_MAIL_FROM)"
-  "PREFLIGHT_ALLOWED_HOSTS=$HOST"
+  "PREFLIGHT_ALLOWED_HOSTS=$HOST${SITE:+,$SITE.web.app,$SITE.firebaseapp.com}"
+  # per-account hourly limits and a daily model spend cap (src/preflight/api/public.py)
+  "PREFLIGHT_PUBLIC_MODE=${PUBLIC_MODE:-on}"
+  "PREFLIGHT_DAILY_CAP_USD=${DAILY_CAP_USD:-10}"
 )
 # '|' separates the variables because the email allowlist itself contains commas
 joined=$(IFS='|'; printf '%s' "${env_vars[*]}")

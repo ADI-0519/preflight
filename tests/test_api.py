@@ -653,3 +653,11 @@ def test_a_deployment_names_its_public_hosts(tmp_path, monkeypatch):
         assert client.get("/health", headers={"Host": "preflight-123.europe-west1.run.app"}).status_code == 200
         assert client.get("/health", headers={"Host": "untrusted.example"}).status_code == 400
         assert client.get("/health").status_code == 200
+
+
+def test_a_deployment_sets_its_daily_spend_cap(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setenv("PREFLIGHT_DAILY_CAP_USD", "10")
+    assert create_app().state.service.public.settings.daily_cap_usd == 10
+    monkeypatch.delenv("PREFLIGHT_DAILY_CAP_USD")
+    assert create_app().state.service.public.settings.daily_cap_usd == Settings().daily_cap_usd

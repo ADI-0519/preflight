@@ -55,6 +55,7 @@ The tests need none of them.
 | `PREFLIGHT_PUBLIC_MODE` | Public demo limits: `on`, or `replay` for preloaded demos only | Set it yourself |
 | `BASETEN_API_KEY`, `GLIMMER_MODEL` | P43 development-only triage | Baseten account |
 | `PREFLIGHT_ALLOWED_HOSTS` | A deployment's public host names (local runs need none) | Set by `deploy/cloud-run.sh`; see [docs/deploy.md](docs/deploy.md) |
+| `PREFLIGHT_DAILY_CAP_USD` | Public mode's daily model spend cap across all visitors (default 40) | Set by `deploy/cloud-run.sh` (10); see [docs/deploy.md](docs/deploy.md) |
 
 For local work only `META_API_KEY` matters; leave the sign-in variables empty and the workspace runs open on
 localhost.

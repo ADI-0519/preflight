@@ -209,8 +209,24 @@ def test_suggestion_for_another_claims_substance_is_dropped_and_the_flag_kept():
 
 
 def test_on_hold_citation_for_another_claims_substance_is_dropped():
-    with pytest.raises(ValidationError):
-        run({"claim-0": verdict("on_hold", on_hold=[ASHWAGANDHA]), "claim-1": verdict(), "claim-2": verdict()})
+    out, _ = run({
+        "claim-0": verdict("possible_breach", ["15.1.1"], on_hold=[ASHWAGANDHA]),
+        "claim-1": verdict(),
+        "claim-2": verdict(),
+    })
+    assert [s.kind for s in out.flags[0].sources] == ["cap_rule"]
+
+
+def test_flag_left_without_the_source_its_kind_needs_keeps_another_substances_entries():
+    out, _ = run({
+        "claim-0": verdict("on_hold", ["15.1"], on_hold=[ASHWAGANDHA]),
+        "claim-1": verdict("possible_breach", register=[TIREDNESS]),
+        "claim-2": verdict(),
+    })
+    assert [s.model_dump() for f in out.flags for s in f.sources] == [
+        {"kind": "cap_rule", "rule": "15.1"}, {"kind": "on_hold", "on_hold_id": ASHWAGANDHA},
+        {"kind": "register", "register_id": TIREDNESS},
+    ]
 
 
 def test_claim_naming_no_substance_may_cite_the_ads_entries():

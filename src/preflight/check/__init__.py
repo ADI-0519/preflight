@@ -206,9 +206,15 @@ def parse(
         # a claim naming a substance keeps only that substance's entries; one naming none may cite the ad's
         own_register = {e.register_id for e in own.register} if own.register or own.on_hold else register_ids
         own_on_hold = {e.on_hold_id for e in own.on_hold} if own.register or own.on_hold else on_hold_ids
+        cite_register, cite_on_hold = own_register, own_on_hold
+        cited = own_on_hold & set(v.on_hold_ids) if v.verdict == "on_hold" else (
+            v.cap_rules or v.ruling_ids or own_register & set(v.register_ids))
+        # a flag left without a source its kind needs keeps the other substance's entries the judge cited
+        if not cited:
+            cite_register, cite_on_hold = register_ids, on_hold_ids
         sources: list[SourceRef] = [CapRuleRef(rule=r) for r in v.cap_rules]
-        sources += [RegisterRef(register_id=i) for i in v.register_ids if i in own_register]
-        sources += [OnHoldRef(on_hold_id=i) for i in v.on_hold_ids if i in own_on_hold]
+        sources += [RegisterRef(register_id=i) for i in v.register_ids if i in cite_register]
+        sources += [OnHoldRef(on_hold_id=i) for i in v.on_hold_ids if i in cite_on_hold]
         sources += [RulingRef(ruling_id=i, date=dates[i]) for i in v.ruling_ids]
         # rule 2: section 3 and other non-health claims never get wording
         health = v.verdict == "on_hold" or any(r.startswith("15.") for r in v.cap_rules)

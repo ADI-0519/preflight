@@ -13,6 +13,8 @@ import {
 import type { Config, Demo, Fix, Job, Result, Reveal, Round, Scoreboard } from './api';
 import './style.css';
 import { ClaimTrack, Inspector, TierSummary } from './evidence';
+import { UploadPanel } from './upload-panel';
+import { AccountPage, Brand, ProductSections, SiteFooter } from './product-page';
 import {
   FlagCount,
   FlaggedList,
@@ -71,12 +73,6 @@ function Metrics({ board }: { board: Scoreboard }) {
   );
 }
 
-function initialAppearance(): 'dark' | 'light' {
-  return window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
-}
-
-document.documentElement.dataset.appearance = initialAppearance();
-
 function App() {
   const [config, setConfig] = useState<Config | null>(null);
   const [mode, setMode] = useState<'screen' | 'demo'>('screen');
@@ -104,7 +100,7 @@ function App() {
   const [voiceover, setVoiceover] = useState('');
   const [still, setStill] = useState<File | null>(null);
   const [view, setView] = useState<'evidence' | 'edit' | 'compare'>('evidence');
-  const [appearance, setAppearance] = useState<'dark' | 'light'>(initialAppearance);
+  const [appearance, setAppearance] = useState<'dark' | 'light'>('light');
   const [chosen, setChosen] = useState<{ name: string; video: boolean } | null>(null);
   const chrome = useRef<HTMLDivElement>(null);
   const [currentTime, setCurrentTime] = useState(0);
@@ -437,23 +433,8 @@ function App() {
   return (
     <>
       <div className="chrome" ref={chrome}>
-        <header className="bar">
-          <a className="brand" href="/">
-            <svg width="22" height="22" viewBox="0 0 22 22" aria-hidden="true">
-              <rect
-                x="1"
-                y="1"
-                width="20"
-                height="20"
-                rx="3"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.6"
-              />
-              <path d="M6 16V6h10" fill="none" stroke="currentColor" strokeWidth="2.4" />
-            </svg>
-            PreFlight
-          </a>
+        <header className={`bar${entry ? ' with-account' : ''}`}>
+          <Brand />
           <nav className="modes" aria-label="Workspace mode">
             <button aria-pressed={mode === 'screen'} disabled={active} onClick={openScreen}>
               Screen an ad
@@ -462,6 +443,14 @@ function App() {
               Explore demos
             </button>
           </nav>
+          {entry && (
+            <nav className="account-nav" aria-label="Account">
+              <a href="/login">Log in</a>
+              <a className="outline" href="/signup">
+                Sign up
+              </a>
+            </nav>
+          )}
           <button
             className="appearance outline"
             aria-label={appearance === 'dark' ? 'Light appearance' : 'Dark appearance'}
@@ -476,7 +465,7 @@ function App() {
           {config?.notice ?? NOTICE}
         </aside>
       </div>
-      <main id="workspace">
+      <main id="workspace" className={entry ? 'entry' : undefined}>
         {config?.verification_label && <p className="replay">{config.verification_label}</p>}
         {error && (
           <div className="error" role="alert">
@@ -503,60 +492,62 @@ function App() {
         {mode === 'demo' && result && demoChoices}
         {entry && (
           <>
-            <div className="title-row">
+            <div className="title-row entry-title">
               <div className="what">
-                <h1>Screen an ad</h1>
+                <p className="eyebrow">PreFlight / The creative review desk</p>
+                <h1>
+                  Good creative.
+                  <br />
+                  <em>A second look.</em>
+                </h1>
                 <p className="lead">
-                  Upload one ad. Each claim is checked against the GB register, the CAP Code and ASA
-                  rulings, and every flag shows its evidence.
+                  Screen health and supplement ads before they go live. Find the claims, follow the
+                  evidence, and decide what needs a rethink.
+                </p>
+                <p className="entry-sources">
+                  GB health claims register <span aria-hidden="true">/</span> CAP Code{' '}
+                  <span aria-hidden="true">/</span> ASA rulings
                 </p>
               </div>
             </div>
-            <div className="work">
-              <div className="slot">
-                <p className="upload-notice">{config?.upload_notice ?? 'Loading upload terms…'}</p>
-                {config?.uploads_closed && (
-                  <p role="status">{PUBLIC_ERRORS[config.uploads_closed]}</p>
-                )}
-                <span>Nothing uploaded yet.</span>
-                <label className="file-button primary">
-                  Choose ad or script
-                  <input
-                    aria-label="Upload ad"
-                    type="file"
-                    accept=".txt,.md,text/plain,text/markdown,image/png,image/jpeg,image/webp,video/mp4,video/webm,video/quicktime"
-                    disabled={active || !config || Boolean(config.uploads_closed)}
-                    onChange={(e) => {
-                      const file = e.target.files?.[0];
-                      e.target.value = '';
-                      if (file) void screenFile(file);
-                    }}
-                  />
-                </label>
-              </div>
+            <div className="work entry-work">
+              <UploadPanel
+                disabled={active || !config || Boolean(config.uploads_closed)}
+                notice={config?.upload_notice ?? 'Loading upload terms…'}
+                closedReason={
+                  config?.uploads_closed ? PUBLIC_ERRORS[config.uploads_closed] : undefined
+                }
+                onFile={(file) => void screenFile(file)}
+              />
               <div className="facts">
-                <h2>Formats</h2>
-                <p>
-                  PNG, JPEG, WebP, MP4, WebM or QuickTime, up to{' '}
-                  {config ? mebibytes(config.max_upload_bytes) : 100} MiB
-                  {config ? `, and video up to ${config.max_seconds} seconds` : ''}. Scripts: UTF-8
-                  .txt or .md, up to 64 KiB and 1,000 lines. Use VO: or SUPER: to distinguish spoken
-                  and on-screen copy.
-                </p>
-                <h2>Retention</h2>
-                <p>
-                  Uploads are deleted after {config ? config.retention_seconds / 3600 : 24} hours,
-                  or later if a job is still using them. Screening spends model credits.
-                </p>
-                <h2>Demos</h2>
-                <p>
-                  <button className="link" onClick={openDemos}>
-                    Explore labelled demos
-                  </button>
-                  . Their ASA outcomes stay hidden until you reveal them.
-                </p>
+                <details className="input-details">
+                  <summary>Supported formats & retention</summary>
+                  <h2>Formats</h2>
+                  <p>
+                    PNG, JPEG, WebP, MP4, WebM or QuickTime, up to{' '}
+                    {config ? mebibytes(config.max_upload_bytes) : 100} MiB
+                    {config ? `, and video up to ${config.max_seconds} seconds` : ''}. Scripts:
+                    UTF-8 .txt or .md, up to 64 KiB and 1,000 lines. Use VO: or SUPER: to
+                    distinguish spoken and on-screen copy.
+                  </p>
+                  <h2>Retention</h2>
+                  <p>
+                    Uploads are deleted after {config ? config.retention_seconds / 3600 : 24} hours,
+                    or later if a job is still using them. Screening spends model credits.
+                  </p>
+                </details>
+                <div>
+                  <h2>Demos</h2>
+                  <p>
+                    <button className="link" onClick={openDemos}>
+                      Explore labelled demos
+                    </button>
+                    . Their ASA outcomes stay hidden until you reveal them.
+                  </p>
+                </div>
               </div>
             </div>
+            <ProductSections />
           </>
         )}
         {processing && (
@@ -673,6 +664,16 @@ function App() {
             )}
             <div className="workspace" hidden={view !== 'evidence'}>
               <section className="viewer" aria-label="Ad and claim timeline">
+                <div className="panel-heading">
+                  <span>{script ? 'Source script' : 'Your creative'}</span>
+                  <span className="panel-meta">
+                    {script
+                      ? 'Numbered copy'
+                      : result.screening.ad.media === 'video'
+                        ? 'Video review'
+                        : 'Image review'}
+                  </span>
+                </div>
                 <div className="stage">
                   {script ? (
                     <ScriptPreview
@@ -871,15 +872,17 @@ function App() {
         )}
         {mode === 'demo' && config && <Metrics board={config.scoreboard} />}
       </main>
-      <footer>
-        <a href="/docs">API documentation</a>
-      </footer>
+      <SiteFooter />
     </>
   );
 }
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <App />
+    {location.pathname === '/login' || location.pathname === '/signup' ? (
+      <AccountPage mode={location.pathname === '/signup' ? 'signup' : 'login'} />
+    ) : (
+      <App />
+    )}
   </StrictMode>,
 );

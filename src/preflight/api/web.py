@@ -359,6 +359,8 @@ def install_web(app, service, *, web_root: Path, demo_root: Path, results_root: 
         return {"kind": "reconstruction", "ruling_id": ruling.ruling_id, "date": str(ruling.date),
                 "outcome": ruling.outcome, "rules": ruling.cap_rules, "url": ruling.url}
 
+    @app.get("/login", include_in_schema=False)
+    @app.get("/signup", include_in_schema=False)
     @app.get("/", include_in_schema=False)
     def index():
         if not (web_root / "index.html").is_file():

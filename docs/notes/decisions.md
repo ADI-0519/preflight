@@ -10,6 +10,13 @@
   encoding/control bytes return HTTP 415 like unreadable media; readable but empty
   or over-line-limit scripts remain 422, and byte-size limits remain 413.
 
+- **4 Nov 2026 (product and account pages).** At the user's request, expanded the
+  frontend into a full product page with feature/workflow sections, FAQs and footer
+  navigation. `/login` and `/signup` currently serve explicit page previews under
+  the existing content security policy. No identity provider or ownership model is
+  configured; disabled forms neither create sessions nor collect credentials. Real
+  sign-in must be delivered with access controls around uploads, jobs, reports and
+  revisions, rather than presented as protection provided by these page routes.
 
 - **3 Nov 2026 (P72).** The user confirmed in this working session that all three
   founders agreed to script-line evidence: a script flag shows its exact quoted
@@ -17,6 +24,7 @@
   Media evidence requirements remain unchanged. P72 initially used schema v3 for script input and
   script-line evidence; v1/v2 media results remain readable. A script screening
   applies only to that copy; the finished ad requires a separate screening.
+  The 4 November integration correction above moves the combined contract to v4.
 
 - **3 Nov 2026 (P43/dev integration).** At the user's request, incorporated the
   teammate's P43 commits through `50426a2` and merged dev `d026fca`. Retained the

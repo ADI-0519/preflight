@@ -8,6 +8,12 @@ PreFlight screens a health or supplement ad before it goes live and shows, for e
 
 Everything in this plan serves those two scenes. Features that neither scene shows (accounts, multi-brand dashboards, a hosted deployment, EU rules) are out of scope until after 4 November.
 
+**4 November frontend follow-up:** the user requested a complete product page and
+login/signup pages. This adds product sections, footer navigation and explicit account
+page previews. Working authentication and per-account media isolation are not shipped;
+the preview cannot accept credentials. Provider selection and secure data ownership
+remain prerequisites for real accounts, separate from this presentation work.
+
 ## Dates that bound the plan
 
 | When (GMT) | What |

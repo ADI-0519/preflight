@@ -15,6 +15,7 @@ PreFlight screens a health or supplement ad before it goes live, against the GB 
 ## Working rules
 
 - For architecture questions, query `graphify-out/graph.json` before broad file reads.
+- Local settings live in a git-ignored `.env` copied from `.env.example`; README "Settings (.env)" lists every variable and where its value comes from. If one is missing, name the variable and ask the user to add it; never write, print or commit secret values.
 - Use `docs/plan.md` for roadmap scope, `docs/product-rules.md` for product behavior, and `docs/notes/decisions.md` for durable decisions.
 - Keep changes bounded to the requested phase. State non-goals before implementation when the change crosses schema, model, evidence, evaluation, or API boundaries.
 - Prefer deterministic scripts and existing project tooling over asking the model to reproduce checklists.

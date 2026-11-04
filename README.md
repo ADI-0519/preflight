@@ -31,12 +31,32 @@ Needs [uv](https://docs.astral.sh/uv/). It installs Python 3.12 if missing.
 
 ```
 uv sync
-cp .env.example .env    # then fill in META_API_KEY
+cp .env.example .env    # then fill in the values: see "Settings (.env)" below
 uv run pytest           # skips tests marked live
 uv run ruff check
 ```
 
 Tests that call the real Meta Model API are marked `live` and run only with `uv run pytest -m live`.
+
+### Settings (.env)
+
+`.env.example` is the template: copy it to `.env` and fill in the values. `.env` is git-ignored. Get values from
+the founder who holds them, never from the repository; do not commit them or paste them into issues, docs or chat.
+The tests need none of them.
+
+| Variable | Needed for | Where the value comes from |
+|---|---|---|
+| `META_API_KEY` | Live screening and fixes (not `--replay`, not tests) | Meta Model API account |
+| `FIREBASE_PROJECT_ID`, `FIREBASE_API_KEY`, `FIREBASE_AUTH_DOMAIN`, `FIREBASE_APP_ID` | Sign-in; leave `FIREBASE_PROJECT_ID` empty to run open locally | Team Firebase project > Project settings > Your apps > Web app |
+| `PREFLIGHT_SESSION_SECRET` | Sign-in sessions that survive a restart | Any long random string you generate |
+| `PREFLIGHT_ALLOWED_EMAILS` | Limiting who can sign in (emails, or `@domain`) | The team's decision; required on a deployment |
+| `PREFLIGHT_SMTP_HOST`, `PREFLIGHT_SMTP_PORT`, `PREFLIGHT_SMTP_USER`, `PREFLIGHT_SMTP_PASSWORD`, `PREFLIGHT_MAIL_FROM` | Emailing the 6-digit sign-in code when sign-in is on | A mail account; for Gmail, `smtp.gmail.com`, port 587 and an App Password |
+| `PREFLIGHT_DEV_CODES` | Local sign-in without email: `1` writes codes to the server log | Set it yourself; never on a deployment |
+| `PREFLIGHT_PUBLIC_MODE` | Public demo limits: `on`, or `replay` for preloaded demos only | Set it yourself |
+| `BASETEN_API_KEY`, `GLIMMER_MODEL` | P43 development-only triage | Baseten account |
+
+For local work only `META_API_KEY` matters; leave the sign-in variables empty and the workspace runs open on
+localhost.
 
 For an inspectable synthetic replay with no credentials or network requests (requires FFmpeg):
 

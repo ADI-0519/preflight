@@ -10,7 +10,8 @@ import {
   request,
   upload,
 } from './api';
-import type { Config, Demo, Fix, Job, Result, Reveal, Round, Scoreboard } from './api';
+import type { Account, Config, Demo, Fix, Job, Result, Reveal, Round, Scoreboard } from './api';
+import { Login, signOutEverywhere } from './login';
 import './style.css';
 import { ClaimTrack, Inspector, TierSummary } from './evidence';
 import { FlagCount, FlaggedList, RoundComparison, StageList, StillStage } from './workspace';
@@ -70,7 +71,7 @@ function initialAppearance(): 'dark' | 'light' {
 
 document.documentElement.dataset.appearance = initialAppearance();
 
-function App() {
+function App({ account }: { account: Account | null }) {
   const [config, setConfig] = useState<Config | null>(null);
   const [mode, setMode] = useState<'screen' | 'demo'>('screen');
   const [demos, setDemos] = useState<Demo[]>([]);
@@ -103,6 +104,8 @@ function App() {
   const [currentTime, setCurrentTime] = useState(0);
   const player = useRef<HTMLVideoElement>(null);
   const generation = useRef(0);
+  // with sign-in on, the account's email is the approver
+  const approver = account?.signed_in ? (account.email ?? '') : by;
   const active = busy || (!!job && !['completed', 'incomplete', 'failed'].includes(job.status));
 
   useEffect(() => {
@@ -352,11 +355,11 @@ function App() {
 
   async function approve(event: React.FormEvent) {
     event.preventDefault();
-    if (!job || !confirmed || !by.trim() || !canApprove(fix)) return;
+    if (!job || !confirmed || !approver.trim() || !canApprove(fix)) return;
     setBusy(true);
     setError('');
     try {
-      await post(`/fixes/${job.job_id}/approve`, { by, note });
+      await post(`/fixes/${job.job_id}/approve`, { by: approver, note });
       setFix(await request<Fix>(`/fixes/${job.job_id}`));
       setStatus('Your decision is recorded. Meta has not reviewed this ad.');
     } catch (e) {
@@ -462,6 +465,15 @@ function App() {
             {appearance === 'dark' ? 'Light' : 'Dark'}
             <span className="long"> appearance</span>
           </button>
+          {account?.signed_in && (
+            <button
+              className="outline"
+              title={account.email ?? undefined}
+              onClick={() => signOutEverywhere().then(() => location.reload())}
+            >
+              Sign out
+            </button>
+          )}
         </header>
         <aside className="notice" role="note">
           {config?.notice ?? NOTICE}
@@ -808,7 +820,8 @@ function App() {
                     <input
                       required
                       maxLength={100}
-                      value={by}
+                      value={approver}
+                      readOnly={!!account?.signed_in}
                       onChange={(e) => setBy(e.target.value)}
                     />
                   </label>
@@ -832,7 +845,7 @@ function App() {
                   <button
                     className="primary"
                     type="submit"
-                    disabled={busy || !by.trim() || !confirmed}
+                    disabled={busy || !approver.trim() || !confirmed}
                   >
                     Record my review decision
                   </button>
@@ -855,8 +868,35 @@ function App() {
   );
 }
 
+// with sign-in on, nothing in the workspace loads until the server holds a session for this browser
+function Gate() {
+  const [state, setState] = useState<{ config: Config; account: Account } | null>(null);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    Promise.all([
+      request<Config>('/ui/config'),
+      fetch('/auth/me', { cache: 'no-store' }).then((r) => r.json() as Promise<Account>),
+    ])
+      .then(([config, account]) => setState({ config, account }))
+      .catch(() => setError('PreFlight could not reach its server. Reload the page to try again.'));
+  }, []);
+
+  if (error)
+    return (
+      <p className="login-error" role="alert">
+        {error}
+      </p>
+    );
+  if (!state) return null;
+  const { config, account } = state;
+  if (config.auth && !account.signed_in)
+    return <Login config={config.auth} onSignedIn={(a) => setState({ config, account: a })} />;
+  return <App account={config.auth ? account : null} />;
+}
+
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <App />
+    <Gate />
   </StrictMode>,
 );

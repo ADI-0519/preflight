@@ -258,7 +258,8 @@ def install_web(app, service, *, web_root: Path, demo_root: Path, results_root: 
                 "max_seconds": public.max_seconds(MAX_SECONDS), "public_mode": public.mode,
                 "upload_notice": UPLOAD_NOTICE.format(hours=retention / 3600), "uploads_closed": public.closed(),
                 "retention_seconds": retention, "scoreboard": scoreboard(results_root),
-                "verification_label": getattr(app.state, "verification_label", None)}
+                "verification_label": getattr(app.state, "verification_label", None),
+                "auth": app.state.auth.client_config()}
 
     @app.get("/uploads/{upload_id}/media")
     def media(upload_id: str, request: Request):
@@ -359,11 +360,7 @@ def install_web(app, service, *, web_root: Path, demo_root: Path, results_root: 
     def index():
         if not (web_root / "index.html").is_file():
             raise APIError(503, "web_build_missing")
-        return FileResponse(web_root / "index.html", headers={
-            "Content-Security-Policy": "default-src 'self'; img-src 'self' blob: data:; media-src 'self' blob:; "
-                                       "style-src 'self'; script-src 'self'; connect-src 'self'; "
-                                       "base-uri 'none'; frame-ancestors 'none'",
-        })
+        return FileResponse(web_root / "index.html", headers={"Content-Security-Policy": app.state.auth.page_policy()})
 
     if (web_root / "assets").is_dir():
         app.mount("/assets", StaticFiles(directory=web_root / "assets"), name="web-assets")

@@ -10,7 +10,17 @@ from fastapi.responses import HTMLResponse, JSONResponse, Response, StreamingRes
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from starlette.middleware.trustedhost import TrustedHostMiddleware
 
-from preflight.api.contracts import Approval, ApprovalView, FixView, JobView, StartFix, StartScreening, UploadView
+from preflight.api.auth import COOKIE, SESSION_SECONDS, Auth
+from preflight.api.contracts import (
+    Approval,
+    ApprovalView,
+    FixView,
+    JobView,
+    SignIn,
+    StartFix,
+    StartScreening,
+    UploadView,
+)
 from preflight.api.public import Public
 from preflight.api.service import Service
 from preflight.api.storage import TERMINAL, APIError, Settings
@@ -67,10 +77,11 @@ class BodyLimit:
 
 def create_app(
     settings: Settings | None = None, *, web_root: Path | None = None,
-    demo_root: Path | None = None, results_root: Path | None = None, **dependencies,
+    demo_root: Path | None = None, results_root: Path | None = None, auth: Auth | None = None, **dependencies,
 ) -> FastAPI:
-    """Local single-process app; production authentication/deployment are out of scope."""
+    """Single-process app; sign-in is on when FIREBASE_PROJECT_ID is set (preflight.api.auth)."""
     settings = settings or Settings()
+    auth = auth or Auth.from_env()
     service = Service(settings, **dependencies)
     storage, public = service.storage, service.public
 
@@ -99,6 +110,7 @@ def create_app(
 
     app = FastAPI(title="PreFlight API", version="0.1.0", lifespan=lifespan)
     app.state.service = service
+    app.state.auth = auth
     app.add_middleware(BodyLimit, settings=settings, public=public)
     app.add_middleware(TrustedHostMiddleware, allowed_hosts=["localhost", "127.0.0.1", "testserver"])
 
@@ -111,6 +123,14 @@ def create_app(
                                 headers={"Cache-Control": "no-store"})
         response.headers["Cache-Control"] = "no-store"
         return response
+
+    @app.middleware("http")
+    async def signed_in(request, call_next):
+        request.state.user = auth.user(request.cookies.get(COOKIE)) if auth.enabled else None
+        if auth.required(request.url.path) and request.state.user is None:
+            return JSONResponse({"error": "login_required", "notice": NOTICE}, status_code=401,
+                                headers={"Cache-Control": "no-store"})
+        return await call_next(request)
 
     @app.exception_handler(APIError)
     async def api_error(request, error):
@@ -126,8 +146,35 @@ def create_app(
         return JSONResponse({"error": "request_rejected", "notice": NOTICE}, status_code=error.status_code)
 
     def client(request: Request) -> str:
+        # a signed-in visitor is limited as one account wherever they connect from
+        if user := getattr(request.state, "user", None):
+            return f"user:{user.uid}"
         # behind a proxy, run uvicorn with --proxy-headers so this is the visitor's address
         return request.client.host if request.client else "unknown"
+
+    def signed_in_as(request: Request) -> dict:
+        user = request.state.user
+        return {"signed_in": user is not None, "email": user.email if user else None, "login": auth.enabled}
+
+    @app.post("/auth/session")
+    def sign_in(fields: SignIn, request: Request):
+        if not auth.enabled:
+            raise APIError(404, "login_not_enabled")
+        user = auth.sign_in(fields.id_token)
+        response = JSONResponse({"signed_in": True, "email": user.email, "login": True})
+        response.set_cookie(COOKIE, auth.cookie(user), max_age=SESSION_SECONDS, httponly=True, samesite="lax",
+                            secure=request.url.scheme == "https", path="/")
+        return response
+
+    @app.post("/auth/logout")
+    def sign_out():
+        response = JSONResponse({"signed_in": False, "email": None, "login": auth.enabled})
+        response.delete_cookie(COOKIE, path="/")
+        return response
+
+    @app.get("/auth/me")
+    def me(request: Request):
+        return signed_in_as(request)
 
     def view(job):
         return {"job_id": job["job_id"], "kind": job["kind"], "status": job["status"], "notice": NOTICE}
@@ -240,8 +287,10 @@ def create_app(
         return service.fix_result(job_id) | {"notice": NOTICE}
 
     @app.post("/fixes/{job_id}/approve", response_model=ApprovalView)
-    def approval(job_id: str, fields: Approval):
-        return {"decision": service.approve(job_id, fields.by, fields.note), "notice": NOTICE}
+    def approval(job_id: str, fields: Approval, request: Request):
+        # with sign-in on, the audit log names the account that approved, not a typed name
+        by = request.state.user.email if request.state.user else fields.by
+        return {"decision": service.approve(job_id, by, fields.note), "notice": NOTICE}
 
     @app.get("/fixes/{job_id}/stills/{index}")
     def still(job_id: str, index: int):

@@ -45,6 +45,10 @@ class Approval(Input):
     note: Annotated[str, Field(max_length=2000)] = ""
 
 
+class SignIn(Input):
+    id_token: Annotated[str, Field(min_length=1, max_length=8192)]
+
+
 class JobView(Input):
     job_id: Identifier
     kind: Literal["screening", "fix"]

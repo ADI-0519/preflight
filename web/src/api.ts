@@ -124,7 +124,19 @@ export interface Scoreboard {
   created_at?: string;
   metrics: { name: string; hits: number; total: number; low: number | null; high: number | null }[];
 }
+export interface FirebaseConfig {
+  apiKey: string;
+  authDomain: string;
+  projectId: string;
+  appId: string;
+}
+export interface Account {
+  signed_in: boolean;
+  email: string | null;
+  login: boolean;
+}
 export interface Config {
+  auth: FirebaseConfig | null;
   notice: string;
   verification_label: string | null;
   retention_seconds: number;
@@ -155,6 +167,11 @@ export async function request<T>(url: string, init?: RequestInit): Promise<T> {
       .json()
       .then((body: { error?: string }) => body.error)
       .catch(() => undefined);
+    if (error === 'login_required') {
+      // the session ended; the page reloads to the sign-in screen
+      location.reload();
+      throw new Error('Your session has ended. Sign in again.');
+    }
     if (error && error in PUBLIC_ERRORS) throw new Error(PUBLIC_ERRORS[error]);
     if (code === 404 || code === 410)
       throw new Error(

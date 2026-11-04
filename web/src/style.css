@@ -1141,3 +1141,69 @@ footer {
 .tier-summary p {
   margin: 0;
 }
+
+.login {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 32px 16px;
+  background: var(--paper);
+}
+.login-card {
+  width: min(400px, 100%);
+  display: grid;
+  gap: 14px;
+  padding: 32px 28px;
+  background: var(--sheet);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+}
+.login-card h1 {
+  margin: 8px 0 0;
+  font-size: 24px;
+}
+.login-lede,
+.login-notice,
+.login-or {
+  margin: 0;
+  color: var(--graphite);
+  font-size: 14px;
+}
+.login-or {
+  text-align: center;
+}
+.login-notice {
+  font-size: 12px;
+  border-top: 1px solid var(--line);
+  padding-top: 12px;
+}
+.login .google {
+  padding: 10px 12px;
+}
+.login-form {
+  display: grid;
+  gap: 12px;
+}
+.login-form label {
+  display: grid;
+  gap: 4px;
+  font-weight: 500;
+  font-size: 14px;
+}
+.login-form input {
+  padding: 9px 10px;
+  border: 1px solid var(--control);
+  border-radius: 6px;
+  background: var(--sheet);
+}
+.login-switch {
+  display: flex;
+  justify-content: space-between;
+  margin: 0;
+  font-size: 14px;
+}
+.login-error {
+  margin: 0;
+  color: var(--tier-high);
+  font-weight: 500;
+}

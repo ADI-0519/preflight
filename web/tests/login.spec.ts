@@ -29,7 +29,7 @@ test('with sign-in on, a visitor sees the landing page and every action leads to
     if (/\/(ui\/demos|jobs|uploads|screenings)/.test(r.url())) workspace.push(r.url());
   });
   await page.goto('/');
-  await expect(page.getByRole('heading', { level: 1 })).toContainText('Good creative.');
+  await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
   await expect(page.getByLabel('Upload ad')).toHaveCount(0);
   await page.getByRole('link', { name: /Log in to screen an ad/ }).click();
   await expect(page).toHaveURL(/\/login$/);

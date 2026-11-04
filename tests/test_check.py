@@ -316,7 +316,7 @@ def test_two_of_three_samples_flag_a_claim_and_one_does_not():
     ])
     (flag,) = out.flags
     assert (flag.claim_id, flag.votes) == ("claim-0", 3)
-    assert out.schema_version == "3"
+    assert out.schema_version == "4"
 
 
 def test_rules_cited_by_two_samples_are_kept():

@@ -142,8 +142,9 @@ to that process. Filesystem backups and remote-provider storage are not managed 
 
 Public error bodies contain generic codes and the screening notice. Validation does
 not echo private input, and worker exceptions are not included in events or info logs.
-HTTP statuses include 413 for body limits, 415 for unsupported/unreadable media, 422
-for invalid request structure, 404/410 for unavailable/expired resources, 409 for an
+HTTP statuses include 413 for body limits, 415 for unsupported/unreadable media or
+script encoding/control bytes, 422 for invalid request structure or readable scripts
+with no ad copy or too many lines, 404/410 for unavailable/expired resources, 409 for an
 unavailable result/decision and 429 when the job queue is full. Responses use no-store.
 
 ## Verification
@@ -178,7 +179,7 @@ curl.exe -X POST http://127.0.0.1:8000/uploads -H "Content-Type: text/plain" --d
 The CLI accepts the same files: `uv run preflight screen synthetic-script.txt --no-align`.
 Scripts skip transcription, on-screen reading and region detection. The existing extraction and checker
 run on script lines, with a separate extraction cache/version tag; adopted media prompts are unchanged.
-Schema v3 adds `ad.media = "script"`, `script_lines` and evidence with `kind: "script"`, `line_number` and
+Schema v4 adds `ad.media = "script"`, `script_lines` and evidence with `kind: "script"`, `line_number` and
 exact original line `text`. The schema rejects mismatched source text, unknown lines and evidence from
 the wrong input mode. Scripts have no fake frame dimensions or timestamps. Existing v1/v2 media results
 remain readable, and source and suggested-wording verification still applies.
@@ -188,6 +189,12 @@ The report and `screen_ad` return the same quoted evidence. Every result says th
 screened and the finished ad needs a separate check. A failed stage remains incomplete. Script results
 do not offer media regeneration; a direct media-fix request returns `409 script_fix_not_supported`.
 Text previews are served as `text/plain` with `nosniff`, never interpreted as HTML.
+
+Dev's v3 introduced marked claim phrases while P72 independently used v3 for scripts.
+The integrated contract now writes v4. Historical v1/v2/v3 media results remain
+readable under their original version and still require dimensions. Earlier P72-v3
+script results are normalised to v4 on read, in memory only; stored files and evidence
+are not rewritten. Consumers must handle `ad.media = "script"` before using dimensions.
 
 Original script bytes, parsed lines, results and model cache share the private per-upload retention
 boundary. Existing public quotas, progress/event privacy, expiry and restart handling apply. No source

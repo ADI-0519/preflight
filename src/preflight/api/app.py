@@ -167,7 +167,9 @@ def create_app(
                     try:
                         await asyncio.to_thread(read_script, path)
                     except ScriptError as exc:
-                        raise APIError(422, str(exc)) from None
+                        code = str(exc)
+                        status = 415 if code in {"invalid_script_encoding", "invalid_script_content"} else 422
+                        raise APIError(status, code) from None
                 else:
                     try:
                         info = await asyncio.to_thread(validate_media, path, public.max_seconds(MAX_SECONDS))

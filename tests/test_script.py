@@ -57,6 +57,29 @@ def script_result(**changes):
     return Screening(**(fields | changes))
 
 
+def test_script_contract_is_v4_and_premerge_v3_scripts_are_upgraded_on_read():
+    result = script_result()
+    assert result.schema_version == "4"
+    saved = result.model_dump(mode="json") | {"schema_version": "3"}
+    restored = Screening.model_validate(saved)
+    assert restored.schema_version == "4"
+    assert restored.ad == result.ad and restored.script_lines == result.script_lines
+    assert saved["schema_version"] == "3", "loading must not mutate the caller's saved payload"
+
+
+@pytest.mark.parametrize("version", ["1", "2", "3"])
+def test_historical_media_versions_keep_dimensions_and_their_version(version):
+    from test_schema import screening
+
+    restored = Screening.model_validate(screening(schema_version=version))
+    assert restored.schema_version == version
+    assert restored.ad.width == 1280 and restored.ad.height == 720
+    invalid = screening(schema_version=version)
+    invalid["ad"]["width"] = None
+    with pytest.raises(ValidationError, match="media ads require dimensions"):
+        Screening.model_validate(invalid)
+
+
 def test_script_report_does_not_display_media_dimensions():
     report = render_html(script_result())
     assert "None × None" not in report and "None &#215; None" not in report

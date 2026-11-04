@@ -109,10 +109,15 @@ estimate of perception loss. No new measurement exists yet.
 
 ## Migration Plan
 
+Integration review: P72 and dev independently used schema v3 for different changes.
+The combined writer uses v4. Historical v1/v2/v3 media readings retain dimensions
+and their version. A saved P72-v3 script is normalised to v4 only in memory during
+validation, preserving its evidence and leaving the original file untouched.
+
 Record the agreed rule interpretation first. Implement and test schema/ingestion/pipeline, then API/tool
 delivery, report and web support, then synthetic replay/browser integration and documentation. Keep all
 tasks incomplete until verified. Finish the dev comparison only with retained inputs and authorised live
 calls. P72 remains open until its three issue acceptance criteria are met.
 
-Deploy or publish only on an explicit request. A rollback must not delete v3 script results or relabel them
+Deploy or publish only on an explicit request. A rollback must not delete v3/v4 script results or relabel them
 as v2 media; retain them for the normal expiry window and restore compatible readers before exposing them.

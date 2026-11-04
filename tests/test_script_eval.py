@@ -1,6 +1,7 @@
 from types import SimpleNamespace
 
 import pytest
+from test_triage_eval import cohort  # noqa: F401
 
 from preflight.eval import scripts
 from preflight.eval.reconstruct import Scene, ShotList
@@ -8,6 +9,28 @@ from preflight.eval.registry import snapshot_text
 from preflight.eval.split import GroundTruth
 from preflight.eval.triage import Inputs
 from preflight.pipeline import SNAPSHOTS
+
+
+@pytest.mark.parametrize("case", ["test-registry", "held-out-cohort"])
+@pytest.mark.parametrize("check_only", [False, True])
+def test_script_evaluator_rejects_held_out_inputs_before_copy_labels_or_credentials(
+    request, monkeypatch, case, check_only,
+):
+    from preflight.eval.registry import write_rows
+
+    run_id, folder, _, registry = request.getfixturevalue("cohort")
+    if case == "test-registry":
+        registry.write_text(registry.read_text().replace(",dev,", ",test,"), encoding="utf-8")
+    else:
+        write_rows(registry.parent / "runs" / f"{run_id}.csv",
+                   [{"item_id": "held-out", "media": 1, "label": "positive"}])
+    monkeypatch.setattr(scripts, "script_copy", lambda *args: pytest.fail("opened held-out copy"))
+    monkeypatch.setattr(scripts, "load_ground_truth", lambda *args: pytest.fail("opened held-out labels"))
+    monkeypatch.setattr(scripts, "from_env", lambda: pytest.fail("opened credentials"))
+    args = ["scripts", run_id, "--screenings", str(folder)]
+    monkeypatch.setattr("sys.argv", args + (["--check-inputs"] if check_only else []))
+    with pytest.raises(SystemExit, match="script evaluation inputs or run failed"):
+        scripts.main()
 
 
 def test_copy_exports_only_ad_words_and_preserves_a_source_hash(tmp_path, monkeypatch):

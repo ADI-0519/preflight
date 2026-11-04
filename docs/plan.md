@@ -76,7 +76,7 @@ The [engineering workflow](./notes/engineering-workflow.md) records the evidence
 
 ### Output schema (contract for P21)
 
-P72 adds schema v3 with first-class `script` input, no artificial media dimensions or timestamps, and
+P72 adds schema v4 with first-class `script` input, no artificial media dimensions or timestamps, and
 exact quoted `script` evidence referencing numbered source lines. Historical v1/v2 media screenings remain
 readable. UTF-8 `.txt`/`.md` inputs preserve physical line numbers and optional VO/SUPER hints. The shared
 pipeline skips perception for scripts, then uses the existing extraction/parser and policy checker.

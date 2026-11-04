@@ -1,9 +1,20 @@
 # Decisions
 
+- **4 Nov 2026 (P72 schema integration review).** P72 originally changed v2 to v3
+  for scripts, while dev independently used v3 for `Flag.quotes`. The combined
+  contract is now v4. New outputs use v4; historical v1/v2/v3 media results retain
+  their version and still require dimensions. Previously saved P72-v3 scripts are
+  normalised to v4 in memory when read, without rewriting their stored files or
+  changing their source/evidence. New script outputs never carry dev's v3 tag.
+  Scripts still require source lines and reject media evidence. Unreadable script
+  encoding/control bytes return HTTP 415 like unreadable media; readable but empty
+  or over-line-limit scripts remain 422, and byte-size limits remain 413.
+
+
 - **3 Nov 2026 (P72).** The user confirmed in this working session that all three
   founders agreed to script-line evidence: a script flag shows its exact quoted
   source line and physical line number, with the existing policy provenance.
-  Media evidence requirements remain unchanged. Schema v3 adds script input and
+  Media evidence requirements remain unchanged. P72 initially used schema v3 for script input and
   script-line evidence; v1/v2 media results remain readable. A script screening
   applies only to that copy; the finished ad requires a separate screening.
 

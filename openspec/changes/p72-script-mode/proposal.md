@@ -10,7 +10,7 @@ scripts cannot establish what the final pictures, captions or delivery imply.
 
 - Add plain UTF-8 `.txt` and `.md` scripts as a first-class input, retaining physical line numbers and optional
   `VO:`/`SUPER:` channel hints. Markdown is text, not executable or fetched content.
-- Add schema-v3 script-line evidence and script input metadata. Preserve readable v1/v2 media results and
+- Add schema-v4 script-line evidence and script input metadata. Preserve readable v1/v2/v3 media results and
   the existing timestamp/region evidence requirements for images, videos and pages.
 - Route scripts through the existing `pipeline.screen`, claim parser and checker; skip perception stages
   and make no transcription, visual-reading, region or image calls for script inputs.

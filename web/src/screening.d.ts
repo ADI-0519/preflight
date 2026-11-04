@@ -5,7 +5,7 @@
  * and run json-schema-to-typescript to regenerate this file.
  */
 
-export type SchemaVersion = "1" | "2" | "3";
+export type SchemaVersion = "1" | "2" | "3" | "4";
 export type ScreeningId = string;
 export type PreviousId = string | null;
 export type ContentHash = string;

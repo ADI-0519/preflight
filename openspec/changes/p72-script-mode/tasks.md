@@ -6,7 +6,7 @@ the corresponding product-rule interpretation and dated decision are recorded un
 ## 1. Product decision and compatibility contract
 
 - [x] 1.1 Obtain confirmation of all three founders' agreement to quoted, numbered script-line evidence; record the dated agreement in `docs/notes/decisions.md` and the corresponding rule-3 clarification in `docs/product-rules.md`, preserving media evidence requirements. Verify the record identifies the confirmed agreement rather than attributing an unconfirmed decision.
-- [x] 1.2 Add schema-v3 script metadata, source lines and evidence validation, and document the new contract in `docs/plan.md`. Verify exact text/line matching, cross-mode rejection and valid v1/v2 media reads with focused schema tests.
+- [x] 1.2 Add schema-v4 script metadata, source lines and evidence validation, and document the new contract in `docs/plan.md`. Verify exact text/line matching, cross-mode rejection and valid v1/v2/v3 media reads with focused schema tests. Normalise the pre-integration P72-v3 script variant to v4 on read.
 - [x] 1.3 Regenerate `web/schema.json` and `web/src/screening.d.ts`; verify schema generation and `npm --prefix web run check` pass and generated files match the Python schema.
 
 ## 2. Deterministic ingestion and shared screening

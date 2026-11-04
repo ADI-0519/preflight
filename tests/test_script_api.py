@@ -33,7 +33,7 @@ def test_script_upload_screening_evidence_report_progress_and_expiry(tmp_path, c
         job_id = start(client, upload_id)
         assert wait_for(client, job_id) == "completed"
         saved = client.get(f"/screenings/{job_id}").json()
-        assert saved["schema_version"] == "3" and saved["ad"]["media"] == "script"
+        assert saved["schema_version"] == "4" and saved["ad"]["media"] == "script"
         assert saved["claims"][0]["evidence"] == [{"kind": "script", "line_number": 1, "text": "VO: Treats anxiety"}]
         assert saved["flags"][0]["sources"] and "Script only" in saved["headline"]
         report = client.get(f"/screenings/{job_id}/report")
@@ -59,13 +59,14 @@ def test_script_upload_screening_evidence_report_progress_and_expiry(tmp_path, c
         assert client.get(f"/ui/jobs/{job_id}").status_code in {404, 410}
 
 
-@pytest.mark.parametrize("raw", [b"\xff", b"text\x00", b" \n\t", b"x" * 65537])
-def test_invalid_script_never_calls_model_or_retains_source(tmp_path, raw):
+@pytest.mark.parametrize(("raw", "status"), [(b"\xff", 415), (b"text\x00", 415),
+                                             (b" \n\t", 422), (b"x" * 65537, 413)])
+def test_invalid_script_never_calls_model_or_retains_source(tmp_path, raw, status):
     spark = ScriptSpark()
     app = application(tmp_path / "private", spark=spark)
     with TestClient(app) as client:
         result = client.post("/uploads", content=raw, headers={"Content-Type": "text/plain"})
-        assert result.status_code in {413, 422}
+        assert result.status_code == status
         assert not spark.calls
         assert not list(app.state.service.storage.root.glob("*/media*"))
 

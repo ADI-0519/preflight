@@ -11,7 +11,7 @@ from preflight.sources.on_hold import load_on_hold
 from preflight.sources.register import RegisterEntry, load_register
 from preflight.sources.rulings import load_ruling_index
 
-SCHEMA_VERSION = "3"
+SCHEMA_VERSION = "4"
 SCRIPT_NOTICE = "Script only. Screen the finished ad separately."
 
 # rules 1 and 4: shown with every screening; no wording here may suggest the ad is cleared to run
@@ -240,8 +240,8 @@ class Snapshots(_Record):
 
 
 class Screening(_Record):
-    # v3 adds optional marked phrases and script evidence; historical media results remain readable.
-    schema_version: Literal["1", "2", SCHEMA_VERSION] = SCHEMA_VERSION
+    # Dev's v3 added marked phrases; v4 adds script input. Earlier media results still read.
+    schema_version: Literal["1", "2", "3", SCHEMA_VERSION] = SCHEMA_VERSION
     screening_id: str
     # the screening this one re-checks after a fix round
     previous_id: str | None = None
@@ -289,6 +289,12 @@ class Screening(_Record):
     def _drop_headline(cls, fields):
         if isinstance(fields, dict):
             fields = {k: v for k, v in fields.items() if k != "headline"}
+            # P72 and dev independently used v3 before integration. Normalise only
+            # the old script variant in memory; never emit a script as dev's v3.
+            ad = fields.get("ad")
+            media = ad.get("media") if isinstance(ad, dict) else getattr(ad, "media", None)
+            if fields.get("schema_version") == "3" and media == "script":
+                fields["schema_version"] = SCHEMA_VERSION
         return fields
 
     @model_validator(mode="after")
@@ -299,7 +305,7 @@ class Screening(_Record):
             raise ValueError("script lines must be unique and in source order")
         if script:
             if self.schema_version != SCHEMA_VERSION or not self.script_lines:
-                raise ValueError("script screenings require v3 and source lines")
+                raise ValueError("script screenings require v4 and source lines")
             if self.segments or self.on_screen or self.tracks:
                 raise ValueError("script screenings cannot contain media evidence")
         elif self.script_lines:

@@ -1,6 +1,7 @@
 import asyncio
 import json
 import logging
+import os
 from contextlib import asynccontextmanager, suppress
 from pathlib import Path
 
@@ -113,7 +114,9 @@ def create_app(
     app.state.service = service
     app.state.auth = auth
     app.add_middleware(BodyLimit, settings=settings, public=public)
-    app.add_middleware(TrustedHostMiddleware, allowed_hosts=["localhost", "127.0.0.1", "testserver"])
+    # a deployment names its public host names (PREFLIGHT_ALLOWED_HOSTS, comma-separated); local runs need none
+    hosts = [h.strip() for h in os.environ.get("PREFLIGHT_ALLOWED_HOSTS", "").split(",") if h.strip()]
+    app.add_middleware(TrustedHostMiddleware, allowed_hosts=["localhost", "127.0.0.1", "testserver", *hosts])
 
     @app.middleware("http")
     async def private_errors(request, call_next):

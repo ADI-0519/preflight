@@ -643,3 +643,11 @@ def test_public_approval_is_recorded_as_a_demo_approval(tmp_path, replay_models,
         assert response.json()["decision"]["public_demo"] is True
         log = (directory / "audit.jsonl").read_text(encoding="utf-8").splitlines()
         assert json.loads(log[-1]) | {"at": None} == json.loads(log[-1]) | {"at": None, "public_demo": True}
+
+
+def test_a_deployment_names_its_public_hosts(tmp_path, monkeypatch):
+    monkeypatch.setenv("PREFLIGHT_ALLOWED_HOSTS", "preflight-123.europe-west1.run.app, ")
+    with TestClient(create_app(Settings(root=tmp_path / "uploads"))) as client:
+        assert client.get("/health", headers={"Host": "preflight-123.europe-west1.run.app"}).status_code == 200
+        assert client.get("/health", headers={"Host": "untrusted.example"}).status_code == 400
+        assert client.get("/health").status_code == 200

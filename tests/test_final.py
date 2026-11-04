@@ -71,3 +71,28 @@ def test_negatives_are_also_given_by_cohort(results, monkeypatch):
                           {"item_id": "A25-1", "label": "positive", "flags": 4}])
     expected = "1 of 2 split v1, 1 of 2 added in v2, 1 of 3 without T14"
     assert final.negatives_by_cohort("screen-t", "v2", "test") == expected
+
+
+def test_the_one_test_screening_run_is_named_for_the_web_scoreboard(results):
+    from preflight.api.web import scoreboard
+    write_runs(results / "runs.csv", [
+        row("screen-t", "ad_recall", 50, 59, 0.73, 0.93),
+        row("baseline-t", "ad_recall", 30, 59, 0.37, 0.64, stage="baseline"),
+        row("screen-d", "ad_recall", 35, 35, 0.9, 1.0, part="dev"),
+    ])
+    text = final.render(final.load_runs(["screen-t", "baseline-t", "screen-d"]))
+    assert text.count("run_id:") == 1 and "\nrun_id: screen-t\n" in text
+    (results / "final.md").write_text(text, encoding="utf-8")
+    board = scoreboard(results)
+    assert board["available"] and board["run_id"] == "screen-t"
+
+
+@pytest.mark.parametrize("columns", [["baseline-t", "screen-d"], ["screen-t", "screen-u"]])
+def test_no_run_is_named_unless_one_test_screening_run_is_given(results, columns):
+    write_runs(results / "runs.csv", [
+        row("screen-t", "ad_recall", 50, 59, 0.73, 0.93),
+        row("screen-u", "ad_recall", 51, 59, 0.74, 0.94),
+        row("baseline-t", "ad_recall", 30, 59, 0.37, 0.64, stage="baseline"),
+        row("screen-d", "ad_recall", 35, 35, 0.9, 1.0, part="dev"),
+    ])
+    assert "run_id:" not in final.render(final.load_runs(columns))

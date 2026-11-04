@@ -4,6 +4,10 @@ Login is on when FIREBASE_PROJECT_ID is set; otherwise the workspace runs open, 
 signs in with Firebase (Google or email and password) and trades its ID token for a session cookie, because image,
 video and progress-stream requests cannot carry a token header. The server checks the token against Google's
 published keys, so it needs no Firebase service account.
+
+Every sign-in, Google or email, then waits for a six-digit code sent to the account's email, so the workspace knows
+the person can read that inbox. The code is mailed over SMTP (PREFLIGHT_SMTP_*); for local work,
+PREFLIGHT_DEV_CODES=1 writes it to the server log instead.
 """
 
 import base64
@@ -13,9 +17,12 @@ import json
 import logging
 import os
 import secrets
+import smtplib
+import threading
 import time
 from collections.abc import Callable
 from dataclasses import dataclass, field
+from email.message import EmailMessage
 
 import jwt
 from dotenv import load_dotenv
@@ -26,6 +33,11 @@ log = logging.getLogger(__name__)
 
 COOKIE = "preflight_session"
 SESSION_SECONDS = 12 * 3600
+# the half-signed-in state between a Firebase sign-in and the emailed code
+PENDING = "preflight_pending"
+CODE_SECONDS = 10 * 60
+CODE_ATTEMPTS = 5
+RESEND_SECONDS = 60
 JWKS_URL = "https://www.googleapis.com/service_accounts/v1/jwk/securetoken@system.gserviceaccount.com"
 # open without a session: the page and its assets, its configuration, health and the sign-in routes themselves
 OPEN = ("/health", "/ui/config", "/auth/", "/assets/", "/docs", "/openapi.json")
@@ -35,6 +47,38 @@ OPEN = ("/health", "/ui/config", "/auth/", "/assets/", "/docs", "/openapi.json")
 class User:
     uid: str
     email: str
+
+
+@dataclass
+class _Code:
+    digest: str
+    expires: float
+    sent: float
+    attempts: int = 0
+
+
+def smtp_sender(host: str, port: int, user: str, password: str, sender: str) -> Callable[[str, str], None]:
+    def send(to: str, code: str) -> None:
+        message = EmailMessage()
+        message["From"], message["To"] = sender, to
+        message["Subject"] = f"{code} is your PreFlight code"
+        message.set_content(
+            f"Your PreFlight sign-in code is {code}.\n\n"
+            f"It expires in {CODE_SECONDS // 60} minutes. If you did not try to sign in, ignore this email; "
+            "nobody can get in without the code.\n"
+        )
+        smtp = smtplib.SMTP_SSL if port == 465 else smtplib.SMTP
+        with smtp(host, port, timeout=15) as server:
+            if port != 465:
+                server.starttls()
+            if user:
+                server.login(user, password)
+            server.send_message(message)
+    return send
+
+
+def _log_code(to: str, code: str) -> None:
+    log.warning("PREFLIGHT_DEV_CODES is on: sign-in code for %s is %s (local use only)", to, code)
 
 
 def _allowed(entries: str) -> tuple[str, ...]:
@@ -52,6 +96,10 @@ class Auth:
     secret: bytes = field(default=b"", repr=False)
     clock: Callable[[], float] = time.time
     verify: Callable[[str], dict] | None = field(default=None, repr=False)
+    # mails a sign-in code; None refuses sign-in with email_codes_not_configured
+    send_code: Callable[[str, str], None] | None = field(default=None, repr=False)
+    _codes: dict[str, _Code] = field(default_factory=dict, init=False, repr=False)
+    _lock: threading.Lock = field(default_factory=threading.Lock, init=False, repr=False)
 
     def __post_init__(self):
         if self.enabled and not self.secret:
@@ -66,11 +114,18 @@ class Auth:
     def from_env(cls) -> "Auth":
         load_dotenv()
         env = os.environ.get
+        send = None
+        if host := env("PREFLIGHT_SMTP_HOST", "").strip():
+            user = env("PREFLIGHT_SMTP_USER", "").strip()
+            send = smtp_sender(host, int(env("PREFLIGHT_SMTP_PORT", "587")), user, env("PREFLIGHT_SMTP_PASSWORD", ""),
+                               env("PREFLIGHT_MAIL_FROM", "").strip() or user)
+        elif env("PREFLIGHT_DEV_CODES", "").strip() == "1":
+            send = _log_code
         return cls(
             project_id=env("FIREBASE_PROJECT_ID", "").strip(), api_key=env("FIREBASE_API_KEY", "").strip(),
             auth_domain=env("FIREBASE_AUTH_DOMAIN", "").strip(), app_id=env("FIREBASE_APP_ID", "").strip(),
             allowed=_allowed(env("PREFLIGHT_ALLOWED_EMAILS", "")),
-            secret=env("PREFLIGHT_SESSION_SECRET", "").encode(),
+            secret=env("PREFLIGHT_SESSION_SECRET", "").encode(), send_code=send,
         )
 
     @property
@@ -99,9 +154,7 @@ class Auth:
         if not claims.get("sub") or not email:
             raise APIError(401, "invalid_sign_in")
         if self.allowed:
-            # an unverified email could be anyone's, so an allowlist only admits verified addresses
-            if not claims.get("email_verified"):
-                raise APIError(403, "email_not_verified")
+            # the emailed code proves the address before any session starts, so an allowlist can trust it
             domain = "@" + email.rpartition("@")[2]
             if email not in self.allowed and domain not in self.allowed:
                 raise APIError(403, "not_allowed")
@@ -110,13 +163,49 @@ class Auth:
     def _mac(self, body: bytes) -> str:
         return base64.urlsafe_b64encode(hmac.new(self.secret, body, hashlib.sha256).digest()).decode().rstrip("=")
 
-    def cookie(self, user: User) -> str:
+    def cookie(self, user: User, stage: str = "session") -> str:
+        seconds = SESSION_SECONDS if stage == "session" else CODE_SECONDS
         body = base64.urlsafe_b64encode(json.dumps(
-            {"uid": user.uid, "email": user.email, "exp": int(self.clock()) + SESSION_SECONDS}
+            {"uid": user.uid, "email": user.email, "exp": int(self.clock()) + seconds, "stage": stage}
         ).encode()).decode().rstrip("=")
         return f"{body}.{self._mac(body.encode())}"
 
-    def user(self, cookie: str | None) -> User | None:
+    def send(self, user: User, again: bool = False) -> None:
+        """Emails a fresh code; a second sign-in within a minute keeps the code already sent."""
+        if self.send_code is None:
+            raise APIError(503, "email_codes_not_configured")
+        now = self.clock()
+        with self._lock:
+            current = self._codes.get(user.uid)
+            if current and now - current.sent < RESEND_SECONDS and current.expires > now:
+                if again:
+                    raise APIError(429, "code_recently_sent")
+                return
+            code = f"{secrets.randbelow(10**6):06d}"
+            self._codes[user.uid] = _Code(self._mac(f"{user.uid}:{code}".encode()), now + CODE_SECONDS, now)
+        try:
+            self.send_code(user.email, code)
+        except (OSError, smtplib.SMTPException):
+            log.exception("sending the sign-in code failed")
+            with self._lock:
+                self._codes.pop(user.uid, None)
+            raise APIError(502, "code_not_sent") from None
+
+    def check(self, user: User, code: str) -> None:
+        with self._lock:
+            current = self._codes.get(user.uid)
+            if current is None or current.expires <= self.clock():
+                self._codes.pop(user.uid, None)
+                raise APIError(400, "code_expired")
+            if not hmac.compare_digest(current.digest, self._mac(f"{user.uid}:{code}".encode())):
+                current.attempts += 1
+                if current.attempts >= CODE_ATTEMPTS:
+                    del self._codes[user.uid]
+                    raise APIError(429, "too_many_attempts")
+                raise APIError(400, "wrong_code")
+            del self._codes[user.uid]
+
+    def user(self, cookie: str | None, stage: str = "session") -> User | None:
         if not cookie or "." not in cookie:
             return None
         body, mac = cookie.rsplit(".", 1)
@@ -126,7 +215,7 @@ class Auth:
             fields = json.loads(base64.urlsafe_b64decode(body + "=" * (-len(body) % 4)))
         except ValueError:
             return None
-        if fields.get("exp", 0) <= self.clock():
+        if fields.get("exp", 0) <= self.clock() or fields.get("stage") != stage:
             return None
         return User(fields["uid"], fields["email"])
 

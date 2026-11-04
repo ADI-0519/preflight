@@ -891,7 +891,13 @@ function Gate() {
   if (!state) return null;
   const { config, account } = state;
   if (config.auth && !account.signed_in)
-    return <Login config={config.auth} onSignedIn={(a) => setState({ config, account: a })} />;
+    return (
+      <Login
+        config={config.auth}
+        pending={account.pending ?? null}
+        onSignedIn={(a) => setState({ config, account: a })}
+      />
+    );
   return <App account={config.auth ? account : null} />;
 }
 

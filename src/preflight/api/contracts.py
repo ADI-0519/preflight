@@ -49,6 +49,10 @@ class SignIn(Input):
     id_token: Annotated[str, Field(min_length=1, max_length=8192)]
 
 
+class Code(Input):
+    code: Annotated[str, Field(pattern=r"^[0-9]{6}$")]
+
+
 class JobView(Input):
     job_id: Identifier
     kind: Literal["screening", "fix"]

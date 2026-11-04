@@ -134,6 +134,8 @@ export interface Account {
   signed_in: boolean;
   email: string | null;
   login: boolean;
+  // the email a sign-in code was sent to, while the workspace waits for it
+  pending?: string | null;
 }
 export interface Config {
   auth: FirebaseConfig | null;

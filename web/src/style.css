@@ -1207,3 +1207,38 @@ footer {
   color: var(--tier-high);
   font-weight: 500;
 }
+.password-field {
+  display: flex;
+  align-items: end;
+  gap: 8px;
+}
+.password-field label {
+  flex: 1;
+  min-width: 0;
+}
+.password-field .link {
+  padding-bottom: 10px;
+}
+.password-rules {
+  list-style: none;
+  margin: -4px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 2px;
+  font-size: 13px;
+  color: var(--graphite);
+}
+.password-rules li.met {
+  color: var(--ink);
+}
+.login-hint {
+  margin: -6px 0 0;
+  font-size: 13px;
+  color: var(--tier-high);
+}
+.login-form .code-input {
+  font-size: 24px;
+  letter-spacing: 0.4em;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}

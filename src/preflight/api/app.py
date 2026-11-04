@@ -10,10 +10,11 @@ from fastapi.responses import HTMLResponse, JSONResponse, Response, StreamingRes
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from starlette.middleware.trustedhost import TrustedHostMiddleware
 
-from preflight.api.auth import COOKIE, SESSION_SECONDS, Auth
+from preflight.api.auth import CODE_SECONDS, COOKIE, PENDING, SESSION_SECONDS, Auth
 from preflight.api.contracts import (
     Approval,
     ApprovalView,
+    Code,
     FixView,
     JobView,
     SignIn,
@@ -154,22 +155,52 @@ def create_app(
 
     def signed_in_as(request: Request) -> dict:
         user = request.state.user
-        return {"signed_in": user is not None, "email": user.email if user else None, "login": auth.enabled}
+        pending = None if user or not auth.enabled else auth.user(request.cookies.get(PENDING), stage="code")
+        return {"signed_in": user is not None, "email": user.email if user else None, "login": auth.enabled,
+                "pending": pending.email if pending else None}
+
+    def set_cookie(response, request: Request, name: str, value: str, seconds: int) -> None:
+        response.set_cookie(name, value, max_age=seconds, httponly=True, samesite="lax",
+                            secure=request.url.scheme == "https", path="/")
+
+    def waiting(request: Request):
+        if not auth.enabled:
+            raise APIError(404, "login_not_enabled")
+        user = auth.user(request.cookies.get(PENDING), stage="code")
+        if user is None:
+            raise APIError(401, "code_session_expired")
+        return user
 
     @app.post("/auth/session")
     def sign_in(fields: SignIn, request: Request):
+        # a checked Firebase sign-in only earns the wait for the emailed code; the session comes after it
         if not auth.enabled:
             raise APIError(404, "login_not_enabled")
         user = auth.sign_in(fields.id_token)
-        response = JSONResponse({"signed_in": True, "email": user.email, "login": True})
-        response.set_cookie(COOKIE, auth.cookie(user), max_age=SESSION_SECONDS, httponly=True, samesite="lax",
-                            secure=request.url.scheme == "https", path="/")
+        auth.send(user)
+        response = JSONResponse({"signed_in": False, "email": None, "login": True, "pending": user.email})
+        set_cookie(response, request, PENDING, auth.cookie(user, stage="code"), CODE_SECONDS)
         return response
+
+    @app.post("/auth/code")
+    def enter_code(fields: Code, request: Request):
+        user = waiting(request)
+        auth.check(user, fields.code)
+        response = JSONResponse({"signed_in": True, "email": user.email, "login": True, "pending": None})
+        set_cookie(response, request, COOKIE, auth.cookie(user), SESSION_SECONDS)
+        response.delete_cookie(PENDING, path="/")
+        return response
+
+    @app.post("/auth/code/resend")
+    def resend_code(request: Request):
+        auth.send(waiting(request), again=True)
+        return {"sent": True}
 
     @app.post("/auth/logout")
     def sign_out():
-        response = JSONResponse({"signed_in": False, "email": None, "login": auth.enabled})
+        response = JSONResponse({"signed_in": False, "email": None, "login": auth.enabled, "pending": None})
         response.delete_cookie(COOKIE, path="/")
+        response.delete_cookie(PENDING, path="/")
         return response
 
     @app.get("/auth/me")

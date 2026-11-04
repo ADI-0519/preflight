@@ -78,3 +78,23 @@ def test_media_that_is_not_the_screened_file_is_refused(world):
 def test_items_outside_the_run_and_unregistered_runs_are_refused(world, run_id, items, message):
     with pytest.raises(SystemExit, match=message):
         demos.build(run_id, items, work=world["work"], out=world["out"], runs=world["runs"])
+
+
+@pytest.mark.parametrize("absolute", [False, True])
+def test_crop_paths_cannot_escape_the_ingest_folder_or_replace_existing_demos(world, absolute):
+    outside = world["work"] / "outside.png"
+    outside.write_bytes(b"not a crop of the screened ad")
+    saved = demos.screening_of(RUN, "T26", world["work"])
+    screening = json.loads(saved.read_text(encoding="utf-8"))
+    name = str(outside.resolve()) if absolute else "../outside.png"
+    for track in screening["tracks"]:
+        for region in track["regions"]:
+            region["crop"] = name
+    saved.write_text(json.dumps(screening), encoding="utf-8")
+    world["out"].mkdir()
+    previous = world["out"] / "items.json"
+    previous.write_text("[]", encoding="utf-8")
+    with pytest.raises(SystemExit, match="crop path"):
+        build(world, ["T26"])
+    assert previous.read_text(encoding="utf-8") == "[]"
+    assert not (world["out"].with_name("demo.tmp") / "outside.png").exists()

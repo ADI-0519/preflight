@@ -171,31 +171,31 @@ export const PUBLIC_ERRORS: Record<string, string> = {
 
 export async function request<T>(url: string, init?: RequestInit): Promise<T> {
   const response = await fetch(url, { ...init, cache: 'no-store' });
-  if (!response.ok) {
-    const code = response.status;
-    const error = await response
-      .json()
-      .then((body: { error?: string }) => body.error)
-      .catch(() => undefined);
-    if (error === 'login_required') {
-      // the session ended; the page reloads to the sign-in screen
-      location.reload();
-      throw new Error('Your session has ended. Sign in again.');
-    }
-    if (error && error in PUBLIC_ERRORS) throw new Error(PUBLIC_ERRORS[error]);
-    if (code === 404 || code === 410)
-      throw new Error(
-        'This item is unavailable or its retention period has ended. Upload it again.',
-      );
-    if (code === 413) throw new Error('The file is too large to upload.');
-    if (code === 415)
-      throw new Error('The file could not be decoded as a supported image or video.');
-    if (code === 429) throw new Error('Every job slot is busy. Try again in a minute.');
-    if (code === 409)
-      throw new Error('This result cannot do that yet. Reload the page to get its current state.');
-    throw new Error(`The server refused the request (HTTP ${code}). Check the file and try again.`);
-  }
+  if (!response.ok) await refuse(response);
   return response.json() as Promise<T>;
+}
+
+// turns a refused response into the message the page shows
+async function refuse(response: Response): Promise<never> {
+  const code = response.status;
+  const error = await response
+    .json()
+    .then((body: { error?: string }) => body.error)
+    .catch(() => undefined);
+  if (error === 'login_required') {
+    // the session ended; the page reloads to the sign-in screen
+    location.reload();
+    throw new Error('Your session has ended. Sign in again.');
+  }
+  if (error && error in PUBLIC_ERRORS) throw new Error(PUBLIC_ERRORS[error]);
+  if (code === 404 || code === 410)
+    throw new Error('This item is unavailable or its retention period has ended. Upload it again.');
+  if (code === 413) throw new Error('The file is too large to upload.');
+  if (code === 415) throw new Error('The file could not be decoded as a supported image or video.');
+  if (code === 429) throw new Error('Every job slot is busy. Try again in a minute.');
+  if (code === 409)
+    throw new Error('This result cannot do that yet. Reload the page to get its current state.');
+  throw new Error(`The server refused the request (HTTP ${code}). Check the file and try again.`);
 }
 
 export function post<T>(url: string, fields: unknown): Promise<T> {
@@ -206,18 +206,68 @@ export function post<T>(url: string, fields: unknown): Promise<T> {
   });
 }
 
-export async function upload(file: File): Promise<{ upload_id: string }> {
-  return request('/uploads', {
-    method: 'POST',
-    headers: {
-      'Content-Type': /\.md$/i.test(file.name)
-        ? 'text/markdown'
-        : /\.txt$/i.test(file.name)
-          ? 'text/plain'
-          : file.type,
-    },
-    body: file,
+// Cloud Run refuses any request over 32 MiB, so larger files go in parts of this size
+export const PART_BYTES = 16 * 1024 * 1024;
+const PART_RETRIES = 3;
+
+function mediaType(file: File): string {
+  if (/\.md$/i.test(file.name)) return 'text/markdown';
+  if (/\.txt$/i.test(file.name)) return 'text/plain';
+  return file.type;
+}
+
+export async function upload(
+  file: File,
+  onProgress?: (fraction: number) => void,
+  partBytes = PART_BYTES,
+  pause = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms)),
+): Promise<{ upload_id: string }> {
+  if (file.size <= partBytes)
+    return request('/uploads', {
+      method: 'POST',
+      headers: { 'Content-Type': mediaType(file) },
+      body: file,
+    });
+  const started = await post<{ upload_id: string; part_bytes: number }>('/uploads/parts', {
+    media_type: mediaType(file),
+    bytes: file.size,
   });
+  const size = Math.min(partBytes, started.part_bytes);
+  const parts = `/uploads/${started.upload_id}/parts`;
+  let offset = 0;
+  let failures = 0;
+  while (offset < file.size) {
+    let response: Response | null = null;
+    try {
+      response = await fetch(`${parts}?offset=${offset}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/octet-stream' },
+        body: file.slice(offset, offset + size),
+        cache: 'no-store',
+      });
+    } catch {
+      // a dropped connection; the retry asks the server where to carry on
+    }
+    if (response?.ok) {
+      offset = ((await response.json()) as { received: number }).received;
+      failures = 0;
+      onProgress?.(offset / file.size);
+      continue;
+    }
+    if (response?.status === 409) {
+      const body = (await response.json().catch(() => ({}))) as { received?: number };
+      if (typeof body.received === 'number') {
+        offset = body.received;
+        continue;
+      }
+    }
+    if (response && response.status < 500) await refuse(response);
+    if (++failures > PART_RETRIES)
+      throw new Error('The connection kept dropping while uploading. Try again.');
+    await pause(1000 * failures);
+    // after a failure the part may have arrived; a wrong offset reply says how much did
+  }
+  return request(`/uploads/${started.upload_id}/complete`, { method: 'POST' });
 }
 
 export function complete(screening: Screening): boolean {

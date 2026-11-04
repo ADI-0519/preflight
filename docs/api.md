@@ -71,10 +71,27 @@ curl.exe -X POST http://127.0.0.1:8000/uploads -H "Content-Type: image/png" --da
 
 Supported types: PNG, JPEG, WebP, MP4, WebM and QuickTime. Validation restricts FFmpeg's
 input formats/protocols and checks that a frame decodes. Playlists and URLs are not
-supported inputs. Defaults: 150 MiB per local upload (25 MiB in public mode),
+supported inputs. Defaults: 150 MiB per upload, local or public mode,
 256 KiB for JSON bodies, ten minutes maximum media duration, two worker threads
 and sixteen pending jobs. No original
 filename is retained or used as a path. Oversized/failed uploads are discarded.
+
+### Uploading in parts
+
+Cloud Run refuses any request over 32 MiB, so the web page sends a file larger than
+16 MiB in parts, and any client can do the same:
+
+1. `POST /uploads/parts` with `{"media_type": "video/mp4", "bytes": <file size>}` returns
+   `upload_id` and `part_bytes` (16 MiB). The size is checked against the upload limit,
+   and public mode counts this as the file's one upload.
+2. `POST /uploads/{upload_id}/parts?offset=<bytes sent so far>` with each part as the raw
+   body, in order, each at most `part_bytes`. It returns `received`. A part at the wrong
+   offset, such as a retry of one that already arrived, gets 409 `wrong_offset` with
+   `received`, so the client carries on from there.
+3. `POST /uploads/{upload_id}/complete` runs the same checks as a single upload and
+   returns the same fields. Media that fails them is deleted.
+
+An unfinished upload is not kept from deletion: it expires with the normal retention.
 
 ### Fix
 

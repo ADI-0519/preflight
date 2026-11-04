@@ -619,7 +619,7 @@ def test_replay_switch_turns_uploads_off_without_public_settings(tmp_path, monke
         assert response.status_code == 503 and response.json()["error"] == "uploads_paused"
         config = client.get("/ui/config").json()
         assert (config["public_mode"], config["uploads_closed"]) == ("replay", "uploads_paused")
-        assert config["max_upload_bytes"] == 25 * 1024 * 1024
+        assert config["max_upload_bytes"] == 150 * 1024 * 1024
         assert "Uploads expire after 24 hours." in config["upload_notice"]
         assert "Local deletion runs while the server is on and may wait for active jobs." in config["upload_notice"]
         assert "Do not upload confidential ads." in config["upload_notice"]
@@ -665,3 +665,78 @@ def test_a_deployment_sets_its_daily_spend_cap(tmp_path, monkeypatch):
     assert create_app().state.service.public.settings.daily_cap_usd == 10
     monkeypatch.delenv("PREFLIGHT_DAILY_CAP_USD")
     assert create_app().state.service.public.settings.daily_cap_usd == Settings().daily_cap_usd
+
+
+def send_in_parts(client, data, media_type="video/mp4", size=4096):
+    started = client.post("/uploads/parts", json={"media_type": media_type, "bytes": len(data)})
+    assert started.status_code == 201, started.text
+    upload_id = started.json()["upload_id"]
+    for offset in range(0, len(data), size):
+        part = client.post(f"/uploads/{upload_id}/parts", params={"offset": offset},
+                           content=data[offset:offset + size])
+        assert part.status_code == 200, part.text
+    return upload_id, client.post(f"/uploads/{upload_id}/complete")
+
+
+def test_a_file_sent_in_parts_is_checked_and_screened_like_one_upload(app):
+    video = (MEDIA / "captions.mp4").read_bytes()
+    with TestClient(app) as client:
+        upload_id, done = send_in_parts(client, video)
+        assert done.status_code == 201, done.text
+        assert done.json()["bytes"] == len(video) and done.json()["media_type"] == "video/mp4"
+        assert client.post(f"/uploads/{upload_id}/complete").json()["error"] == "upload_already_complete"
+        assert wait_for(client, start(client, upload_id)) == "completed"
+
+
+def test_parts_must_arrive_in_order_and_fit_the_declared_size(app):
+    video = (MEDIA / "captions.mp4").read_bytes()
+    with TestClient(app) as client:
+        upload_id = client.post("/uploads/parts", json={"media_type": "video/mp4", "bytes": len(video)}).json()[
+            "upload_id"]
+        skipped = client.post(f"/uploads/{upload_id}/parts", params={"offset": 10}, content=video[10:20])
+        assert skipped.status_code == 409 and skipped.json() == {"error": "wrong_offset", "received": 0,
+                                                                 "notice": NOTICE}
+        assert client.post(f"/uploads/{upload_id}/parts", params={"offset": 0}, content=video[:100]).json()[
+            "received"] == 100
+        # a retried part is refused with what already arrived, so the browser can carry on from there
+        assert client.post(f"/uploads/{upload_id}/parts", params={"offset": 0}, content=video[:100]).json()[
+            "received"] == 100
+        assert client.post(f"/uploads/{upload_id}/complete").json()["error"] == "upload_incomplete"
+        too_much = client.post(f"/uploads/{upload_id}/parts", params={"offset": 100}, content=video[100:] + b"x")
+        assert too_much.status_code == 413
+        assert client.post(f"/uploads/{upload_id}/parts", params={"offset": 100}, content=video[100:]).json()[
+            "received"] == len(video)
+        assert client.post(f"/uploads/{upload_id}/complete").status_code == 201
+
+
+def test_parts_that_are_not_media_are_deleted_when_completed(app, tmp_path):
+    with TestClient(app) as client:
+        upload_id, done = send_in_parts(client, SECRET.encode() * 50, media_type="video/mp4")
+        assert done.status_code == 415 and done.json()["error"] == "unreadable_media"
+        assert client.post(f"/uploads/{upload_id}/complete").json()["error"] == "upload_not_found"
+        assert SECRET not in done.text
+        refused = client.post("/uploads/parts", json={"media_type": "application/x-sh", "bytes": 10})
+        assert refused.status_code == 415
+
+
+def test_a_part_larger_than_cloud_run_allows_is_refused(app, monkeypatch):
+    import preflight.api.app as module
+
+    monkeypatch.setattr(module, "PART_BYTES", 64)
+    with TestClient(app) as client:
+        upload_id = client.post("/uploads/parts", json={"media_type": "video/mp4", "bytes": 1000}).json()["upload_id"]
+        assert client.post(f"/uploads/{upload_id}/parts", params={"offset": 0}, content=b"x" * 65).status_code == 413
+
+
+def test_public_mode_counts_a_file_in_parts_as_one_upload_within_its_size_limit(tmp_path, replay_models,
+                                                                               monkeypatch):
+    video = (MEDIA / "captions.mp4").read_bytes()
+    small = public_app(tmp_path, replay_models, monkeypatch, public_uploads_per_hour=1,
+                       public_max_upload_bytes=len(video))
+    with TestClient(small) as client:
+        too_big = client.post("/uploads/parts", json={"media_type": "video/mp4", "bytes": len(video) + 1})
+        assert too_big.status_code == 413
+        upload_id, done = send_in_parts(client, video, size=1024)
+        assert done.status_code == 201, done.text
+        again = client.post("/uploads/parts", json={"media_type": "video/mp4", "bytes": len(video)})
+        assert again.status_code == 429 and again.json()["error"] == "rate_limited"

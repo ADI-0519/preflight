@@ -35,6 +35,9 @@ def inside(root: Path, name: str) -> Path:
     return path
 
 
+MEDIA_SLICE = 8 * 1024 * 1024
+
+
 def media_response(path: Path, request: Request) -> Response:
     size = path.stat().st_size
     headers = {"Accept-Ranges": "bytes", "X-Content-Type-Options": "nosniff"}
@@ -50,6 +53,8 @@ def media_response(path: Path, request: Request) -> Response:
         first, last = match.groups()
         start = int(first) if first else max(0, size - int(last))
         end = min(int(last), size - 1) if first and last else size - 1
+        # Cloud Run refuses a response over 32 MiB; a shorter range reply is valid and the player asks for the rest
+        end = min(end, start + MEDIA_SLICE - 1)
         if start >= size or end < start:
             return Response(status_code=416, headers=headers | {"Content-Range": f"bytes */{size}"})
         headers["Content-Range"] = f"bytes {start}-{end}/{size}"

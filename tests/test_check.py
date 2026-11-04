@@ -1,9 +1,10 @@
 from datetime import UTC, date, datetime
+from types import SimpleNamespace
 
 import pytest
 from pydantic import ValidationError
 
-from preflight.check import PROMPT_VERSION, check
+from preflight.check import PROMPT_VERSION, asks_quote, check, output_schema
 from preflight.models import SparkResult
 from preflight.schema import Ad, Claim, Screening, Segment, Snapshots, StageRun, TranscriptEvidence
 from preflight.sources.register import load_register
@@ -299,7 +300,7 @@ def test_two_of_three_samples_flag_a_claim_and_one_does_not():
     ])
     (flag,) = out.flags
     assert (flag.claim_id, flag.votes) == ("claim-0", 3)
-    assert out.schema_version == "2"
+    assert out.schema_version == "3"
 
 
 def test_rules_cited_by_two_samples_are_kept():
@@ -377,3 +378,46 @@ def test_the_check_votes_by_default():
     spark = FakeSpark({"claim-0": breach("15.1.1"), "claim-1": verdict(), "claim-2": verdict()})
     out = check(screening(), spark, FakeIndex())
     assert len(spark.calls) == 3 and out.flags[0].votes == 3
+
+
+def quoted(*quotes, rules=("15.1.1",)):
+    return {**breach(*rules), "quotes": list(quotes)}
+
+
+@pytest.mark.parametrize("quotes, kept", [
+    (["calm", "focus"], ("calm", "focus")),
+    # the claim's own words are kept when the model changes only case or spacing
+    (["Calm  AND focus"], ("calm and focus",)),
+    (["calm and sleep", "focus", "focus"], ("focus",)),
+    (["Magnesium for calm and focus"], ()),
+    ([], ()),
+])
+def test_a_flag_marks_only_phrases_its_claim_holds(quotes, kept):
+    out, _ = run({"claim-0": quoted(*quotes), "claim-1": verdict(), "claim-2": verdict()})
+    assert out.flags[0].quotes == kept
+
+
+def test_only_prompts_that_ask_for_quotes_get_the_field():
+    _, ((_, kwargs),) = run({f"claim-{n}": verdict() for n in range(3)})
+    assert "quotes" not in kwargs["schema"]["properties"]["verdicts"]["items"]["properties"]
+    assert [asks_quote(p) for p in ("judge_v8", "judge_v9", "judge_v10", "judge_v11")] == [False, False, True, True]
+    claims, found = list(screening().claims), SimpleNamespace(register=[], on_hold=[])
+    item = output_schema(claims, found, [], [], quote=True)["properties"]["verdicts"]["items"]
+    assert "quotes" in item["properties"] and "quotes" in item["required"]
+
+
+def test_the_vote_keeps_the_quotes_of_the_reasons_sample():
+    out, _ = vote_on([
+        {"claim-0": quoted("calm and focus"), "claim-1": verdict(), "claim-2": verdict()},
+        {"claim-0": quoted("focus"), "claim-1": verdict(), "claim-2": verdict()},
+        {"claim-0": verdict(), "claim-1": verdict(), "claim-2": verdict()},
+    ])
+    assert out.flags[0].quotes == ("calm and focus",)
+
+
+def test_a_saved_quote_missing_from_its_claim_is_rejected():
+    out, _ = run({"claim-0": quoted("calm and focus"), "claim-1": verdict(), "claim-2": verdict()})
+    saved = out.model_dump(mode="json")
+    saved["flags"][0]["quotes"] = ["calm", "calm and sleep"]
+    with pytest.raises(ValidationError, match="quotes words missing"):
+        Screening.model_validate(saved)

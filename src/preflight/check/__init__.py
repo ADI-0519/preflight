@@ -1,5 +1,6 @@
 import logging
 import random
+import re
 from collections import Counter
 from concurrent.futures import ThreadPoolExecutor
 from functools import cache
@@ -33,6 +34,8 @@ from preflight.sources.rulings import Ruling
 log = logging.getLogger(__name__)
 
 PROMPT_VERSION = "judge_v8"
+# judge prompts from this version on ask each flag to mark the phrases that carry the breach
+QUOTE_FROM = 10
 EFFORT = "high"
 # judge samples per ad; when the check votes, a claim is flagged when two of three agree
 VOTE_SAMPLES = 3
@@ -65,7 +68,14 @@ def ids(values: list[str]) -> dict:
     return {"type": "array", "items": {"type": "string", "enum": values}}
 
 
-def output_schema(claims: list[Claim], found: Shortlist, rules: list[CapRule], rulings: list[Ruling]) -> dict:
+def asks_quote(prompt: str) -> bool:
+    version = re.fullmatch(r"judge_v(\d+)", prompt)
+    return bool(version) and int(version[1]) >= QUOTE_FROM
+
+
+def output_schema(
+    claims: list[Claim], found: Shortlist, rules: list[CapRule], rulings: list[Ruling], quote: bool = False,
+) -> dict:
     verdict = {
         "claim_id": {"type": "string", "enum": [c.claim_id for c in claims]},
         # the reason comes before the verdict, so the model reasons before it commits
@@ -73,6 +83,8 @@ def output_schema(claims: list[Claim], found: Shortlist, rules: list[CapRule], r
         "verdict": {"type": "string", "enum": ["possible_breach", "on_hold", "no_issue"]},
         "cap_rules": ids([r.rule for r in rules]),
     }
+    if quote:
+        verdict["quotes"] = {"type": "array", "items": {"type": "string"}}
     # a list with nothing to cite is left out, since an enum may not be empty
     if found.register:
         verdict["register_ids"] = ids([e.register_id for e in found.register])
@@ -148,6 +160,7 @@ class _Verdict(BaseModel):
     on_hold_ids: list[str] = Field(default_factory=list)
     ruling_ids: list[str] = Field(default_factory=list)
     suggested_register_id: str | None = None
+    quotes: list[str] = Field(default_factory=list)
     reason: str = Field(min_length=1)
 
 
@@ -200,6 +213,7 @@ def parse(
         # rule 2: section 3 and other non-health claims never get wording
         health = v.verdict == "on_hold" or any(r.startswith("15.") for r in v.cap_rules)
         suggested = v.suggested_register_id if health and v.suggested_register_id in own_register else None
+        quotes = tuple(dict.fromkeys(q for q in (marked(claim, q) for q in v.quotes) if q))
         flags.append(Flag(
             flag_id=f"flag-{len(flags)}",
             claim_id=claim.claim_id,
@@ -208,8 +222,21 @@ def parse(
             # a breach or on-hold verdict citing nothing fails validation here (rule 3)
             sources=tuple(dict.fromkeys(sources)),
             suggested_wording=SuggestedWording.from_entry(authorised[suggested]) if suggested else None,
+            quotes=quotes,
         ))
     return flags
+
+
+def marked(claim: Claim, quote: str) -> str | None:
+    # the claim's own words, so a quote differing only in case or spacing still points at the ad's text
+    pattern = r"\s+".join(map(re.escape, quote.split()))
+    found = re.search(pattern, claim.text, re.IGNORECASE)
+    if not found:
+        # a quote the claim does not hold is dropped; the flag still points at the whole claim
+        log.warning("quote for %s is not in the claim's text: %r", claim.claim_id, quote)
+        return None
+    # the whole claim is no narrower than no quote
+    return found[0] if found[0] != claim.text else None
 
 
 def voters(screening: Screening) -> int:
@@ -242,6 +269,7 @@ def vote(claims: list[Claim], samples: list[list[Flag] | None]) -> list[Flag]:
         flags.append(Flag(
             flag_id=f"flag-{len(flags)}", claim_id=claim.claim_id, kind=kind, reason=first.reason,
             sources=tuple(sources), suggested_wording=first.suggested_wording if health else None, votes=len(found),
+            quotes=first.quotes,
         ))  # fmt: skip
     return flags
 
@@ -276,7 +304,7 @@ def check(
         found = shortlist(claims, _register(s.gb_register), _on_hold(s.on_hold))
         rules = list(_rules(s.cap_rules))
         rulings, closest = precedents_for(claims, precedents, per_claim)
-        schema = output_schema(claims, found, rules, rulings)
+        schema = output_schema(claims, found, rules, rulings, quote=asks_quote(prompt))
 
         def judge(sample: int):
             # the same wording with the rules in another fixed order; sample 0 keeps the pack's order

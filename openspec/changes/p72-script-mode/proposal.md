@@ -22,7 +22,7 @@ scripts cannot establish what the final pictures, captions or delivery imply.
 
 **Prerequisite:** no implementation until all three founders agree to the rule-3 interpretation and the
 agreement is recorded in the decision log. The user confirmed all-founder agreement on 3 Nov 2026;
-the interpretation is now recorded in `docs/notes/decisions.md` and rule 3.
+the agreed contract is now documented in `docs/api.md` and rule 3.
 
 Non-goals: changing the judge or adopted media prompts, tuning from held-out data, a final test run,
 automatically approving scripts, editing scripts with the media fix loop, document/PDF import, markdown

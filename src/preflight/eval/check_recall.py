@@ -16,7 +16,7 @@ from preflight.models.store import Store
 from preflight.pipeline import SNAPSHOTS
 from preflight.schema import Ad, Claim, OnScreenEvidence, OnScreenText, Screening, StageRun
 
-# the dev screenings whose claims the judge is run on (docs/notes/claim-extraction.md)
+# the dev screenings whose claims the judge is run on
 CLAIMS_RUN = "claims-20261101T023641"
 
 

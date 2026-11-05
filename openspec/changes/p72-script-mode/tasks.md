@@ -5,15 +5,15 @@ the corresponding product-rule interpretation and dated decision are recorded un
 
 ## 1. Product decision and compatibility contract
 
-- [x] 1.1 Obtain confirmation of all three founders' agreement to quoted, numbered script-line evidence; record the dated agreement in `docs/notes/decisions.md` and the corresponding rule-3 clarification in `docs/product-rules.md`, preserving media evidence requirements. Verify the record identifies the confirmed agreement rather than attributing an unconfirmed decision.
-- [x] 1.2 Add schema-v4 script metadata, source lines and evidence validation, and document the new contract in `docs/plan.md`. Verify exact text/line matching, cross-mode rejection and valid v1/v2/v3 media reads with focused schema tests. Normalise the pre-integration P72-v3 script variant to v4 on read.
+- [x] 1.1 Obtain confirmation of all three founders' agreement to quoted, numbered script-line evidence; document the agreed contract in `docs/api.md` and the corresponding rule-3 clarification in `docs/product-rules.md`, preserving media evidence requirements. Retain the original confirmation record separately rather than attributing an unconfirmed decision.
+- [x] 1.2 Add schema-v4 script metadata, source lines and evidence validation, and document the new contract in `docs/architecture.md`. Verify exact text/line matching, cross-mode rejection and valid v1/v2/v3 media reads with focused schema tests. Normalise the pre-integration P72-v3 script variant to v4 on read.
 - [x] 1.3 Regenerate `web/schema.json` and `web/src/screening.d.ts`; verify schema generation and `npm --prefix web run check` pass and generated files match the Python schema.
 
 ## 2. Deterministic ingestion and shared screening
 
 - [x] 2.1 Add bounded UTF-8 script ingestion and optional VO/SUPER parsing. Verify BOM, LF/CRLF, blank-line gaps, literal markdown, Unicode, empty input, invalid UTF-8, binary control content and size/line limits with synthetic tests; document the accepted input grammar in `docs/api.md`.
 - [x] 2.2 Extend evidence preparation and the existing extraction path for text-only script requests, without altering media prompt bytes. Verify returned citations resolve only to supplied source lines, joined claims cite their pieces, and script content cannot create out-of-scope evidence IDs.
-- [x] 2.3 Dispatch script inputs through `pipeline.screen` with perception stages skipped. Verify transcribe/on-screen/region/image clients raise if invoked, no media is fabricated, no-claim checks finish and failures remain incomplete; update the architecture description in `docs/plan.md`.
+- [x] 2.3 Dispatch script inputs through `pipeline.screen` with perception stages skipped. Verify transcribe/on-screen/region/image clients raise if invoked, no media is fabricated, no-claim checks finish and failures remain incomplete; update the architecture description in `docs/architecture.md`.
 
 ## 3. CLI, tool and report delivery
 
@@ -35,7 +35,7 @@ the corresponding product-rule interpretation and dated decision are recorded un
 
 - [x] 6.1 Add dev-only script fixture export from original shot-list ad words and authored team copy, with source hashes and line mappings. Verify no image prompts, assessment text, label annotations or held-out items enter scripts.
 - [x] 6.2 Add original-baseline cohort validation and paired metrics/registration. Verify missing/void/test/incomplete inputs fail before labels or clients, textual-population masks and denominators are explicit, failed checks cannot register success and historical result files remain unchanged.
-- [ ] 6.3 Obtain retained baseline screenings and original dev inputs, then run the authorised script-versus-media comparison and record its run IDs, cohort, configuration, counts and limitations in `docs/notes/decisions.md`. Verify every issue acceptance criterion against the actual registered artifacts; leave this task pending if inputs or authorisation are absent.
+- [ ] 6.3 Obtain retained baseline screenings and original dev inputs, then run the authorised script-versus-media comparison and record its run IDs, cohort, configuration, counts and limitations in `docs/evaluation.md`. Verify every issue acceptance criterion against the actual registered artifacts; leave this task pending if inputs or authorisation are absent.
   - 3 Nov check: `screen-20261103T172541` is registered, but `data/work/runs/screen-20261103T172541` is absent. `--check-inputs` stopped before model client construction; leave the comparison pending.
 
 ## 7. Final integration checks

@@ -120,7 +120,7 @@ def main() -> None:
         "created": CREATED,
         "status": "draft: ground truth awaits a second founder's check; not frozen",
         "sources": {"rulings": "2026-10-31", "register": "2026-05-19"},
-        "topics": "all in-scope supplement and health-claim rulings (see docs/notes/rulings-corpus.md)",
+        "topics": "all in-scope supplement and health-claim rulings (see docs/evaluation.md#items)",
         "counts": {
             "dev": {"positive": len(dev_pos), "negative": len(TEAM_DEV)},
             "test": {"positive": len(test_pos), "negative": len(team_test)},

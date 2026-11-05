@@ -6,7 +6,7 @@ status: 'frozen 2026-10-31; ground truth checked by NEESAY'
 sources:
   rulings: '2026-10-31'
   register: '2026-05-19'
-topics: all in-scope supplement rulings, any CAP breach (see docs/notes/rulings-corpus.md)
+topics: all in-scope supplement rulings, any CAP breach (see docs/evaluation.md#items)
 counts:
   dev:
     positive: 25

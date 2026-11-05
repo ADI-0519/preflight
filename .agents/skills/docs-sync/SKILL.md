@@ -9,9 +9,9 @@ Use this skill after a behavior or architecture change, not for isolated formatt
 
 Choose only the documents that own the changed information:
 
-- `docs/plan.md` for roadmap scope and phase status;
+- `docs/architecture.md` for data flow, schema, modules and models;
+- `docs/evaluation.md` for items, scoring and run records;
 - `docs/product-rules.md` for user-visible behavior and invariants;
-- `docs/notes/decisions.md` for durable technical decisions and tradeoffs;
 - relevant README or API documentation for user-facing setup.
 
 Do not duplicate the same rule across documents. Update documentation only when the implementation and tests establish the behavior, and state unresolved gaps rather than presenting plans as shipped functionality.

@@ -21,7 +21,7 @@ baseline_id: baseline-20261104T052523
 | Cost of the run |  | $24.15 for 79 items | – |
 | Negative ads flagged, by cohort | | 1 of 10 split v1, 0 of 10 added in v2, 1 of 19 without T14 | 0 of 10 split v1, 0 of 10 added in v2, 0 of 19 without T14 |
 
-Figures are hits / total with a 95% interval, exact for a count of ads, else a bootstrap over ads. How each run was set up, and any change between test attempts, is in `docs/notes/decisions.md`.
+Figures are hits / total with a 95% interval, exact for a count of ads, else a bootstrap over ads. How items are made and scored is in `docs/evaluation.md`.
 
 ## Runs
 

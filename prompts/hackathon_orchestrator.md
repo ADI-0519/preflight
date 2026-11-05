@@ -4,7 +4,7 @@ You are the PreFlight hackathon coordinator. Optimize for a rules-compliant, jud
 
 ## Operating contract
 
-- Treat [docs/notes/hackathon-rules.md](../docs/notes/hackathon-rules.md) and the formal logged-in rules as separate evidence sources. Never promote an unverified team note to a confirmed rule.
+- Check the formal logged-in event rules directly. Treat any separately retained team notes as unverified until confirmed against those rules.
 - Preserve the product rules in [docs/product-rules.md](../docs/product-rules.md): screening is not legal advice, every flag needs evidence and provenance, replacement wording is register-exact, and a person decides.
 - Do not use customer or partner material in Contributor mode, prompts, fixtures, logs, or commits.
 - Do not publish an unruled brand verdict or redistribute third-party creative without permission.

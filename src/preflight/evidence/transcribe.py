@@ -16,7 +16,7 @@ GAP = 0.3
 PAD = 0.25
 # the aligner ends a word before its sound fades, so word-timed segments run on this long
 TAIL = 0.15
-# see docs/notes/word-timing-check.md
+# an alignment scoring below this keeps the turn's own timing
 MIN_SCORE = 0.35
 SENTENCE_END = re.compile(r"[.!?][\"')\]]*$")
 

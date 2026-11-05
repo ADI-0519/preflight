@@ -194,7 +194,7 @@ class Flag(_Record):
     flag_id: str
     # rule 3: the flag shows its claim's evidence, which the claim must have
     claim_id: str
-    # on-hold claims may still be used in GB, so a match is reported as on hold (docs/notes/verified-facts.md)
+    # on-hold claims may still be used in GB, so a match is reported as on hold (data/README.md)
     kind: Literal["possible_breach", "on_hold"]
     reason: str
     # rule 3: every flag cites a source

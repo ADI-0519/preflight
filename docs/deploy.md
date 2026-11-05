@@ -1,101 +1,80 @@
 # Deploying to Google Cloud Run
 
-PreFlight runs as one container on Cloud Run's free tier: the FastAPI service, the built web page and FFmpeg
-(`Dockerfile`). `deploy/cloud-run.sh` builds it with Cloud Build and deploys it. Sign-in (Firebase, with an
-emailed code) is required on the deployed service.
+PreFlight deploys as a single container holding the FastAPI service, the built web page and FFmpeg (`Dockerfile`). `deploy/cloud-run.sh` builds the image with Cloud Build and deploys it to Cloud Run. The deployed service always requires sign-in: Firebase Authentication with a code sent by email.
 
-## Why one Cloud Run instance
+## Why the service runs as one instance
 
-- A screening runs for minutes in a background thread after the upload request returns, so the service uses
-  instance-based billing (`--no-cpu-throttling`); with the default request-based billing the CPU is cut when the
-  response is sent.
-- Jobs, sessions and sign-in codes live in the process, so there is exactly one instance (`--max-instances 1`).
-  A restart or scale-to-zero ends running jobs and signs everyone out.
-- Uploads are deleted after 24 hours by design and live on the container's in-memory disk, so no storage
-  service is needed. The disk counts against the 2 GiB of memory.
-- Cloud Run allows outbound SMTP on port 587, which the sign-in code email uses (Render's free tier blocks it).
+The service keeps state in memory and does long work after a request has returned, and the deployment settings follow from that.
 
-## Free tier and what it costs
+- A screening runs for several minutes in a background thread after the upload request has been answered. With Cloud Run's default request-based billing the CPU is throttled once the response is sent, so the service uses instance-based billing (`--no-cpu-throttling`).
+- Jobs, sessions and sign-in codes are held in the process, so the service is limited to one instance (`--max-instances 1`). A restart or a scale to zero ends any running job and signs every user out.
+- Uploads are deleted after 24 hours and are kept on the container's in-memory file system, so no storage service is needed. That file system counts against the instance's 2 GiB of memory.
+- Cloud Run allows outbound SMTP on port 587, which the sign-in email uses.
 
-Cloud Run's monthly free tier (instance-based billing) is 240,000 vCPU-seconds and 450,000 GiB-seconds. At 1 vCPU
-and 2 GiB that is about 60 hours with the service up. An instance stays up at most 15 minutes after its last
-request and costs nothing while scaled to zero. Building and storing the image can cost a few pence. Set a budget
-alert before the first deploy.
+## Cost
 
-Hosting being free does not make screening free: every screening calls the Meta model API on the team's key.
-The script refuses to deploy without `PREFLIGHT_ALLOWED_EMAILS` unless `ALLOW_ANYONE=1` is set. With
-`ALLOW_ANYONE=1` the service gets an empty allowlist, so any Google or email account can sign in, whatever
-`.env` says.
+Cloud Run's monthly free tier for instance-based billing is 240,000 vCPU-seconds and 450,000 GiB-seconds. At 1 vCPU and 2 GiB this covers about 60 hours of the service being up. An idle instance shuts down at most 15 minutes after its last request and costs nothing while scaled to zero. Building and storing the image may cost a few pence. Set a budget alert before the first deploy.
+
+Free hosting does not make screening free, since every screening calls the Meta Model API on the configured key. For that reason the script refuses to deploy without `PREFLIGHT_ALLOWED_EMAILS` unless `ALLOW_ANYONE=1` is set. With `ALLOW_ANYONE=1` the service receives an empty allowlist, so any Google or email account can sign in, whatever `.env` says.
 
 ## One-time setup
 
-1. Create a Google Cloud account at console.cloud.google.com, add a billing account and create a project.
-   Note the project ID.
-2. Billing > Budgets & alerts: create a budget of £1 with email alerts at 50%, 90% and 100%.
-3. Install the Google Cloud CLI and sign in: `gcloud auth login`.
-4. In the main checkout's `.env`, set everything `.env.example` lists for sign-in, the SMTP code email and
-   `META_API_KEY`, and set `PREFLIGHT_ALLOWED_EMAILS`.
-5. The git-ignored ASA ruling pages must be complete in `data/raw/rulings/` (see `data/README.md`); the image
-   build fails if a page the precedent list needs is missing.
+1. Create a Google Cloud account at console.cloud.google.com, add a billing account and create a project. Note the project ID.
+2. Under Billing > Budgets & alerts, create a budget (for example £1) with email alerts at 50%, 90% and 100%.
+3. Install the Google Cloud CLI and sign in with `gcloud auth login`.
+4. In the settings file the script reads (below), set `META_API_KEY`, the four `FIREBASE_*` values, `PREFLIGHT_SESSION_SECRET`, `PREFLIGHT_SMTP_HOST`, `PREFLIGHT_SMTP_USER` and `PREFLIGHT_SMTP_PASSWORD`, and normally `PREFLIGHT_ALLOWED_EMAILS`. The script stops if any of the first nine is empty. [README.md](../README.md#settings-env) explains each variable.
+5. Make sure the ASA ruling pages are complete in `data/raw/rulings/` ([data/README.md](../data/README.md) explains how to fetch them). These pages are not in the repository. The image build fails if a page the precedent index needs is missing, so the fault shows at build time instead of at the first screening.
 
 ## Deploy
 
-From a checkout of the branch to deploy, in Git Bash:
+From a checkout of the branch to deploy, in a Bash shell (Git Bash on Windows):
 
 ```bash
 PROJECT=your-project-id bash deploy/cloud-run.sh
 ```
 
-The script reads settings from `../preflight/.env` (`ENV_FILE`) and the ruling pages and demo files from
-`../preflight/data/raw` (`DATA`), copies those two folders into the build, stores `META_API_KEY`,
-`PREFLIGHT_SMTP_PASSWORD` and `PREFLIGHT_SESSION_SECRET` in Secret Manager, and deploys the service `preflight`
-in `europe-west1` (`SERVICE`, `REGION`). It prints the service address,
-`https://preflight-<project number>.europe-west1.run.app`.
+The script:
 
-After the first deploy, add that host name in Firebase > Authentication > Settings > Authorized domains, or
-Google sign-in refuses it.
+1. reads settings from `ENV_FILE`, by default `../preflight/.env` beside the checkout, without printing secret values;
+2. copies the git-ignored `rulings` and `demo` folders from `DATA`, by default `../preflight/data/raw`, into the build;
+3. enables Cloud Run, Cloud Build, Artifact Registry and Secret Manager in the project;
+4. stores `META_API_KEY`, `PREFLIGHT_SMTP_PASSWORD` and `PREFLIGHT_SESSION_SECRET` in Secret Manager, adding a version only when a value has changed and destroying older versions;
+5. deploys the service `preflight` (`SERVICE`) in `europe-west1` (`REGION`) with the remaining settings as plain environment variables;
+6. prints the service address, `https://preflight-<project number>.europe-west1.run.app`.
 
-Run the same command to deploy a new version. The service only answers on the host names in
-`PREFLIGHT_ALLOWED_HOSTS`, which the script sets to that address and the service's older `*.a.run.app`
-address (where Firebase Hosting forwards; it exists only after the first deploy, so run the script twice the first
-time), plus `<SITE>.web.app` and
-`<SITE>.firebaseapp.com` when `SITE` names a Firebase Hosting site.
+After the first deploy, add that host name under Firebase > Authentication > Settings > Authorized domains, or Google sign-in will refuse it. Running the same command again deploys a new version.
 
-The team's deployment runs open to any account, under public mode's per-account limits:
+The service answers only on the host names in `PREFLIGHT_ALLOWED_HOSTS`. The script sets that list to the printed address and the service's older `*.a.run.app` address, which is where Firebase Hosting forwards requests. The older address exists only once the service does, so on a first deploy that uses Firebase Hosting the script must be run twice. When `SITE` names a Firebase Hosting site, `<SITE>.web.app` and `<SITE>.firebaseapp.com` are added as well.
+
+### Public mode
+
+Two further variables set the limits for a deployment open to the public:
+
+- `PUBLIC_MODE` (default `on`) sets `PREFLIGHT_PUBLIC_MODE`. With `on`, each signed-in account may make 10 uploads, start 3 screenings and run 1 fix an hour, a fix runs a single round, and uploads are limited to 150 MiB and 60 seconds of media. With `replay`, uploads are refused and only the preloaded demos run.
+- `DAILY_CAP_USD` (default 10) sets `PREFLIGHT_DAILY_CAP_USD`, the total model spend allowed per day across all users. Once it is reached, new screenings are refused until midnight UTC.
+
+Cloud Run refuses any request body over 32 MiB, so the web page sends files larger than 16 MiB in parts ([docs/api.md](api.md#uploading-in-parts)).
+
+The project's own deployment lets any account sign in, under the public-mode limits:
 
 ```bash
 ALLOW_ANYONE=1 SITE=preflight-ai PROJECT=preflight-513720 bash deploy/cloud-run.sh
 ```
 
-`PUBLIC_MODE` (default `on`) sets `PREFLIGHT_PUBLIC_MODE`: each signed-in account may start 3 screenings,
-1 fix and 10 uploads an hour, with uploads up to 150 MiB and 60 seconds. Cloud Run refuses any request over
-32 MiB, so the page sends files over 16 MiB in parts (docs/api.md, "Uploading in parts"). `DAILY_CAP_USD` (default 10) sets
-`PREFLIGHT_DAILY_CAP_USD`, the day's model spend across everyone, after which new screenings are refused until
-midnight UTC.
+## A web.app address
 
-## A free web.app address
+A Cloud Run address cannot be renamed, and a custom domain costs money. Firebase Hosting provides a free `<name>.web.app` address that forwards every path to the service. A Hosting rewrite can reach Cloud Run only in the same Google Cloud project, so the Hosting site must be created in the project that runs the service. For the project's deployment, the site `preflight-ai` in project `preflight-513720` has a single rewrite of `**` to the service `preflight` in `europe-west1`. Both `preflight-ai.web.app` and `preflight-ai.firebaseapp.com` are authorised domains in the Firebase project used for sign-in.
 
-Cloud Run's own address cannot be renamed, and a custom domain costs money. Firebase Hosting gives a free
-`<name>.web.app` address that forwards every path to the service. A Hosting rewrite only reaches Cloud Run in
-the same Google Cloud project, so Firebase was added to `preflight-513720` and the site `preflight-ai` created
-there, with a release whose only config is a rewrite of `**` to the service `preflight` in `europe-west1`.
-`preflight-ai.web.app` and `preflight-ai.firebaseapp.com` are authorized domains in the sign-in Firebase
-project.
+Two Hosting limits affect the service. Hosting forwards only one cookie, named `__session`, so the session cookie and the half-signed-in state both use that name. Hosting also ends a forwarded request after 60 seconds, so the progress stream of a long screening reconnects; the run.app address has no such limit.
 
-Hosting forwards only a cookie named `__session`, which is why the session and the half-signed-in state share
-that name. It also ends a forwarded request after 60 seconds, so a screening's progress stream reconnects
-during long screenings; the run.app address has no such limit.
-
-## Checks
+## Checks after a deploy
 
 - `https://<address>/health` answers `ready`.
-- The page opens on the landing page signed out; a sign-in emails a code.
+- The page opens signed out on the landing page, and signing in sends a code by email.
 - Logs: `gcloud run services logs read preflight --region europe-west1 --project <project>`.
 
 ## What the image holds
 
-`src`, `prompts`, `results`, `eval/splits` (the split lists that keep held-out rulings out of the precedent
-pool), `data/snapshots`, and the git-ignored `data/raw/rulings` and `data/raw/demo`. It holds no `.env`, test
-items, ground truth or team media; the only reconstructions are the labelled demos the manifest in
-`data/raw/demo` names. The ruling pages reach Google's private build storage and
-image registry in the team's project; they are never committed or published.
+The image holds `src`, `prompts`, `results`, `eval/splits`, `data/snapshots`, the built web page, and the git-ignored `data/raw/rulings` and `data/raw/demo`. The split lists are included because they keep the held-out test rulings out of the precedent index. The image holds no `.env`, test items, ground truth or test media: `.gcloudignore` and `.dockerignore` exclude them, along with `tests` and `docs`. The only rebuilt ads it contains are the labelled demos listed in the manifest in `data/raw/demo`.
+
+The ruling pages are uploaded to the project's private Cloud Build storage and image registry. They are never committed or published. The container runs as an unprivileged user, with one uvicorn worker, because jobs, sessions and sign-in codes live in that one process.

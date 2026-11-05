@@ -3,8 +3,7 @@ schema: spec-driven
 context: |
   PreFlight screens ads for possible policy issues; it does not approve ads.
   Read AGENTS.md and docs/product-rules.md before proposing changes.
-  docs/plan.md owns roadmap scope; docs/notes/decisions.md owns durable decisions.
-  docs/handoff-2026-11-01.md records the current integration and verification limits.
+  docs/architecture.md owns how the system is built; docs/evaluation.md owns how it is measured.
   OpenSpec proposals supplement these documents and must not silently replace them.
   Use synthetic/dev inputs only; never inspect held-out labels to tune behavior.
   Every visible flag requires evidence and repository-backed source provenance.

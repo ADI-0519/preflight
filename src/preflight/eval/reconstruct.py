@@ -1,6 +1,6 @@
 """Benchmark reconstructions: a ruling's ad description -> shot list -> stills, voiceover -> labelled video.
 
-The builder takes an AdDescription and nothing else (docs/plan.md, evaluation protocol item 3; rule 8).
+The builder takes an AdDescription and nothing else (docs/evaluation.md, Items; rule 8).
 Outputs go to data/raw/reconstructions/<ruling-id>/ and are never committed.
 
     uv run --extra render python -m preflight.eval.reconstruct eval/splits/v1.yaml
@@ -44,7 +44,7 @@ FONTS = [
     Path("/System/Library/Fonts/Supplemental/Arial.ttf"),
 ]
 
-# Published prices (docs/plan.md): Spark per million tokens in and out, Muse Image per image.
+# Published prices (docs/architecture.md, Models): Spark per million tokens in and out, Muse Image per image.
 SPARK_IN, SPARK_OUT, IMAGE_EACH = 1.25, 4.25, 0.01
 
 

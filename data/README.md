@@ -26,7 +26,7 @@ Attribution, as OGL v3.0 asks: contains public sector information licensed under
 
 ## "On hold" health claims
 
-Claims DHSC says "may continue to be used in Great Britain" while they are still under consideration. They are not in the register, so a claim that matches no authorised register entry may still be usable if it matches one here (see `docs/notes/verified-facts.md`).
+Claims DHSC says "may continue to be used in Great Britain" while they are still under consideration. They are not in the register, so a claim that matches no authorised register entry may still be usable if it matches one here (see `docs/source-terms.md`).
 
 | | |
 |---|---|
@@ -46,13 +46,13 @@ Rebuild the snapshot from the download:
 uv run python -m preflight.sources.on_hold data/raw/on-hold/article-13.1-on-hold-health-claims.ods --date 2021-01-12
 ```
 
-The wording in this list was proposed by applicants in 2008 and DHSC warns that much of it "may not be acceptable", so it is cited as context and never offered as suggested wording (`docs/product-rules.md`, rule 2).
+The wording in this list was proposed by applicants in 2008 and DHSC warns that much of it "may not be acceptable", so it is cited as context and never offered as suggested wording.
 
 ## ASA rulings index
 
 | | |
 |---|---|
-| Source | asa.org.uk rulings pages, found through the rulings search (`preflight.sources.rulings`, see `docs/notes/rulings-corpus.md`) |
+| Source | asa.org.uk rulings pages, found through the rulings search (`preflight.sources.rulings`, see `docs/evaluation.md`) |
 | Fetched | 31 Oct 2026, rulings published 31 Oct 2023 to 31 Oct 2026, 10 s between requests |
 | Raw pages | `data/raw/rulings/` (git-ignored; 146 pages) |
 | Snapshot | `data/snapshots/rulings-2026-10-31.jsonl`: the 77 in-scope rulings, metadata only (ID, date, advertiser, media, outcome, rules cited, URL, keyword topics). No ruling text, because asa.org.uk states no reuse terms (`docs/source-terms.md`). |

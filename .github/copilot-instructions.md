@@ -1,8 +1,8 @@
 # PreFlight
 
 Read and follow [AGENTS.md](../AGENTS.md) before working in this repository.
-Read [the plan](../docs/plan.md) and [the handoff](../docs/handoff-2026-11-01.md)
-for scope and current verification status. Repository instructions remain authoritative
+Read [the architecture](../docs/architecture.md) and [the evaluation method](../docs/evaluation.md)
+for scope. Repository instructions remain authoritative
 over generated workflow templates.
 
 Use Context7 for public library documentation when available. Queries must contain

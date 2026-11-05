@@ -28,7 +28,7 @@ from preflight.models.clients import Image, Sam, SamResult, Turn, VoiceTranscrib
 from preflight.pipeline import SNAPSHOTS, screen
 from preflight.schema import Screening
 
-# published prices (docs/plan.md); SAM bills every decoded frame, at least 50 per video
+# published prices (docs/architecture.md, Models); SAM bills every decoded frame, at least 50 per video
 SAM_FRAME, SAM_MIN_FRAMES, SAM_IMAGE, TRANSCRIBE_HOUR = 0.20 / 1000, 50, 2.50 / 1000, 0.18
 WORKERS = 3
 

@@ -1,4 +1,4 @@
-"""Evaluation split manifests, ground truth and team-written items (docs/plan.md, evaluation protocol)."""
+"""Evaluation split manifests, ground truth and team-written items (docs/evaluation.md)."""
 
 import json
 import re

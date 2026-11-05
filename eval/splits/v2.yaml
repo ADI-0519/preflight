@@ -4,12 +4,12 @@
 version: v2
 frozen: true
 created: '2026-11-01'
-status: 'frozen 2 Nov 2026: every item checked (docs/notes/split-v2-test-items.md), false-alarm pass mark agreed
-  (docs/notes/decisions.md)'
+status: 'frozen 2 Nov 2026: every item checked, false-alarm pass mark agreed
+  (docs/evaluation.md#split; original sign-off records retained separately)'
 sources:
   rulings: '2026-10-31'
   register: '2026-05-19'
-topics: all in-scope supplement rulings, any CAP breach (see docs/notes/rulings-corpus.md)
+topics: all in-scope supplement rulings, any CAP breach (see docs/evaluation.md#items)
 counts:
   dev:
     positive: 35

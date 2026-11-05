@@ -7,7 +7,7 @@ from preflight.eval.split import load_ground_truth, load_split
 from preflight.sources.cap import load_cap_rules
 
 SNAPSHOT = "2026-10-31"
-SAMPLE = Path(__file__).resolve().parents[1] / "docs" / "notes" / "ruling-rebuildability-sample.md"
+SAMPLE = Path(__file__).resolve().parents[1] / "tests" / "fixtures" / "ruling-rebuildability-sample.md"
 
 
 @pytest.fixture(scope="module")

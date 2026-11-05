@@ -1,5 +1,19 @@
 # Decisions
 
+- **5 Nov 2026 (identity labels in this repository copy).** Historical contributor
+  names, commit identities and reviewer labels were normalised to `NEESAY` at the
+  repository owner's request. This is a display-label change, not evidence that
+  the account performed the original work or a new review. Older notes describing
+  separate authors, reviewers or prompt signatories cannot establish independence
+  from these labels: distinct original people can now share the same label.
+  The inventory continues to reject a reviewer label matching the author label;
+  do not bypass that check to make the renamed records pass. Claims, rule labels,
+  outcomes and dev/test membership have not changed. Ground-truth file hashes
+  and evaluation fingerprints that include reviewer metadata do change. Historical
+  evaluation results belong to their original inputs and must not be presented as
+  reruns or revalidated against this copy. Preserve independent review evidence
+  separately before using these records to substantiate reviewer independence.
+
 - **4 Nov 2026 (P72 schema integration review).** P72 originally changed v2 to v3
   for scripts, while dev independently used v3 for `Flag.quotes`. The combined
   contract is now v4. New outputs use v4; historical v1/v2/v3 media results retain

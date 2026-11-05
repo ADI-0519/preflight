@@ -8,7 +8,7 @@ import yaml
 
 ROOT = Path(__file__).resolve().parents[1]
 TEAM_ID = re.compile(r"[TN]\d{2,}")
-FOUNDERS = {"NEESAY", "neesay", "adi-0519"}
+FOUNDERS = {"neesay", "adi-0519"}
 # an item written by an assistant may be checked by any founder
 AUTHORS = FOUNDERS | {"assistant"}
 # a check may also be signed by an independent checker, one that wrote none of the items (P60 decision, 2 Nov)

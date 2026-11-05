@@ -11,7 +11,6 @@ import {
   signOut,
 } from 'firebase/auth';
 import type { Auth, User } from 'firebase/auth';
-import { NOTICE } from './api';
 import type { Account, FirebaseConfig } from './api';
 
 let auth: Auth | null = null;
@@ -422,7 +421,6 @@ export function Login({
             {message && <p role="status">{message}</p>}
           </>
         )}
-        <p className="login-notice">{NOTICE}</p>
       </section>
     </main>
   );

@@ -6,6 +6,7 @@ import re
 import shutil
 import threading
 import time
+from contextvars import ContextVar
 from dataclasses import dataclass
 from pathlib import Path
 from uuid import uuid4
@@ -13,10 +14,25 @@ from uuid import uuid4
 IDENTIFIER = re.compile(r"^[0-9a-f]{32}$")
 TERMINAL = {"completed", "incomplete", "failed"}
 
+# the account a request acts for: a Firebase uid, or None with sign-in off; workers and the sweep act for anyone
+ANYONE = object()
+OWNER: ContextVar = ContextVar("owner", default=ANYONE)
+
+
+def owner() -> str | None:
+    current = OWNER.get()
+    return None if current is ANYONE else current
+
+
+def mine(fields: dict) -> bool:
+    current = OWNER.get()
+    return current is ANYONE or fields.get("owner") == current
+
 
 class APIError(Exception):
-    def __init__(self, status: int, code: str):
-        self.status, self.code = status, code
+    # detail travels in the error body, e.g. which limit was reached and when it frees up
+    def __init__(self, status: int, code: str, **detail):
+        self.status, self.code, self.detail = status, code, detail
 
 
 @dataclass(frozen=True)
@@ -98,7 +114,7 @@ class Retention:
             directory = self.upload_dir(upload_id)
             directory.mkdir()
             fields = {
-                "upload_id": upload_id, "media_type": media_type, "suffix": suffix,
+                "upload_id": upload_id, "media_type": media_type, "suffix": suffix, "owner": owner(),
                 "bytes": 0, "created_at": self.clock(),
                 "expires_at": self.clock() + self.settings.retention_seconds, "stored": False,
             }
@@ -125,6 +141,9 @@ class Retention:
         if not path.is_file():
             raise APIError(404, "upload_not_found")
         fields = json.loads(path.read_text(encoding="utf-8"))
+        # another account's upload reads as missing, so its ID reveals nothing
+        if not mine(fields):
+            raise APIError(404, "upload_not_found")
         if fields["expires_at"] <= self.clock():
             raise APIError(410, "upload_expired")
         if not fields["stored"]:
@@ -164,22 +183,23 @@ class Retention:
         return self.upload_dir(fields["upload_ids"][0]) / "jobs" / fields["job_id"]
 
     def job(self, job_id: str) -> dict:
-        if not IDENTIFIER.fullmatch(job_id) or job_id not in self.jobs:
+        if not IDENTIFIER.fullmatch(job_id) or job_id not in self.jobs or not mine(self.jobs[job_id]):
             raise APIError(404, "job_not_found")
         fields = self.jobs[job_id]
         for upload_id in fields["upload_ids"]:
             self.upload(upload_id)
         return fields
 
-    def create_job(self, kind: str, upload_ids: list[str]) -> dict:
+    def create_job(self, kind: str, upload_ids: list[str], title: str | None = None) -> dict:
         with self.lock:
             if sum(j["status"] not in TERMINAL for j in self.jobs.values()) >= self.settings.max_pending:
                 raise APIError(429, "job_queue_full")
             upload_ids = list(dict.fromkeys(upload_ids))
-            deadline = min(self.upload(upload_id)["expires_at"] for upload_id in upload_ids)
+            uploads = [self.upload(upload_id) for upload_id in upload_ids]
             fields = {
-                "job_id": uuid4().hex, "kind": kind, "upload_ids": upload_ids,
-                "expires_at": deadline, "status": "queued", "events": [], "pinned": True,
+                "job_id": uuid4().hex, "kind": kind, "upload_ids": upload_ids, "owner": owner(), "title": title,
+                "media_type": uploads[0]["media_type"], "created_at": self.clock(),
+                "expires_at": min(u["expires_at"] for u in uploads), "status": "queued", "events": [], "pinned": True,
             }
             self.job_dir(fields).mkdir(parents=True)
             self.jobs[fields["job_id"]] = fields
@@ -187,6 +207,18 @@ class Retention:
                 self.active[upload_id] = self.active.get(upload_id, 0) + 1
             self.event(fields["job_id"], "queued")
             return fields
+
+    def rename(self, job_id: str, title: str) -> dict:
+        with self.lock:
+            fields = self.job(job_id)
+            fields["title"] = title
+            write_json(self.job_dir(fields) / "job.json", fields)
+            return fields
+
+    def owned_jobs(self) -> list[dict]:
+        with self.lock:
+            live = [j for j in self.jobs.values() if mine(j) and j["expires_at"] > self.clock()]
+        return sorted(live, key=lambda j: j.get("created_at", 0), reverse=True)
 
     def event(self, job_id: str, status: str | None = None, **data) -> None:
         with self.lock:

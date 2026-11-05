@@ -13,8 +13,8 @@ def write_runs(path, rows):
         writer.writerows(rows)
 
 
-def row(run_id, metric, hits, total, low="", high="", part="test", sha="abc1234", stage="screen"):
-    return {"run_id": run_id, "created_at": "2026-11-04T00:00:00+00:00", "git_sha": sha, "split": "v2", "part": part,
+def row(run_id, metric, hits, total, low="", high="", part="test", sha="abc1234", stage="screen", split="v2"):
+    return {"run_id": run_id, "created_at": "2026-11-04T00:00:00+00:00", "git_sha": sha, "split": split, "part": part,
             "stage": stage, "model": "m", "prompt": "claims_v5+judge_v8+vote3", "metric": metric, "hits": hits,
             "total": total, "low": low, "high": high}
 
@@ -85,6 +85,20 @@ def test_the_one_test_screening_run_is_named_for_the_web_scoreboard(results):
     (results / "final.md").write_text(text, encoding="utf-8")
     board = scoreboard(results)
     assert board["available"] and board["run_id"] == "screen-t"
+    assert "\nbaseline_id: baseline-t\n" in text
+    assert board["baseline_id"] == "baseline-t"
+    assert board["metrics"][0]["baseline"]["hits"] == 30
+
+
+def test_a_baseline_from_another_split_is_not_shown_beside_the_models(results):
+    from preflight.api.web import scoreboard
+    write_runs(results / "runs.csv", [
+        row("screen-t", "ad_recall", 50, 59, 0.73, 0.93),
+        row("baseline-t", "ad_recall", 30, 59, 0.37, 0.64, stage="baseline", split="v1"),
+    ])
+    (results / "final.md").write_text("run_id: screen-t\nbaseline_id: baseline-t\n", encoding="utf-8")
+    board = scoreboard(results)
+    assert board["available"] and board["baseline_id"] is None and board["metrics"][0]["baseline"] is None
 
 
 @pytest.mark.parametrize("columns", [["baseline-t", "screen-d"], ["screen-t", "screen-u"]])

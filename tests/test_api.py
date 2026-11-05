@@ -398,7 +398,6 @@ def test_uploaded_playlist_is_not_treated_as_a_video(app):
 @pytest.mark.parametrize("suffix,media_type,source", [
     (".jpg", "image/jpeg", AGENT / "still.png"),
     (".webp", "image/webp", AGENT / "still.png"),
-    (".webm", "video/webm", MEDIA / "captions.mp4"),
     (".mov", "video/quicktime", MEDIA / "captions.mp4"),
 ])
 def test_supported_media_formats_decode_before_storage(app, tmp_path, suffix, media_type, source):
@@ -493,14 +492,22 @@ def test_public_mode_allows_three_screenings_per_client_an_hour(tmp_path, replay
     app = public_app(tmp_path, replay_models, monkeypatch, clock=lambda: clock[0])
     with TestClient(app) as client:
         upload_id = upload(client, (MEDIA / "captions.mp4").read_bytes(), "video/mp4")
+        assert client.get("/ui/allowance").json()["allowance"]["screening"] == {"limit": 3, "left": 3, "resets_in": 0}
         jobs = [start(client, upload_id) for _ in range(3)]
+        clock[0] += 600
         response = client.post("/screenings", json={"upload_id": upload_id})
         assert response.status_code == 429 and response.json()["error"] == "rate_limited"
+        # the visitor is told which limit and when the oldest start in the hour frees a place
+        body = response.json()
+        assert (body["kind"], body["limit"], body["retry_after"]) == ("screening", 3, 3000)
+        assert response.headers["retry-after"] == "3000"
+        assert client.get("/ui/allowance").json()["allowance"]["screening"] == {"limit": 3, "left": 0,
+                                                                               "resets_in": 3000}
         for job_id in jobs:
             wait_for(client, job_id)
         # each job's model usage is counted towards the day's spend, priced from its recorded usage
         assert app.state.service.public.spent() > 0
-        clock[0] += 3601
+        clock[0] += 3001
         assert client.post("/screenings", json={"upload_id": upload_id}).status_code == 202
 
 
@@ -657,6 +664,15 @@ def test_a_deployment_names_its_public_hosts(tmp_path, monkeypatch):
         assert client.get("/health", headers={"Host": "preflight-123.europe-west1.run.app"}).status_code == 200
         assert client.get("/health", headers={"Host": "untrusted.example"}).status_code == 400
         assert client.get("/health").status_code == 200
+
+
+def test_webm_is_refused_because_the_model_api_reads_only_mp4_or_mov(app, tmp_path):
+    converted = tmp_path / "synthetic.webm"
+    run("ffmpeg", "-nostdin", "-hide_banner", "-loglevel", "error", "-i", str(MEDIA / "captions.mp4"), str(converted))
+    with TestClient(app) as client:
+        response = client.post("/uploads", content=converted.read_bytes(), headers={"Content-Type": "video/webm"})
+        assert response.status_code == 415
+        assert response.json()["error"] == "unsupported_media_type"
 
 
 def test_a_deployment_sets_its_daily_spend_cap(tmp_path, monkeypatch):

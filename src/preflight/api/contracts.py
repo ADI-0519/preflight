@@ -8,6 +8,7 @@ from preflight.schema import NOTICE, Screening
 
 Identifier = Annotated[str, Field(pattern=r"^[0-9a-f]{32}$")]
 Text = Annotated[str, Field(max_length=4000)]
+Title = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=120)]
 
 
 class Input(BaseModel):
@@ -16,7 +17,13 @@ class Input(BaseModel):
 
 class StartScreening(Input):
     upload_id: Identifier
-    align: bool = False
+    # word timing runs locally; a turn it cannot align keeps its whole-passage time
+    align: bool = True
+    title: Title | None = None
+
+
+class Rename(Input):
+    title: Title
 
 
 class Scene(Input):
@@ -31,7 +38,7 @@ class StartFix(Input):
     format: Literal["image", "video"]
     scenes: tuple[Scene, ...] = Field(min_length=1, max_length=10)
     rounds: int = Field(default=3, ge=0, le=3)
-    align: bool = False
+    align: bool = True
 
     @model_validator(mode="after")
     def one_image_scene(self):
@@ -64,6 +71,21 @@ class JobView(Input):
     job_id: Identifier
     kind: Literal["screening", "fix"]
     status: Literal["queued", "running", "completed", "incomplete", "failed"]
+    notice: Literal[NOTICE] = NOTICE
+
+
+class JobSummary(Input):
+    job_id: Identifier
+    kind: Literal["screening", "fix"]
+    status: Literal["queued", "running", "completed", "incomplete", "failed"]
+    upload_id: Identifier
+    media: Literal["script", "image", "video"] | None
+    created_at: float | None
+    title: str | None
+
+
+class JobList(Input):
+    jobs: list[JobSummary]
     notice: Literal[NOTICE] = NOTICE
 
 

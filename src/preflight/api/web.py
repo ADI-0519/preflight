@@ -154,6 +154,39 @@ def crop_path(screening: Screening, root: Path, track: int, region: int) -> Path
     return inside(root, name)
 
 
+SCOREBOARD_METRICS = {"ad_recall", "claim_recall", "claim_recall_carried", "claim_recall_any_rule",
+                      "near_miss_caught", "wording_on_eligible", "negative_ads_flagged"}
+RUN_METADATA = ("created_at", "git_sha", "split", "part", "stage", "model", "prompt", "effort", "snapshots")
+
+
+def run_metrics(rows: list[dict], run_id: str, stage: str) -> tuple[dict, dict] | None:
+    rows = [r for r in rows if r["run_id"] == run_id]
+    if not rows or any(r["part"] != "test" or r["stage"] != stage for r in rows):
+        return None
+    if not re.fullmatch(r"[0-9a-f]{7,40}", rows[0]["git_sha"]):
+        return None
+    if any(any(row[k] != rows[0][k] for k in RUN_METADATA) for row in rows):
+        return None
+    metrics = {}
+    try:
+        for row in rows:
+            if row["metric"] not in SCOREBOARD_METRICS:
+                continue
+            hits, total = float(row["hits"]), float(row["total"])
+            low = float(row["low"]) if row["low"] else None
+            high = float(row["high"]) if row["high"] else None
+            if not all(math.isfinite(n) for n in (hits, total, low or 0, high or 0)) or not 0 <= hits <= total:
+                return None
+            if (low is None) != (high is None) or (low is not None and not 0 <= low <= high <= 1):
+                return None
+            if row["metric"] in metrics:
+                return None
+            metrics[row["metric"]] = {"hits": hits, "total": total, "low": low, "high": high}
+    except (ValueError, KeyError):
+        return None
+    return ({k: rows[0][k] for k in RUN_METADATA}, metrics) if metrics else None
+
+
 def scoreboard(root: Path) -> dict:
     unavailable = {"available": False, "reason": "No registered final test run is selected.", "metrics": []}
     final, registry = root / "final.md", root / "runs.csv"
@@ -165,46 +198,33 @@ def scoreboard(root: Path) -> dict:
     except (OSError, UnicodeError):
         return unavailable
     selected = re.findall(r"^run_id:[ \t]*([A-Za-z0-9_-]+)[ \t]*$", text, re.MULTILINE)
+    baselines = re.findall(r"^baseline_id:[ \t]*([A-Za-z0-9_-]+)[ \t]*$", text, re.MULTILINE)
     if len(selected) != 1:
         return unavailable
     run_id = selected[0]
-    metadata = ("created_at", "git_sha", "split", "part", "stage", "model", "prompt", "effort", "snapshots")
-    required = {*metadata, "run_id", "metric", "hits", "total", "low", "high"}
+    required = {*RUN_METADATA, "run_id", "metric", "hits", "total", "low", "high"}
     try:
         with registry.open(newline="", encoding="utf-8") as stream:
             reader = csv.DictReader(stream)
             if not required.issubset(reader.fieldnames or []):
                 return unavailable
-            rows = [r for r in reader if r["run_id"] == run_id]
+            rows = list(reader)
     except (OSError, UnicodeError, csv.Error):
         return unavailable
     if any(any(not isinstance(row.get(k), str) for k in required) for row in rows):
         return unavailable
-    if not rows or any(r["part"] != "test" or r["stage"] != "screen" for r in rows):
+    screened = run_metrics(rows, run_id, "screen")
+    if screened is None:
         return unavailable
-    if not re.fullmatch(r"[0-9a-f]{7,40}", rows[0]["git_sha"]):
-        return unavailable
-    if any(any(row[k] != rows[0][k] for k in metadata) for row in rows):
-        return unavailable
-    metrics = []
-    try:
-        for row in rows:
-            if row["metric"] not in {"ad_recall", "claim_recall", "claim_recall_carried",
-                                     "claim_recall_any_rule", "negative_ads_flagged"}:
-                continue
-            hits, total = float(row["hits"]), float(row["total"])
-            low = float(row["low"]) if row["low"] else None
-            high = float(row["high"]) if row["high"] else None
-            if not all(math.isfinite(n) for n in (hits, total, low or 0, high or 0)) or not 0 <= hits <= total:
-                return unavailable
-            if (low is None) != (high is None) or (low is not None and not 0 <= low <= high <= 1):
-                return unavailable
-            metrics.append({"name": row["metric"], "hits": hits, "total": total, "low": low, "high": high})
-    except (ValueError, KeyError):
-        return unavailable
-    if not metrics or len({m["name"] for m in metrics}) != len(metrics):
-        return unavailable
-    return {"available": True, "run_id": run_id, **{k: rows[0][k] for k in metadata}, "metrics": metrics}
+    provenance, metrics = screened
+    # the keyword baseline is shown beside the models only when it ran on the same split's test part
+    baseline = run_metrics(rows, baselines[0], "baseline") if len(baselines) == 1 else None
+    if baseline is not None and baseline[0]["split"] != provenance["split"]:
+        baseline = None
+    against = baseline[1] if baseline else {}
+    return {"available": True, "run_id": run_id, **provenance,
+            "baseline_id": baselines[0] if baseline else None,
+            "metrics": [{"name": name, **m, "baseline": against.get(name)} for name, m in metrics.items()]}
 
 
 class DemoEntry(BaseModel):

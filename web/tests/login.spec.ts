@@ -105,3 +105,26 @@ test('a sign-in waiting for its code asks for the 6 digits and then opens the wo
   await expect(page.getByRole('link', { name: 'Log in', exact: true })).toHaveCount(0);
   expect(tries).toEqual(['135792', '246810']);
 });
+
+test('a signed-in account opens on its workspace, not the product page', async ({
+  page,
+}, testInfo) => {
+  await loginOn(page, {
+    signed_in: true,
+    email: 'founder@example.com',
+    login: true,
+    pending: null,
+  });
+  await page.route('/jobs', (route) => route.fulfill({ json: { jobs: [] } }));
+  await page.goto('/');
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Your workspace');
+  await expect(page.getByLabel('Upload ad')).toBeEnabled();
+  await expect(page.getByRole('region', { name: 'Your screenings' })).toContainText(
+    'No screenings yet',
+  );
+  await expect(page.locator('#features')).toHaveCount(0);
+  await page.screenshot({ path: testInfo.outputPath('dashboard.png'), fullPage: true });
+  await page.setViewportSize({ width: 390, height: 844 });
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  await page.screenshot({ path: testInfo.outputPath('dashboard-phone.png'), fullPage: true });
+});

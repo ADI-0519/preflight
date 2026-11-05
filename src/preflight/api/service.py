@@ -53,8 +53,8 @@ class Service:
         if stage.stage in {"transcribe", "on_screen", "regions", "claims", "check"}:
             self.storage.event(job_id, stage=stage.stage, stage_status=stage.status)
 
-    def submit(self, kind: str, upload_ids: list[str], call: Callable) -> dict:
-        job = self.storage.create_job(kind, upload_ids)
+    def submit(self, kind: str, upload_ids: list[str], call: Callable, title: str | None = None) -> dict:
+        job = self.storage.create_job(kind, upload_ids, title)
 
         def work():
             directory = self.storage.job_dir(job)
@@ -79,7 +79,7 @@ class Service:
             raise APIError(503, "worker_unavailable") from None
         return job
 
-    def start_screening(self, upload_id: str, align: bool) -> dict:
+    def start_screening(self, upload_id: str, align: bool, title: str | None = None) -> dict:
         path = self.storage.media(upload_id)
 
         def call(job, directory):
@@ -95,7 +95,7 @@ class Service:
                 finally:
                     self.public.spend(bill())
 
-        return self.submit("screening", [upload_id], call)
+        return self.submit("screening", [upload_id], call, title)
 
     def result(self, job_id: str) -> Screening:
         with self.storage.lock:
@@ -152,7 +152,7 @@ class Service:
                     })
                     return result.screening
 
-            return self.submit("fix", upload_ids, call)
+            return self.submit("fix", upload_ids, call, source.get("title") and f'Revision of {source["title"]}')
 
     def report(self, job_id: str) -> str:
         with self.storage.lock:

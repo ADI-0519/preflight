@@ -9,9 +9,6 @@
   text-decoration: none;
   font-size: 13px;
 }
-.with-account .appearance {
-  margin-left: 0;
-}
 .product-sections {
   grid-column: 1 / -1;
   display: grid;
@@ -104,11 +101,6 @@
   font-size: 12px;
   color: var(--blue);
 }
-.example-caption {
-  font-size: 11px;
-  padding: 0 24px 20px;
-  color: var(--graphite);
-}
 .section-heading {
   max-width: 680px;
   margin-bottom: 36px;
@@ -163,17 +155,22 @@
   grid-column: 2;
   width: 70%;
 }
+.script-art .flagged {
+  background: var(--accent);
+  box-shadow: 0 0 0 6px var(--hl);
+}
 .image-art {
   padding: 28px;
   display: grid;
   place-items: center;
 }
 .image-art div {
+  position: relative;
   height: 100px;
   width: 72px;
   border: 1px solid var(--control);
   border-radius: 8px 8px 14px 14px;
-  background: var(--sheet);
+  background: linear-gradient(transparent 38px, var(--hl) 38px 66px, transparent 66px) var(--sheet);
 }
 .image-art div::before {
   content: '';
@@ -187,9 +184,22 @@
 }
 .image-art i {
   position: absolute;
-  inset: 45px 26%;
-  border: 1px solid var(--blue);
+  inset: 32px -8px 28px;
+  border: 1.5px solid var(--accent);
   border-radius: 2px;
+}
+.image-art i::after {
+  content: 'Claim';
+  position: absolute;
+  bottom: 100%;
+  left: -1.5px;
+  padding: 1px 5px;
+  font-size: 9px;
+  line-height: 12px;
+  font-style: normal;
+  letter-spacing: 0.06em;
+  color: var(--on-accent);
+  background: var(--accent);
 }
 .image-art span {
   position: absolute;
@@ -202,23 +212,25 @@
 .revision-art {
   display: grid;
   align-content: center;
-  gap: 15px;
+  gap: 6px;
   padding: 28px;
   font-size: 11px;
   color: var(--graphite);
 }
-.revision-art i {
-  width: 82%;
-  height: 7px;
-  background: var(--control);
+.revision-art span:nth-of-type(2) {
+  margin-top: 14px;
 }
-.revision-art i:first-of-type {
-  text-decoration: line-through;
-  opacity: 0.45;
+.revision-art s,
+.revision-art b {
+  font-size: 13px;
+  line-height: 18px;
 }
-.revision-art i:last-child {
-  background: var(--blue);
-  width: 64%;
+.revision-art s {
+  opacity: 0.6;
+}
+.revision-art b {
+  font-weight: 500;
+  color: var(--accent);
 }
 .process-section {
   align-items: start;
@@ -421,15 +433,6 @@
   line-height: 26px;
   max-width: 32ch;
 }
-.account-note {
-  display: grid;
-  gap: 14px;
-  border-top: 1px solid var(--line);
-  margin-top: 40px;
-  padding-top: 24px;
-  font-size: 11px;
-  color: var(--graphite);
-}
 .account-card {
   background: var(--sheet);
   padding: 36px;
@@ -550,9 +553,6 @@
   .account-intro h1 {
     font-size: 44px;
   }
-  .account-note {
-    display: none;
-  }
   .account-card {
     padding: 28px 24px;
   }
@@ -577,14 +577,170 @@
     display: inline-flex;
     align-items: center;
   }
-  .with-account .modes {
-    grid-column: 1;
-  }
-  .with-account .appearance {
-    grid-row: 2;
-  }
   .with-account .modes button {
     padding-inline: 8px;
     font-size: 12px;
   }
+}
+.past {
+  grid-column: 1 / -1;
+  margin-top: -24px;
+}
+.past h2 {
+  font-size: 18px;
+  margin-bottom: 8px;
+}
+.past ul {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 8px;
+  border-top: 1px solid var(--line);
+}
+.past-item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 84px 32px;
+  align-items: center;
+  gap: 8px;
+  border-bottom: 1px solid var(--line);
+}
+.past-rename {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: none;
+  color: var(--graphite);
+  cursor: pointer;
+}
+.past-rename:hover,
+.past-rename:focus-visible {
+  background: var(--raised);
+  color: var(--ink);
+}
+/* with a pointer the pencil waits until the row is hovered or focused; on touch it always shows */
+@media (hover: hover) {
+  .past-item:not(:hover):not(:focus-within) .past-rename {
+    opacity: 0;
+  }
+}
+.past-name {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.past-name small {
+  display: block;
+  margin-top: 2px;
+  font-size: 12px;
+  color: var(--graphite);
+}
+.past-edit {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 12px;
+  padding: 8px 0 8px 4px;
+}
+.past-edit input {
+  flex: 1 1 160px;
+  min-width: 0;
+  height: 32px;
+  padding: 4px 8px;
+  font-size: 14px;
+}
+.past-edit p {
+  flex-basis: 100%;
+  margin: 0;
+  color: var(--tier-high);
+  font-size: 13px;
+}
+.past-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 16px;
+  align-items: center;
+  width: 100%;
+  padding: 12px 4px;
+  border: 0;
+  background: none;
+  color: var(--ink);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.past-row:hover {
+  background: var(--raised);
+}
+.past-status {
+  display: grid;
+  justify-items: end;
+  gap: 2px;
+  justify-self: end;
+  font-size: 13px;
+  color: var(--graphite);
+}
+.past-status.completed {
+  color: var(--ink);
+}
+.past-status.running,
+.past-status.queued {
+  color: var(--accent);
+  font-weight: 600;
+}
+.past-status.failed,
+.past-status.incomplete {
+  color: var(--tier-high);
+}
+.upload-title {
+  display: grid;
+  gap: 4px;
+  width: min(100%, 320px);
+  margin-bottom: 16px;
+  font-size: 13px;
+  text-align: left;
+}
+.job-title {
+  display: block;
+  margin-top: 4px;
+  color: var(--graphite);
+  font-size: 14px;
+}
+.dashboard {
+  align-items: start;
+  row-gap: 40px;
+}
+.dashboard .entry-title {
+  grid-column: 1 / -1;
+}
+.dashboard .entry-title h1 {
+  font-size: 40px;
+  margin: 0 0 8px;
+}
+/* the format notes move below, so the upload panel and the list share a row */
+.dashboard .facts {
+  order: 1;
+}
+.dashboard .past {
+  grid-column: 2;
+  margin-top: 0;
+}
+@media (max-width: 900px) {
+  .dashboard .past {
+    grid-column: 1 / -1;
+  }
+}
+.past-more {
+  display: block;
+  margin: 4px 0 8px;
+  font-size: 13px;
+}
+@media (max-width: 640px) {
+  .past-edit input {
+    flex-basis: 100%;
+  }
+}
+.past-retry {
+  font-size: 12px;
 }

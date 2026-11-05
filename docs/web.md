@@ -4,8 +4,9 @@ The React/TypeScript page uses the P51 API. It makes no model calls itself and s
 no keys, ad content or decisions in browser storage. FastAPI serves the Vite build.
 This remains a localhost, single-process prototype. Firebase sign-in with an emailed
 code is available when configured; otherwise the workspace runs without sign-in.
-Sign-in gates access to a shared workspace and does not add per-user ownership of
-uploads or jobs. See the authentication setup in the README.
+With sign-in, each account sees and opens only its own uploads and screenings, listed
+under "Your screenings" on the start page; without it, the workspace is shared. See the
+authentication setup in the README.
 
 The product page includes an illustrative synthetic evidence example, supported
 creative types, a review walkthrough, data handling, FAQs and a closing action.
@@ -26,8 +27,8 @@ authentication, create accounts or protect uploads. Their forms are disabled, ex
 that accounts are not connected, and do not collect credentials. They link to one
 another and back to the local desk. A real account rollout needs an agreed identity
 provider plus ownership/access controls for uploads, jobs, reports and revisions.
-The merged Firebase flow supplies sign-in when enabled, but still does not provide
-private account isolation. With sign-in enabled, the real sign-in flow replaces
+With sign-in enabled, uploads, jobs, reports and revisions belong to the account that
+created them, and the real sign-in flow replaces
 the previews and runs before the workspace loads.
 
 The entry screen accepts one file through the chooser or drag-and-drop, explains

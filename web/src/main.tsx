@@ -1,16 +1,30 @@
 import { StrictMode, useEffect, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import {
+  allFlags,
+  allowanceLine,
   canApprove,
   complete,
-  NOTICE,
   post,
   progressMessage,
   PUBLIC_ERRORS,
   request,
   upload,
 } from './api';
-import type { Account, Config, Demo, Fix, Job, Result, Reveal, Round, Scoreboard } from './api';
+import type {
+  Account,
+  Allowance,
+  Config,
+  Count,
+  Demo,
+  Fix,
+  Job,
+  JobSummary,
+  Result,
+  Reveal,
+  Round,
+  Scoreboard,
+} from './api';
 import { Login, signOutEverywhere } from './login';
 import './style.css';
 import { ClaimTrack, Inspector, TierSummary } from './evidence';
@@ -19,59 +33,100 @@ import { AccountPage, Brand, ProductSections, SiteFooter } from './product-page'
 import {
   FlagCount,
   FlaggedList,
+  PastList,
   RoundComparison,
   ScriptPreview,
   StageList,
   StillStage,
 } from './workspace';
 
+type Kind = 'script' | 'image' | 'video';
+const KINDS: Kind[] = ['script', 'image', 'video'];
+
+function kindOf(file: File): Kind {
+  if (file.type.startsWith('video/')) return 'video';
+  if (file.type.startsWith('image/')) return 'image';
+  return 'script';
+}
+
 function mebibytes(bytes: number): number {
   return Math.round((bytes / 1024 / 1024) * 10) / 10;
 }
 
+// plain words for the registered measures; the README and results/final.md keep the full table
+const MEASURES: [string, string][] = [
+  ['ad_recall', 'Ruled ads with at least one correct flag'],
+  ['claim_recall_carried', 'Ruled claims caught with a matching CAP rule'],
+  ['claim_recall_any_rule', 'Ruled claims flagged under any rule'],
+  ['near_miss_caught', 'One breaching line slipped into a clean ad, caught'],
+  ['wording_on_eligible', 'Exact register wording suggested where one exists'],
+  ['negative_ads_flagged', 'Clean team-made ads wrongly flagged (lower is better)'],
+];
+
+function Tally({ count }: { count: Count | null | undefined }) {
+  if (!count) return <span className="muted">Not measured</span>;
+  const rate = count.total > 0 ? Math.round((100 * count.hits) / count.total) : null;
+  return (
+    <>
+      <strong>
+        {count.hits} of {count.total}
+      </strong>
+      {rate !== null && ` (${rate}%)`}
+      {count.low !== null && count.high !== null && (
+        <small>
+          95% interval {Math.round(count.low * 100)} to {Math.round(count.high * 100)}%
+        </small>
+      )}
+    </>
+  );
+}
+
 function Metrics({ board }: { board: Scoreboard }) {
+  const byName = new Map(board.metrics.map((m) => [m.name, m]));
+  const rows = MEASURES.filter(([name]) => byName.has(name));
   return (
     <section className="score" aria-labelledby="score-title">
-      <h2 id="score-title">Registered test scoreboard</h2>
+      <h2 id="score-title">How often it catches problems</h2>
       {!board.available ? (
         <p>{board.reason} Only the registered final test run is shown here.</p>
       ) : (
         <>
           <p>
-            Run {board.run_id} on split {board.split}, revision {board.git_sha}
-          </p>
-          <p>
-            These figures describe that recorded test run, not this upload. The current build may
-            use different settings.
+            Measured once on the held-back test split ({board.split}): ads rebuilt from ASA rulings
+            PreFlight never saw, clean ads the team made, and clean ads with one breaching line
+            slipped in.
+            {board.baseline_id &&
+              ' Beside it, a keyword baseline with no model: it flags a sentence that pairs a nutrient with a benefit, or names a disease.'}
           </p>
           <table>
             <thead>
               <tr>
-                <th>Metric</th>
-                <th>Count</th>
-                <th>Rate</th>
-                <th>95% interval</th>
+                <th>Measure</th>
+                <th>PreFlight</th>
+                {board.baseline_id && <th>Keyword baseline</th>}
               </tr>
             </thead>
             <tbody>
-              {board.metrics.map((m) => (
-                <tr key={m.name}>
-                  <td>{m.name.replaceAll('_', ' ')}</td>
+              {rows.map(([name, label]) => (
+                <tr key={name}>
+                  <td>{label}</td>
                   <td>
-                    {m.hits} / {m.total}
+                    <Tally count={byName.get(name)} />
                   </td>
-                  <td>
-                    {m.total > 0 ? `${((100 * m.hits) / m.total).toFixed(1)}%` : 'Not measured'}
-                  </td>
-                  <td>
-                    {m.low !== null && m.high !== null
-                      ? `${(m.low * 100).toFixed(1)} to ${(m.high * 100).toFixed(1)}%`
-                      : 'Not registered'}
-                  </td>
+                  {board.baseline_id && (
+                    <td>
+                      <Tally count={byName.get(name)?.baseline} />
+                    </td>
+                  )}
                 </tr>
               ))}
             </tbody>
           </table>
+          <p className="muted">
+            Registered run {board.run_id}
+            {board.baseline_id && ` beside ${board.baseline_id}`}, revision {board.git_sha}. These
+            figures describe that run, not this upload.
+          </p>
         </>
       )}
     </section>
@@ -83,6 +138,8 @@ function App({ account, guest = false }: { account: Account | null; guest?: bool
   const [config, setConfig] = useState<Config | null>(null);
   const [mode, setMode] = useState<'screen' | 'demo'>('screen');
   const [demos, setDemos] = useState<Demo[]>([]);
+  const [past, setPast] = useState<JobSummary[]>([]);
+  const [allowance, setAllowance] = useState<Allowance | null>(null);
   const [demo, setDemo] = useState<Demo | null>(null);
   const [reveal, setReveal] = useState<Reveal | null>(null);
   const [result, setResult] = useState<Result | null>(null);
@@ -106,8 +163,8 @@ function App({ account, guest = false }: { account: Account | null; guest?: bool
   const [voiceover, setVoiceover] = useState('');
   const [still, setStill] = useState<File | null>(null);
   const [view, setView] = useState<'evidence' | 'edit' | 'compare'>('evidence');
-  const [appearance, setAppearance] = useState<'dark' | 'light'>('light');
-  const [chosen, setChosen] = useState<{ name: string; video: boolean } | null>(null);
+  const [chosen, setChosen] = useState<{ name: string; kind: Kind } | null>(null);
+  const [started, setStarted] = useState<number | null>(null);
   const chrome = useRef<HTMLDivElement>(null);
   const [currentTime, setCurrentTime] = useState(0);
   const player = useRef<HTMLVideoElement>(null);
@@ -115,10 +172,6 @@ function App({ account, guest = false }: { account: Account | null; guest?: bool
   // with sign-in on, the account's email is the approver
   const approver = account?.signed_in ? (account.email ?? '') : by;
   const active = busy || (!!job && !['completed', 'incomplete', 'failed'].includes(job.status));
-
-  useEffect(() => {
-    document.documentElement.dataset.appearance = appearance;
-  }, [appearance]);
 
   useEffect(() => {
     if (view !== 'evidence') player.current?.pause();
@@ -145,7 +198,15 @@ function App({ account, guest = false }: { account: Account | null; guest?: bool
         .catch((e) => {
           if (!controller.signal.aborted) fail(e);
         });
-    const id = new URLSearchParams(location.search).get('job');
+    const params = new URLSearchParams(location.search);
+    const id = params.get('job');
+    // a reload keeps the preview: the upload and its kind travel in the job link
+    const saved = params.get('upload');
+    const kind = params.get('media');
+    if (saved && /^[0-9a-f]{32}$/.test(saved) && KINDS.includes(kind as Kind)) {
+      setMedia(`/uploads/${saved}/media`);
+      setChosen({ name: '', kind: kind as Kind });
+    }
     if (id && /^[0-9a-f]{32}$/.test(id))
       request<Job>(`/jobs/${id}`, { signal: controller.signal })
         .then(setJob)
@@ -263,14 +324,17 @@ function App({ account, guest = false }: { account: Account | null; guest?: bool
     setView('evidence');
     setCurrentTime(0);
     setChosen(null);
+    setStarted(null);
     setStatus('No ad loaded.');
     history.replaceState(null, '', location.pathname);
   }
 
-  async function screenFile(file: File) {
+  async function screenFile(file: File, title = '') {
     reset();
     setDemo(null);
-    setChosen({ name: file.name, video: file.type.startsWith('video/') });
+    const kind = kindOf(file);
+    const name = (title || file.name.replace(/\.[^.]+$/, '')).slice(0, 120);
+    setChosen({ name, kind });
     setBusy(true);
     setStatus('Uploading ad…');
     const current = generation.current;
@@ -284,11 +348,19 @@ function App({ account, guest = false }: { account: Account | null; guest?: bool
       const saved = await upload(file, (done) => {
         if (current === generation.current) setStatus(`Uploading ad… ${Math.round(done * 100)}%`);
       });
-      const queued = await post<Job>('/screenings', { upload_id: saved.upload_id, align: false });
+      const queued = await post<Job>('/screenings', {
+        upload_id: saved.upload_id,
+        title: name || undefined,
+      });
       if (current !== generation.current) return;
       setMedia(`/uploads/${saved.upload_id}/media`);
+      setStarted(Date.now());
       setJob(queued);
-      history.replaceState(null, '', `?job=${queued.job_id}`);
+      history.replaceState(
+        null,
+        '',
+        `?job=${queued.job_id}&upload=${saved.upload_id}&media=${kind}`,
+      );
     } catch (e) {
       if (current === generation.current) {
         fail(e);
@@ -344,7 +416,6 @@ function App({ account, guest = false }: { account: Account | null; guest?: bool
         screening_id: source,
         format,
         rounds: 3,
-        align: false,
         scenes: [
           {
             upload_id: saved.upload_id,
@@ -390,6 +461,48 @@ function App({ account, guest = false }: { account: Account | null; guest?: bool
     if (player.current) player.current.currentTime = seconds;
   }
 
+  function openPast(item: JobSummary) {
+    reset();
+    setMode('screen');
+    setDemo(null);
+    if (item.media) setChosen({ name: item.title ?? '', kind: item.media });
+    if (item.kind === 'screening') setMedia(`/uploads/${item.upload_id}/media`);
+    setJob({ job_id: item.job_id, kind: item.kind, status: item.status });
+    history.replaceState(
+      null,
+      '',
+      `?job=${item.job_id}&upload=${item.upload_id}&media=${item.media ?? ''}`,
+    );
+  }
+
+  // a retry is a new job on the same upload; its cache answers every stage that already finished
+  async function retry(id: string, item?: JobSummary) {
+    try {
+      const queued = await post<Job>(`/jobs/${id}/retry`, {});
+      const upload = item?.upload_id ?? new URLSearchParams(location.search).get('upload') ?? '';
+      openPast({
+        job_id: queued.job_id,
+        kind: 'screening',
+        status: queued.status,
+        upload_id: upload,
+        media: item?.media ?? chosen?.kind ?? 'video',
+        created_at: Date.now() / 1000,
+        title: item?.title ?? chosen?.name ?? null,
+      });
+    } catch (e) {
+      fail(e);
+    }
+  }
+
+  async function renamePast(id: string, title: string) {
+    await request<Job>(`/jobs/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title }),
+    });
+    setPast((items) => items.map((item) => (item.job_id === id ? { ...item, title } : item)));
+  }
+
   function openScreen() {
     reset();
     setMode('screen');
@@ -415,8 +528,25 @@ function App({ account, guest = false }: { account: Account | null; guest?: bool
   const processing =
     mode === 'screen' && !result && (active || (!!job && job.status !== 'failed' && !error));
   const entry = mode === 'screen' && !result && !processing;
+  // a signed-in account gets its workspace in place of the product page
+  const dashboard = !!account?.signed_in;
+
+  // the server lists only this account's jobs; back on the start page the list is fetched again
+  useEffect(() => {
+    if (!entry || guest) return;
+    const controller = new AbortController();
+    request<{ jobs: JobSummary[] }>('/jobs', { signal: controller.signal })
+      .then((value) => setPast(value.jobs))
+      .catch(() => undefined);
+    request<{ allowance: Allowance | null }>('/ui/allowance', { signal: controller.signal })
+      .then((value) => setAllowance(value.allowance))
+      .catch(() => undefined);
+    return () => controller.abort();
+  }, [entry, guest]);
   const lanes = result?.screening.ad.media === 'video' && !(fix && fix.draft.format !== 'video');
   const lastRound = rounds[rounds.length - 1];
+  const revisable =
+    mode === 'screen' && !!source && !fix && !script && !!result && complete(result.screening);
 
   const demoChoices =
     demos.length === 0 ? (
@@ -463,18 +593,9 @@ function App({ account, guest = false }: { account: Account | null; guest?: bool
               </a>
             </nav>
           )}
-          <button
-            className="appearance outline"
-            aria-label={appearance === 'dark' ? 'Light appearance' : 'Dark appearance'}
-            aria-pressed={appearance === 'light'}
-            onClick={() => setAppearance(appearance === 'dark' ? 'light' : 'dark')}
-          >
-            {appearance === 'dark' ? 'Light' : 'Dark'}
-            <span className="long"> appearance</span>
-          </button>
           {account?.signed_in && (
             <button
-              className="outline"
+              className="sign-out outline"
               title={account.email ?? undefined}
               onClick={() => signOutEverywhere().then(() => location.reload())}
             >
@@ -482,11 +603,8 @@ function App({ account, guest = false }: { account: Account | null; guest?: bool
             </button>
           )}
         </header>
-        <aside className="notice" role="note">
-          {config?.notice ?? NOTICE}
-        </aside>
       </div>
-      <main id="workspace" className={entry ? 'entry' : undefined}>
+      <main id="workspace" className={entry ? `entry${dashboard ? ' dashboard' : ''}` : undefined}>
         {config?.verification_label && <p className="replay">{config.verification_label}</p>}
         {error && (
           <div className="error" role="alert">
@@ -502,8 +620,9 @@ function App({ account, guest = false }: { account: Account | null; guest?: bool
               <div className="what">
                 <h1>Explore demos</h1>
                 <p className="lead">
-                  Review reconstructions of ruled ads and team-made examples. For reconstructions,
-                  reveal the ASA outcome after reviewing the screening.
+                  Recorded screenings of reconstructed ASA-ruled ads and of synthetic ads made by
+                  the team. For a reconstruction, review the screening first, then reveal the ASA
+                  outcome.
                 </p>
               </div>
             </div>
@@ -514,31 +633,48 @@ function App({ account, guest = false }: { account: Account | null; guest?: bool
         {entry && (
           <>
             <div className="title-row entry-title">
-              <div className="what">
-                <p className="eyebrow">Health and supplement ad screening</p>
-                <h1>
-                  Check the claims.
-                  <br />
-                  <em>Review the evidence.</em>
-                </h1>
-                <p className="lead">
-                  Upload a script, image or video. Review possible issues against the GB register
-                  and CAP Code, with evidence from your ad and the sources behind each flag.
-                </p>
-                <p className="entry-sources">
-                  GB health claims register <span aria-hidden="true">/</span> CAP Code{' '}
-                  <span aria-hidden="true">/</span> ASA rulings
-                </p>
-              </div>
+              {dashboard ? (
+                <div className="what">
+                  <h1>Your workspace</h1>
+                  <p className="lead">
+                    Upload an ad to screen it, or open one you screened in the last{' '}
+                    {config ? config.retention_seconds / 3600 : 24} hours.
+                  </p>
+                </div>
+              ) : (
+                <div className="what">
+                  <p className="eyebrow">Health and supplement ad screening</p>
+                  <h1>
+                    Check the claims.
+                    <br />
+                    <em>Review the evidence.</em>
+                  </h1>
+                  <p className="lead">
+                    Upload a script, image or video. Review possible issues against the GB register
+                    and CAP Code, with evidence from your ad and the sources behind each flag.
+                  </p>
+                  <p className="entry-sources">
+                    GB health claims register <span aria-hidden="true">/</span> CAP Code{' '}
+                    <span aria-hidden="true">/</span> ASA rulings
+                  </p>
+                </div>
+              )}
             </div>
             <div className="work entry-work">
               <UploadPanel
-                disabled={active || !config || Boolean(config.uploads_closed)}
+                // an upload with no screening left would only use up an upload for nothing
+                disabled={
+                  active ||
+                  !config ||
+                  Boolean(config.uploads_closed) ||
+                  allowance?.screening.left === 0
+                }
                 notice={config?.upload_notice ?? 'Loading upload terms…'}
                 closedReason={
                   config?.uploads_closed ? PUBLIC_ERRORS[config.uploads_closed] : undefined
                 }
-                onFile={(file) => void screenFile(file)}
+                allowance={allowance ? allowanceLine(allowance) : undefined}
+                onFile={(file, title) => void screenFile(file, title)}
                 signIn={guest}
               />
               <div className="facts">
@@ -546,7 +682,7 @@ function App({ account, guest = false }: { account: Account | null; guest?: bool
                   <summary>Supported formats & retention</summary>
                   <h2>Formats</h2>
                   <p>
-                    PNG, JPEG, WebP, MP4, WebM or QuickTime, up to{' '}
+                    PNG, JPEG, WebP, MP4 or QuickTime, up to{' '}
                     {config ? mebibytes(config.max_upload_bytes) : 150} MiB
                     {config ? `, and video up to ${config.max_seconds} seconds` : ''}. Scripts:
                     UTF-8 .txt or .md, up to 64 KiB and 1,000 lines. Use VO: or SUPER: to
@@ -563,21 +699,39 @@ function App({ account, guest = false }: { account: Account | null; guest?: bool
                   <h2>Demos</h2>
                   <p>
                     <button className="link" onClick={openDemos}>
-                      Explore labelled demos
+                      Open the demos
                     </button>
-                    . Reconstructions have ASA outcomes you can reveal; team-made examples do not.
+                    . Reconstructions have an ASA outcome you can reveal; synthetic ads do not.
                   </p>
                 </div>
               </div>
             </div>
-            <ProductSections />
+            {(dashboard || past.length > 0) && (
+              <section className="past" aria-labelledby="past-title">
+                <h2 id="past-title">Your screenings</h2>
+                {past.length === 0 && (
+                  <p className="muted">No screenings yet. Upload an ad to start one.</p>
+                )}
+                <PastList
+                  items={past}
+                  onOpen={openPast}
+                  onRename={renamePast}
+                  onRetry={(item) => void retry(item.job_id, item)}
+                />
+                <p className="muted">
+                  Kept for {config ? config.retention_seconds / 3600 : 24} hours after upload, then
+                  deleted.
+                </p>
+              </section>
+            )}
+            {!dashboard && <ProductSections />}
           </>
         )}
         {processing && (
           <>
             <div className="title-row">
               <div className="what">
-                <h1>{chosen ? `Screening ${chosen.name}` : 'Screening your ad'}</h1>
+                <h1>{chosen?.name ? `Screening ${chosen.name}` : 'Screening your ad'}</h1>
                 <p className="headline" aria-hidden="true">
                   {status}
                 </p>
@@ -586,12 +740,12 @@ function App({ account, guest = false }: { account: Account | null; guest?: bool
             <div className="work">
               <section className="stage-col">
                 <div className="stage">
-                  {/\.(txt|md)$/i.test(chosen?.name ?? '') ? (
+                  {chosen?.kind === 'script' ? (
                     <p>
                       Reading your script. The numbered source lines will appear with the result.
                     </p>
                   ) : media && unavailableMedia !== media ? (
-                    chosen?.video ? (
+                    chosen?.kind === 'video' ? (
                       <video src={media} controls preload="metadata" aria-label="Uploaded ad" />
                     ) : (
                       <img src={media} alt="Uploaded ad" />
@@ -602,7 +756,7 @@ function App({ account, guest = false }: { account: Account | null; guest?: bool
                 </div>
               </section>
               <section className="facts">
-                <StageList stages={stages} />
+                <StageList stages={stages} since={started} />
               </section>
             </div>
           </>
@@ -613,6 +767,7 @@ function App({ account, guest = false }: { account: Account | null; guest?: bool
               <div className="what">
                 <div className="title-line">
                   <h1>{demo?.title ?? 'Screening evidence'}</h1>
+                  {!demo && chosen?.name && <span className="job-title">{chosen.name}</span>}
                   <FlagCount screening={result.screening} />
                 </div>
                 <p className="headline">{result.screening.headline}</p>
@@ -620,6 +775,14 @@ function App({ account, guest = false }: { account: Account | null; guest?: bool
                   <p className="unfinished">
                     Stages that did not finish:{' '}
                     {result.incomplete_stages.map((s) => s.replaceAll('_', ' ')).join(', ')}.
+                    {mode === 'screen' && source && (
+                      <>
+                        {' '}
+                        <button className="link" onClick={() => void retry(source)}>
+                          Retry the unfinished stages
+                        </button>
+                      </>
+                    )}
                   </p>
                 )}
                 {demo && (
@@ -632,21 +795,24 @@ function App({ account, guest = false }: { account: Account | null; guest?: bool
                 )}
               </div>
               <div className="views">
-                <nav aria-label="Review views">
-                  <button aria-pressed={view === 'evidence'} onClick={() => setView('evidence')}>
-                    Evidence
-                  </button>
-                  {mode === 'screen' && source && !fix && !script && complete(result.screening) && (
-                    <button aria-pressed={view === 'edit'} onClick={() => setView('edit')}>
-                      Prepare revision
+                {/* a lone Evidence tab would read as a toggle with nothing to switch to */}
+                {(revisable || fix) && (
+                  <nav aria-label="Review views">
+                    <button aria-pressed={view === 'evidence'} onClick={() => setView('evidence')}>
+                      Evidence
                     </button>
-                  )}
-                  {fix && (
-                    <button aria-pressed={view === 'compare'} onClick={() => setView('compare')}>
-                      Compare rounds
-                    </button>
-                  )}
-                </nav>
+                    {revisable && (
+                      <button aria-pressed={view === 'edit'} onClick={() => setView('edit')}>
+                        Prepare revision
+                      </button>
+                    )}
+                    {fix && (
+                      <button aria-pressed={view === 'compare'} onClick={() => setView('compare')}>
+                        Compare rounds
+                      </button>
+                    )}
+                  </nav>
+                )}
                 {resultOwner && (
                   <a href={`/screenings/${resultOwner}/report`} target="_blank" rel="noreferrer">
                     Open full source report
@@ -768,9 +934,17 @@ function App({ account, guest = false }: { account: Account | null; guest?: bool
             <form onSubmit={startFix} className="sheet draft-form">
               <h2>Editable draft</h2>
               <p className="muted">
-                Upload the scene as a still image without text, then type the captions the ad shows.
-                Each round is re-screened. Text burned into an uploaded video cannot be edited.
+                PreFlight builds a new one-scene draft from a still and the captions you type, then
+                screens it. Each round swaps flagged captions for the register&apos;s exact wording,
+                or edits the picture when a claim is only in the image, and screens again, up to
+                three rounds. It cannot edit text burned into your uploaded video.
               </p>
+              {!result.claims.some((c) => allFlags(c).some((f) => f.suggested_wording)) && (
+                <p className="revision-limit" role="note">
+                  None of this ad&apos;s flags has authorised wording to swap in, so flagged
+                  captions will come back to you to rewrite. Each round still runs a screening.
+                </p>
+              )}
               <label>
                 Draft format
                 <select
@@ -812,7 +986,6 @@ function App({ account, guest = false }: { account: Account | null; guest?: bool
                     disabled={active}
                     onChange={(e) => setVoiceover(e.target.value)}
                   />
-                  <small>Voiced video needs the local rendering tools installed.</small>
                 </label>
               )}
               <button className="primary" type="submit" disabled={active || !still}>
@@ -823,10 +996,7 @@ function App({ account, guest = false }: { account: Account | null; guest?: bool
         )}
         {fix && (
           <section className="comparison" hidden={view !== 'compare'}>
-            <p className="muted">
-              Each column is one saved draft and its screening. A person decides what to do about
-              any flag that remains.
-            </p>
+            <p className="muted">Each column is one saved draft and its screening.</p>
             <RoundComparison rounds={rounds} />
             <div className="review sheet">
               <div className="summary">

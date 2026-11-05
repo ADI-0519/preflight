@@ -24,7 +24,7 @@ test('script upload, numbered evidence, sources, report and reload stay script-o
   );
   await expect(page.locator('.stages')).toBeVisible();
   await expect(page.locator('.stages')).toContainText('Transcribe');
-  await expect(page.locator('.stages')).toContainText('skipped');
+  await expect(page.locator('.stages')).toContainText('Skipped');
   await expect(page.getByRole('region', { name: 'Script source', exact: true })).toBeVisible();
   await expect(page.locator('.script-source li')).toHaveCount(2);
   await expect(page.locator('.script-source li').last()).toHaveAttribute('value', '3');
@@ -68,4 +68,19 @@ test('script clean and incomplete results keep the finished-ad limitation', asyn
   await expect(page.getByRole('region', { name: 'Script source', exact: true })).toBeVisible();
   await expect(page.getByText('Incomplete:', { exact: false }).first()).toBeVisible();
   await expect(page.locator('.script-source')).toContainText('Screen the finished ad separately');
+});
+
+test('an incomplete screening retries from its result and from the list', async ({ page }) => {
+  await uploadScript(page, 'VO: Synthetic incomplete\n');
+  await expect(page.getByText('Incomplete:', { exact: false }).first()).toBeVisible();
+  const first = new URL(page.url()).searchParams.get('job');
+  await page.getByRole('button', { name: 'Retry the unfinished stages' }).click();
+  await expect.poll(() => new URL(page.url()).searchParams.get('job')).not.toBe(first);
+  await expect(page.getByText('Incomplete:', { exact: false }).first()).toBeVisible();
+  await page.getByRole('button', { name: 'Screen an ad', exact: true }).click();
+  const list = page.getByRole('region', { name: 'Your screenings' });
+  const retries = list.getByRole('button', { name: /^Retry / });
+  await expect(retries.first()).toBeVisible();
+  await retries.first().click();
+  await expect(page.getByText('Incomplete:', { exact: false }).first()).toBeVisible();
 });

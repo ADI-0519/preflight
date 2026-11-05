@@ -14,6 +14,7 @@ from test_script import ScriptSpark
 from preflight.agent.draft import render_draft
 from preflight.api import Settings
 from preflight.api.app import create_app as application
+from preflight.evidence import transcribe
 from preflight.models import Image, Models, Sam, Spark, Store, VoiceTranscribe
 from preflight.schema import Screening, StageRun
 
@@ -53,6 +54,8 @@ def replay_clients(directory):
 
 
 def create_app():
+    # the recordings were made from turn-timed segments, so word alignment would miss every replayed claim
+    transcribe.mms_aligner = lambda: None
     # A short private root also keeps FFmpeg below Windows path limits.
     root = Path(tempfile.mkdtemp(prefix="pf-web-"))
     demos = root / "demos"

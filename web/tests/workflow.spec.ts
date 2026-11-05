@@ -10,14 +10,14 @@ test('three labelled demo states, honest scoreboard and explicit reveal', async 
   page.on('pageerror', (e) => exceptions.push(e.message));
   await page.goto('/');
   await expect(page.getByText('Network-blocked synthetic replay.', { exact: false })).toBeVisible();
-  await expect(page.getByRole('note')).toContainText('a person makes that call');
+  await expect(page.getByRole('contentinfo')).toContainText('not legal advice');
   // P67: the upload notice shows before anything can be uploaded
   await expect(page.getByRole('region', { name: 'Upload workspace' })).toContainText(
     'Do not upload confidential ads.',
   );
   await expect(page.getByText('not use it for training', { exact: false })).toBeVisible();
   await page.getByRole('button', { name: 'Explore demos' }).click();
-  await expect(page.getByRole('heading', { name: 'Registered test scoreboard' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'How often it catches problems' })).toBeVisible();
   await expect(
     page.getByText('No registered final test run is selected.', { exact: false }),
   ).toBeVisible();
@@ -33,11 +33,14 @@ test('three labelled demo states, honest scoreboard and explicit reveal', async 
     evidence.getByRole('heading', { name: 'Flagged phrases inside this line' }),
   ).toBeVisible();
   await expect(page.locator('.claim-row .untimed').first()).toHaveText('Time not read');
-  const buttons = page.locator('.claim-row:has(time)');
+  const buttons = page.locator('.claim-row:has(time):visible');
   await expect(buttons.first()).toBeVisible();
   await buttons.last().click();
   await expect(buttons.last()).toHaveAttribute('aria-pressed', 'true');
-  const time = (await buttons.last().locator('time').innerText()).split(':').map(Number);
+  const time = (await buttons.last().locator('time').innerText())
+    .replace('≈', '')
+    .split(':')
+    .map(Number);
   await expect
     .poll(() => video.evaluate((v) => (v as HTMLVideoElement).currentTime))
     .toBeCloseTo(time[0] * 60 + time[1], 0);
@@ -138,6 +141,35 @@ test('invalid media remains recoverable and the mobile layout does not overflow'
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(
     true,
   );
-  await expect(page.getByRole('note')).toBeVisible();
+  await expect(page.getByRole('contentinfo')).toBeVisible();
   await page.screenshot({ path: testInfo.outputPath('mobile.png'), fullPage: true });
+});
+
+test('a named screening is listed on the start page, renames and reopens from there', async ({
+  page,
+}) => {
+  await page.goto('/');
+  await page.getByLabel('Name this screening').fill('Spring launch cut');
+  await page
+    .getByLabel('Upload ad')
+    .setInputFiles(path.join(root, 'tests/fixtures/models/media/captions.mp4'));
+  await expect(page.getByRole('heading', { name: 'Screening evidence' })).toBeVisible({
+    timeout: 30000,
+  });
+  await expect(page.getByText('Spring launch cut', { exact: true })).toBeVisible();
+  await page.getByRole('button', { name: 'Screen an ad', exact: true }).click();
+  const list = page.getByRole('region', { name: 'Your screenings' });
+  const row = list.locator('.past-item').first();
+  await expect(row).toContainText('Spring launch cut');
+  await expect(row).toContainText('Video ad');
+  await expect(row).toContainText('Finished');
+  await row.getByRole('button', { name: 'Rename Spring launch cut' }).click();
+  await row.getByLabel('Screening name').fill('Final cut');
+  await row.getByRole('button', { name: 'Save' }).click();
+  await expect(row).toContainText('Final cut');
+  await page.reload();
+  await expect(list.locator('.past-item').first()).toContainText('Final cut');
+  await list.getByRole('button', { name: /^Final cut/ }).click();
+  await expect(page.getByRole('heading', { name: 'Screening evidence' })).toBeVisible();
+  await expect(page.locator('.viewer video')).toHaveCount(1);
 });

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import type { ClaimView, MaySay, Round } from './api';
+import type { ClaimView, JobSummary, MaySay, Round } from './api';
 import { allFlags, complete } from './api';
 import type { Screening } from './screening';
 
@@ -66,27 +66,78 @@ export function FlagCount({ screening }: { screening: Screening }) {
   );
 }
 
-export function StageList({ stages }: { stages: Record<string, string> }) {
-  const entries = Object.entries(stages);
+const STAGES = [
+  ['transcribe', 'Transcribe speech', 'Turns the voiceover into timed text.'],
+  ['on_screen', 'Read on-screen text', 'Reads captions and supers from the frames.'],
+  ['regions', 'Find image regions', 'Locates the product and other objects in the frame.'],
+  ['claims', 'Extract claims', 'Lists the claims the ad makes, with their evidence.'],
+  [
+    'check',
+    'Check the claims',
+    'Compares each claim with the GB register, the CAP Code and ASA rulings.',
+  ],
+] as const;
+
+const STATE_LABEL: Record<string, string> = {
+  waiting: 'Waiting',
+  running: 'Running…',
+  done: 'Done',
+  failed: 'Failed',
+  skipped: 'Skipped',
+};
+
+function useElapsed(since: number | null) {
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    if (since === null) return;
+    const timer = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(timer);
+  }, [since]);
+  if (since === null) return null;
+  const seconds = Math.max(0, Math.floor((now - since) / 1000));
+  return `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`;
+}
+
+// the server reports a stage only when it ends; the first three run together, then claims, then check
+export function StageList({
+  stages,
+  since = null,
+}: {
+  stages: Record<string, string>;
+  since?: number | null;
+}) {
+  const elapsed = useElapsed(since);
+  const gathered = STAGES.slice(0, 3).every(([name]) => stages[name]);
+  const state = (name: string) => {
+    if (stages[name]) return stages[name];
+    if (name === 'claims') return gathered ? 'running' : 'waiting';
+    if (name === 'check') return stages.claims ? 'running' : 'waiting';
+    return 'running';
+  };
+  const finished = STAGES.filter(([name]) => stages[name]).length;
   return (
     <>
-      <h2 id="stages-title">Screening stages</h2>
-      {entries.length === 0 ? (
-        <p className="muted">No stage has reported yet.</p>
-      ) : (
-        <ol className="stages" aria-labelledby="stages-title">
-          {entries.map(([name, state]) => {
-            const label = name.replaceAll('_', ' ');
-            return (
-              <li key={name} className={state}>
-                <span>{label[0].toUpperCase() + label.slice(1)}</span>
-                <span>{state}</span>
-              </li>
-            );
-          })}
-        </ol>
-      )}
-      <p className="muted">Stages update as the server finishes them.</p>
+      <div className="stages-head">
+        <h2 id="stages-title">Screening stages</h2>
+        <p className="muted">
+          {finished} of {STAGES.length} finished{elapsed && ` · ${elapsed} elapsed`}
+        </p>
+      </div>
+      <ol className="stages" aria-labelledby="stages-title">
+        {STAGES.map(([name, label, detail]) => {
+          const now = state(name);
+          return (
+            <li key={name} className={now}>
+              <span>
+                {label}
+                <small>{detail}</small>
+              </span>
+              <span>{STATE_LABEL[now] ?? now}</span>
+            </li>
+          );
+        })}
+      </ol>
+      <p className="muted">A screening usually takes a few minutes.</p>
     </>
   );
 }
@@ -115,25 +166,90 @@ export const MAY_SAY =
 export const NO_SUGGESTION =
   'No replacement wording was suggested. Check the register and the ad before deciding what to change.';
 
+type Entry = MaySay['entries'][number];
+
+// a generic substance ("vitamin") matches dozens of entries, so a long list opens on request, grouped by nutrient
+const LONG_LIST = 6;
+
+// register wordings open with their nutrient: "Riboflavin contributes to ...", "Vitamin D helps ..."
+function nutrient(wording: string) {
+  const m = wording.match(
+    /^(.+?)\s+(?:contributes?|helps?|is|are|has|have|plays?|supports?|maintains?)\b/i,
+  );
+  return m ? m[1] : 'Other';
+}
+
+function EntryList({ entries, conditions = true }: { entries: Entry[]; conditions?: boolean }) {
+  return (
+    <ul>
+      {entries.map((e) => (
+        <li key={e.register_id}>
+          <p className="said-small">“{e.wording}”</p>
+          <p className="id">GB register {e.register_id}</p>
+          {conditions && e.conditions && <p className="conditions">Conditions: {e.conditions}</p>}
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+function LongMaySay({ item }: { item: MaySay }) {
+  const [query, setQuery] = useState('');
+  const q = query.trim().toLowerCase();
+  const shown = item.entries.filter((e) => !q || e.wording.toLowerCase().includes(q));
+  const groups = new Map<string, Entry[]>();
+  for (const e of shown)
+    groups.set(nutrient(e.wording), [...(groups.get(nutrient(e.wording)) ?? []), e]);
+  return (
+    <details>
+      <summary className="pair-label">
+        {item.entries.length} authorised claims for {item.substance} in the GB register
+      </summary>
+      <input
+        className="may-filter"
+        type="search"
+        aria-label={`Filter the authorised claims for ${item.substance}`}
+        placeholder="Filter, e.g. vitamin D or immune"
+        value={query}
+        onChange={(e) => setQuery(e.target.value)}
+      />
+      {shown.length === 0 && <p className="none">No authorised claim matches.</p>}
+      {[...groups].map(([name, entries]) => {
+        const shared = entries.every((e) => e.conditions === entries[0].conditions)
+          ? entries[0].conditions
+          : null;
+        return (
+          <details className="may-group" key={name} open={!!q}>
+            <summary>
+              {name} <span className="muted">{entries.length}</span>
+            </summary>
+            {shared && <p className="conditions">Conditions for each: {shared}</p>}
+            <EntryList entries={entries} conditions={!shared} />
+          </details>
+        );
+      })}
+    </details>
+  );
+}
+
 // rule 2: the register's authorised entries, quoted exactly, apart from any line's suggested wording
 export function MaySayList({ items }: { items: MaySay[] }) {
   return (
     <>
       {items.map((m) => (
         <div className="may-say" key={m.substance}>
-          <p className="pair-label">Authorised for {m.substance}</p>
           {m.entries.length === 0 ? (
-            <p className="none">No authorised register entries were found for this substance.</p>
+            <>
+              <p className="pair-label">Authorised for {m.substance}</p>
+              <p className="none">No authorised register entries were found for this substance.</p>
+            </>
+          ) : m.entries.length > LONG_LIST ? (
+            <LongMaySay item={m} />
           ) : (
-            <ul>
-              {m.entries.map((e) => (
-                <li key={e.register_id}>
-                  <p className="said-small">“{e.wording}”</p>
-                  <p className="id">GB register {e.register_id}</p>
-                  {e.conditions && <p className="conditions">Conditions: {e.conditions}</p>}
-                </li>
-              ))}
-            </ul>
+            <>
+              <p className="pair-label">Authorised for {m.substance}</p>
+              <EntryList entries={m.entries} />
+            </>
           )}
         </div>
       ))}
@@ -240,6 +356,146 @@ export function RoundComparison({ rounds }: { rounds: Round[] }) {
           </article>
         ))}
       </div>
+    </>
+  );
+}
+
+// the newest few keep the list beside the upload panel; the rest open on request
+const RECENT = 8;
+
+const PAST_STATUS: Record<string, string> = {
+  queued: 'Queued',
+  running: 'Running',
+  completed: 'Finished',
+  incomplete: 'Incomplete',
+  failed: 'Failed',
+};
+
+function pastKind(item: JobSummary) {
+  if (item.kind === 'fix') return 'Revision';
+  return { video: 'Video ad', image: 'Image ad', script: 'Script' }[item.media ?? 'video'];
+}
+
+export function PastList({
+  items,
+  onOpen,
+  onRename,
+  onRetry,
+}: {
+  items: JobSummary[];
+  onOpen: (item: JobSummary) => void;
+  onRename: (id: string, title: string) => Promise<void>;
+  onRetry: (item: JobSummary) => void;
+}) {
+  const [editing, setEditing] = useState<string | null>(null);
+  const [draft, setDraft] = useState('');
+  const [error, setError] = useState('');
+  const [all, setAll] = useState(false);
+  const shown = all ? items : items.slice(0, RECENT);
+
+  async function save(id: string) {
+    const title = draft.trim();
+    if (!title) return setError('Give the screening a name, or cancel.');
+    try {
+      await onRename(id, title);
+      setEditing(null);
+      setError('');
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'The name could not be saved. Try again.');
+    }
+  }
+
+  return (
+    <>
+      <ul hidden={items.length === 0}>
+        {shown.map((item) => {
+          const kind = pastKind(item);
+          const name = item.title ?? kind;
+          const when = item.created_at
+            ? new Date(item.created_at * 1000).toLocaleString(undefined, {
+                dateStyle: 'medium',
+                timeStyle: 'short',
+              })
+            : 'Start time not recorded';
+          return (
+            <li key={item.job_id} className="past-item">
+              {editing === item.job_id ? (
+                <form
+                  className="past-edit"
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    void save(item.job_id);
+                  }}
+                >
+                  <input
+                    aria-label="Screening name"
+                    maxLength={120}
+                    autoFocus
+                    value={draft}
+                    onChange={(e) => setDraft(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Escape' && setEditing(null)}
+                  />
+                  <button className="link" type="submit">
+                    Save
+                  </button>
+                  <button className="link muted" type="button" onClick={() => setEditing(null)}>
+                    Cancel
+                  </button>
+                  {error && <p role="alert">{error}</p>}
+                </form>
+              ) : (
+                <button className="past-row" onClick={() => onOpen(item)}>
+                  <span className="past-name">
+                    {name}
+                    <small>
+                      {item.title ? `${kind} · ` : ''}
+                      {when}
+                    </small>
+                  </span>
+                </button>
+              )}
+              <span className={`past-status ${item.status}`}>
+                {PAST_STATUS[item.status] ?? item.status}
+                {item.kind === 'screening' && ['failed', 'incomplete'].includes(item.status) && (
+                  <button
+                    className="link past-retry"
+                    aria-label={`Retry ${name}`}
+                    onClick={() => onRetry(item)}
+                  >
+                    Retry
+                  </button>
+                )}
+              </span>
+              <button
+                className="past-rename"
+                aria-label={`Rename ${name}`}
+                title="Rename"
+                hidden={editing === item.job_id}
+                onClick={() => {
+                  setEditing(item.job_id);
+                  setDraft(item.title ?? '');
+                  setError('');
+                }}
+              >
+                <svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true">
+                  <path
+                    d="M11.5 2.5l2 2L6 12l-3 1 1-3z"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.4"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </button>
+            </li>
+          );
+        })}
+      </ul>
+      {items.length > RECENT && (
+        <button className="link past-more" onClick={() => setAll(!all)}>
+          {all ? 'Show the most recent only' : `Show all ${items.length} screenings`}
+        </button>
+      )}
     </>
   );
 }

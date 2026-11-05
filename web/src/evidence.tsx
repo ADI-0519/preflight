@@ -18,7 +18,7 @@ function flagState(claim: ClaimView) {
 }
 
 export const TIER_CAPTION =
-  'Tiers order the review by the CAP rules cited: disease and medicinal claims (CAP 12 and 15.6) first, then other section 15 and section 3 rules. A tier is not a finding of breach.';
+  'Tiers set the review order from the CAP rules cited: CAP 12 and 15.6 first, then other section 15 and section 3 rules. A line that only some checker runs flagged drops one tier. A tier sets the order of review and nothing more.';
 
 export function TierChip({ tier }: { tier: Tier }) {
   return <span className={`tier ${tier}`}>{TIER_LABEL[tier]}</span>;
@@ -52,12 +52,31 @@ function when(e: Evidence, still: boolean) {
   if (e.line_number) return `Script line ${e.line_number}`;
   if (still) return `${e.kind} (still)`;
   if (!e.timed) return `${e.kind}, time not read`;
+  // only the passage is known: screenings from before word timing, or speech the aligner could not place
+  if (e.timing === 'turn') return `${e.kind}, within ${timestamp(e.start)} to ${timestamp(e.end)}`;
   return e.end > e.start
     ? `${e.kind}, ${timestamp(e.start)} to ${timestamp(e.end)}`
     : `${e.kind}, at ${timestamp(e.start)}`;
 }
 
 const untimed = (still: boolean) => (still ? 'Still' : 'Time not read');
+
+// a turn-timed spoken passage holds the claim somewhere inside it, so it never sets the claim's place
+const exact = (e: Evidence) => e.timed && e.timing !== 'turn';
+
+function placement(c: ClaimView) {
+  const timed = c.evidence.filter((e) => e.timed);
+  const precise = timed.filter(exact);
+  const spans = precise.length ? precise : timed;
+  return {
+    spans,
+    rough: !precise.length && timed.length > 0,
+    start: spans.length ? Math.min(...spans.map((e) => e.start)) : c.start,
+    end: spans.length ? Math.max(...spans.map((e) => e.end)) : c.start,
+  };
+}
+
+const flagged = (c: ClaimView) => allFlags(c).length > 0 || c.tier === 'unchecked';
 
 export function ClaimTrack({
   claims,
@@ -76,6 +95,61 @@ export function ClaimTrack({
 }) {
   const lanes = duration > 0;
   const position = (seconds: number) => Math.max(0, Math.min(100, (100 * seconds) / duration));
+  const row = (c: ClaimView) => {
+    const mark = markOf(c);
+    const place = placement(c);
+    const scriptLine = c.evidence.find((e) => e.line_number)?.line_number;
+    const at = scriptLine
+      ? `Line ${scriptLine}`
+      : place.start === null
+        ? untimed(still)
+        : `${place.rough ? '≈' : ''}${timestamp(place.start)}`;
+    const span =
+      c.tier === 'unchecked'
+        ? 'unchecked'
+        : mark === 'none'
+          ? 'none'
+          : mark === 'hold'
+            ? 'hold'
+            : (c.tier ?? 'high');
+    const where = place.rough
+      ? `, said somewhere between ${timestamp(place.start!)} and ${timestamp(place.end!)}`
+      : '';
+    return (
+      <button
+        key={c.claim_id}
+        className="claim-row"
+        aria-pressed={selected === c.claim_id}
+        aria-label={`${c.text}, ${at}${where}, ${flagState(c)}${c.tier ? `, ${TIER_LABEL[c.tier]}` : ''}`}
+        onClick={() => onSelect(c.claim_id, place.start)}
+      >
+        {place.start === null ? <span className="untimed">{at}</span> : <time>{at}</time>}
+        <span className="words">
+          {c.tier && <TierChip tier={c.tier} />}
+          {c.text}
+        </span>
+        {lanes && (
+          <span className="lane" aria-hidden="true">
+            {place.spans.map((e, i) => (
+              <i
+                key={i}
+                className={`span ${span}${place.rough ? ' rough' : ''}`}
+                style={{
+                  left: `${position(e.start)}%`,
+                  width: e.end > e.start ? `${position(e.end) - position(e.start)}%` : '0.6%',
+                }}
+              />
+            ))}
+            <i className="head" style={{ left: `${position(currentTime)}%` }} />
+          </span>
+        )}
+        <span className={`mark ${mark}`} aria-hidden="true" />
+      </button>
+    );
+  };
+  const open = claims.filter(flagged);
+  const clean = claims.filter((c) => !flagged(c));
+  const rough = lanes && claims.some((c) => placement(c).rough);
   return (
     <div className={`track ${lanes ? '' : 'no-lanes'}`}>
       {lanes && (
@@ -88,53 +162,28 @@ export function ClaimTrack({
           </div>
         </div>
       )}
-      {claims.map((c) => {
-        const mark = markOf(c);
-        const scriptLine = c.evidence.find((e) => e.line_number)?.line_number;
-        const at = scriptLine
-          ? `Line ${scriptLine}`
-          : c.start === null
-            ? untimed(still)
-            : timestamp(c.start);
-        return (
-          <button
-            key={c.claim_id}
-            className="claim-row"
-            aria-pressed={selected === c.claim_id}
-            aria-label={`${c.text}, ${at}, ${flagState(c)}${c.tier ? `, ${TIER_LABEL[c.tier]}` : ''}`}
-            onClick={() => onSelect(c.claim_id, c.start)}
-          >
-            {c.start === null ? <span className="untimed">{at}</span> : <time>{at}</time>}
-            <span className="words">
-              {c.tier && <TierChip tier={c.tier} />}
-              {c.text}
-            </span>
-            {lanes && (
-              <span className="lane" aria-hidden="true">
-                {c.evidence
-                  .filter((e) => e.timed)
-                  .map((e, i) => (
-                    <i
-                      key={i}
-                      className={`span ${mark}`}
-                      style={{
-                        left: `${position(e.start)}%`,
-                        width: e.end > e.start ? `${position(e.end) - position(e.start)}%` : '0.6%',
-                      }}
-                    />
-                  ))}
-                <i className="head" style={{ left: `${position(currentTime)}%` }} />
-              </span>
-            )}
-            <span className={`mark ${mark}`} aria-hidden="true" />
-          </button>
-        );
-      })}
+      {open.map(row)}
+      {clean.length > 0 && (
+        <details className="clean-claims" open={open.length === 0}>
+          <summary>
+            {clean.length} {clean.length === 1 ? 'claim' : 'claims'} with no flag
+          </summary>
+          {clean.map(row)}
+        </details>
+      )}
       {lanes && (
         <p className="key">
           <span>
-            <i className="sw breach" />
-            Possible breach
+            <i className="sw high" />
+            High
+          </span>
+          <span>
+            <i className="sw medium" />
+            Medium
+          </span>
+          <span>
+            <i className="sw low" />
+            Low
           </span>
           <span>
             <i className="sw hold" />
@@ -144,6 +193,12 @@ export function ClaimTrack({
             <i className="sw none" />
             No flag
           </span>
+          {rough && (
+            <span>
+              <i className="sw rough" />
+              Said somewhere in this spoken passage; exact time not read
+            </span>
+          )}
         </p>
       )}
     </div>
@@ -294,9 +349,6 @@ export function Inspector({
                     {e.text.trim() !== claim.text.trim() && <>: “{e.text}”</>}
                   </span>
                 ))}
-                {claim.evidence.some((e) => e.timing === 'turn') && (
-                  <span>Timed to the whole spoken passage.</span>
-                )}
               </p>
               {claim.evidence.map(
                 (e, i) =>
@@ -347,9 +399,14 @@ export function Inspector({
               ))}
             </section>
           )}
-          {!flagged && (
-            <p className="none">No flag for this claim. Meta or the ASA may still act on it.</p>
-          )}
+          {!flagged &&
+            (claim.tier === 'unchecked' ? (
+              <p className="none">
+                The checker did not reach this claim, so it has no flags. Treat it as unreviewed.
+              </p>
+            ) : (
+              <p className="none">No flag for this claim. Meta or the ASA may still act on it.</p>
+            ))}
           {flagged && context.length > 0 && (
             <details className="may-say-panel">
               <summary>What you may say</summary>

@@ -1,21 +1,40 @@
 import { useState } from 'react';
+import { FORMATS } from './api';
+
+const ACCEPT = [
+  '.txt',
+  '.md',
+  'text/plain',
+  'text/markdown',
+  'image/png',
+  'image/jpeg',
+  'image/webp',
+  'video/mp4',
+  'video/quicktime',
+];
+
+// a dropped file skips the picker's filter, so the same list is checked here before any upload
+const accepted = (file: File) => ACCEPT.includes(file.type) || /\.(txt|md)$/i.test(file.name);
 
 export function UploadPanel({
   disabled,
   notice,
   closedReason,
+  allowance,
   onFile,
   signIn = false,
 }: {
   disabled: boolean;
   notice: string;
   closedReason?: string;
-  onFile: (file: File) => void;
+  allowance?: string;
+  onFile: (file: File, title: string) => void;
   /** nobody is signed in: the button leads to sign-in instead of opening a file */
   signIn?: boolean;
 }) {
   const [dragging, setDragging] = useState(false);
   const [error, setError] = useState('');
+  const [title, setTitle] = useState('');
   function choose(files: FileList | null) {
     if (signIn) return location.assign('/login');
     if (disabled || !files?.length) return;
@@ -23,8 +42,13 @@ export function UploadPanel({
       setError('Choose one ad or script at a time.');
       return;
     }
+    if (!accepted(files[0])) {
+      setError(FORMATS);
+      return;
+    }
     setError('');
-    onFile(files[0]);
+    onFile(files[0], title.trim());
+    setTitle('');
   }
   return (
     <section
@@ -73,17 +97,31 @@ export function UploadPanel({
         <h2>Upload an ad</h2>
         <p>Choose a script, image or video to screen.</p>
       </div>
+      {!signIn && (
+        <label className="upload-title">
+          <span>
+            Name this screening <span className="muted">(optional)</span>
+          </span>
+          <input
+            maxLength={120}
+            placeholder="Defaults to the file name"
+            value={title}
+            disabled={disabled}
+            onChange={(event) => setTitle(event.target.value)}
+          />
+        </label>
+      )}
       {signIn ? (
         <a className="file-button primary" href="/login">
-          Log in to screen an ad <span aria-hidden="true">↗</span>
+          Log in to screen an ad
         </a>
       ) : (
         <label className="file-button primary">
-          Choose ad or script <span aria-hidden="true">↗</span>
+          Choose ad or script
           <input
             aria-label="Upload ad"
             type="file"
-            accept=".txt,.md,text/plain,text/markdown,image/png,image/jpeg,image/webp,video/mp4,video/webm,video/quicktime"
+            accept={ACCEPT.join(',')}
             disabled={disabled}
             onChange={(event) => {
               choose(event.target.files);
@@ -103,6 +141,7 @@ export function UploadPanel({
       </p>
       <p className="upload-notice">{notice}</p>
       {closedReason && <p role="status">{closedReason}</p>}
+      {allowance && <p className="upload-limit">{allowance}</p>}
       {error && <p role="alert">{error}</p>}
     </section>
   );

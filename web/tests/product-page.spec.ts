@@ -35,12 +35,12 @@ test('account pages support direct visits, refresh and navigation without preten
   await page.goto('/');
   await page.locator('header').getByRole('link', { name: 'Log in', exact: true }).click();
   await expect(page).toHaveURL(/\/login$/);
-  await expect(page.getByRole('heading', { name: 'Welcome back.' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Log in', exact: true })).toBeVisible();
   await expect(page.getByRole('status')).toContainText('Accounts are not connected');
   await expect(page.getByRole('textbox', { name: 'Email address' })).toBeDisabled();
   await expect(page.getByRole('button', { name: 'Log in', exact: false })).toBeDisabled();
   await page.reload();
-  await expect(page.getByRole('heading', { name: 'Welcome back.' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Log in', exact: true })).toBeVisible();
   await page.locator('.account-card').getByRole('link', { name: 'Sign up', exact: true }).click();
   await expect(page).toHaveURL(/\/signup$/);
   await expect(page.getByRole('heading', { name: 'Create your account' })).toBeVisible();
@@ -49,7 +49,7 @@ test('account pages support direct visits, refresh and navigation without preten
   await expect(page.getByRole('button', { name: 'Create account', exact: false })).toBeDisabled();
   await page.reload();
   await expect(page.getByRole('heading', { name: 'Create your account' })).toBeVisible();
-  await page.getByRole('link', { name: 'Continue to the local review desk', exact: false }).click();
+  await page.getByRole('link', { name: 'Use PreFlight without an account', exact: false }).click();
   await expect(page.getByLabel('Upload ad')).toBeEnabled();
   expect(submitted).toBe(0);
 });

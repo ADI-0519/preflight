@@ -18,8 +18,10 @@ before model screening; `/health` alone does not verify this prerequisite. Keep
 downloaded ruling pages ignored rather than adding them to Git.
 The service is a single-process prototype. Locally it runs open on localhost. With
 `FIREBASE_PROJECT_ID` set it requires sign-in, and an approval's `by` value is then the
-signed-in account's email; without sign-in it is a supplied name. Uploads and jobs have no
-per-user ownership or tenant isolation: any signed-in account can open a job by its ID.
+signed-in account's email; without sign-in it is a supplied name. With sign-in, each
+upload and job belongs to the account that created it: another account gets 404 for its
+IDs on every route, and `GET /jobs` lists only the caller's own jobs. Without sign-in,
+everyone on the server shares one workspace.
 To run it on Google Cloud Run, see [deploy.md](./deploy.md).
 
 Creating or starting the app does not load credentials or call a model. Starting a
@@ -37,8 +39,11 @@ See [the web guide](./web.md) for the build, demo manifest and scoreboard contra
 |---|---|---|
 | GET | `/health` | Service liveness, not proof of model/account availability |
 | POST | `/uploads` | Stream one raw image/video or UTF-8 script body; return opaque upload ID and expiry |
-| POST | `/screenings` | Queue `screen()` for `{ "upload_id": "...", "align": false }` |
+| POST | `/screenings` | Queue `screen()` for `{ "upload_id": "...", "title": "..." }`; `align` (word timing) defaults to true |
+| GET | `/jobs` | The caller's jobs still within retention, newest first: ID, kind, status, upload ID, media kind and start time |
 | GET | `/jobs/{id}` | Job kind/status: queued, running, completed, incomplete or failed |
+| PATCH | `/jobs/{id}` | Rename a job: `{ "title": "..." }`, 1 to 120 characters |
+| POST | `/jobs/{id}/retry` | Start a failed or incomplete screening again on its upload, under its name; the upload's cache answers the stages that finished |
 | GET | `/jobs/{id}/events` | Ordered metadata-only SSE progress; supports Last-Event-ID |
 | GET | `/screenings/{id}` | Source-verified Screening, including an incomplete result if available |
 | GET | `/screenings/{id}/report` | Existing self-contained HTML report with evidence and source links |
@@ -69,8 +74,9 @@ This avoids multipart's temporary-file spooling outside the retained directory.
 curl.exe -X POST http://127.0.0.1:8000/uploads -H "Content-Type: image/png" --data-binary "@synthetic-ad.png"
 ```
 
-Supported types: PNG, JPEG, WebP, MP4, WebM and QuickTime. Validation restricts FFmpeg's
-input formats/protocols and checks that a frame decodes. Playlists and URLs are not
+Supported types: PNG, JPEG, WebP, MP4 and QuickTime. WebM is refused: the Model API
+reads video only as MP4 or MOV. Validation restricts FFmpeg's input formats/protocols
+and checks that a frame decodes. Playlists and URLs are not
 supported inputs. Defaults: 150 MiB per upload, local or public mode,
 256 KiB for JSON bodies, ten minutes maximum media duration, two worker threads
 and sixteen pending jobs. No original
@@ -110,7 +116,7 @@ client-supplied screening. P41 re-screens the editable draft as its first round.
     "duration_seconds": 4
   }],
   "rounds": 3,
-  "align": false
+  "align": true
 }
 ```
 

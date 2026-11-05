@@ -3,8 +3,6 @@ import path from 'node:path';
 
 const media = path.resolve(import.meta.dirname, '../../tests/fixtures/models/media/captions.mp4');
 
-test.use({ colorScheme: 'dark' });
-
 async function checkTextContrast(page: import('@playwright/test').Page) {
   const tokens = await page.evaluate(() => {
     const style = getComputedStyle(document.documentElement);
@@ -55,9 +53,7 @@ async function checkTextContrast(page: import('@playwright/test').Page) {
   }
 }
 
-test('loaded evidence leads on desktop and appearance preserves the selected claim', async ({
-  page,
-}, testInfo) => {
+test('loaded evidence leads on desktop with readable contrast', async ({ page }, testInfo) => {
   const errors: string[] = [];
   page.on('pageerror', (e) => errors.push(e.message));
   await page.setViewportSize({ width: 1280, height: 800 });
@@ -70,18 +66,8 @@ test('loaded evidence leads on desktop and appearance preserves the selected cla
   const frame = await video.boundingBox();
   expect(frame!.y).toBeLessThan(600);
   expect(frame!.y + 100).toBeLessThan(800);
-  const title = await evidence.locator('h3').innerText();
   await checkTextContrast(page);
-  const theme = page.getByRole('button', { name: 'Dark appearance', exact: true });
-  await theme.focus();
-  await page.keyboard.press('Enter');
-  await expect(page.locator('html')).toHaveAttribute('data-appearance', 'dark');
-  await checkTextContrast(page);
-  await expect(evidence.locator('h3')).toHaveText(title);
-  await expect(page.getByRole('note')).toBeInViewport();
-  await page.screenshot({ path: testInfo.outputPath('evidence-dark.png'), fullPage: true });
-  await page.getByRole('button', { name: 'Light appearance', exact: true }).click();
-  await page.screenshot({ path: testInfo.outputPath('evidence-light.png'), fullPage: true });
+  await page.screenshot({ path: testInfo.outputPath('evidence.png'), fullPage: true });
   expect(errors).toEqual([]);
 });
 
@@ -89,13 +75,13 @@ test('each claim row is keyboard selectable and seeks to recorded evidence', asy
   await page.goto('/');
   await expect(page.getByLabel('Upload ad')).toBeEnabled();
   await page.getByLabel('Upload ad').setInputFiles(media);
-  const lane = page.locator('.claim-row:has(time)').last();
+  const lane = page.locator('.claim-row:has(time):visible').last();
   await expect(lane).toBeVisible({ timeout: 30000 });
   await lane.focus();
   await page.keyboard.press('Enter');
   await expect(lane).toHaveAttribute('aria-pressed', 'true');
   const selected = page.locator('.claim-row[aria-pressed="true"]');
-  const time = (await selected.locator('time').innerText()).split(':').map(Number);
+  const time = (await selected.locator('time').innerText()).replace('≈', '').split(':').map(Number);
   await expect
     .poll(() => page.locator('.viewer video').evaluate((v) => (v as HTMLVideoElement).currentTime))
     .toBeCloseTo(time[0] * 60 + time[1], 0);
@@ -121,7 +107,7 @@ test('a loaded result remains readable on mobile and at doubled content scale', 
     document.body.style.zoom = '2';
   });
   expect(await noOverflow()).toBe(true);
-  await expect(page.getByRole('note')).toBeVisible();
+  await expect(page.getByRole('contentinfo')).toBeVisible();
 });
 
 test('leaving the evidence view pauses the ad video', async ({ page }) => {
@@ -156,7 +142,7 @@ test('on a phone the selected claim evidence follows the claim rows', async ({ p
   await page.getByLabel('Upload ad').setInputFiles(media);
   const evidence = page.getByRole('region', { name: 'Selected claim evidence' });
   await expect(evidence).toBeVisible({ timeout: 30000 });
-  const row = (await page.locator('.claim-row').last().boundingBox())!;
+  const row = (await page.locator('.track').boundingBox())!;
   const top = (await evidence.boundingBox())!.y;
   expect(top).toBeGreaterThan(row.y);
   // one 24px gutter at most between the last claim row and the inspector
@@ -176,19 +162,4 @@ test('a heading scrolled into view is not covered by the sticky header', async (
   const header = await page.locator('.chrome').boundingBox();
   const top = (await heading.boundingBox())!.y;
   expect(top).toBeGreaterThanOrEqual(header!.y + header!.height);
-});
-
-test.describe('light system preference', () => {
-  test.use({ colorScheme: 'light' });
-
-  test('light workspace is the starting appearance and dark remains available', async ({
-    page,
-  }) => {
-    await page.goto('/');
-    await expect(page.locator('html')).toHaveAttribute('data-appearance', 'light');
-    await page.getByRole('button', { name: 'Dark appearance', exact: true }).click();
-    await expect(page.locator('html')).toHaveAttribute('data-appearance', 'dark');
-    expect(await page.evaluate(() => document.documentElement.dataset.appearance)).toBe('dark');
-    await expect(page.getByRole('button', { name: 'Light appearance', exact: true })).toBeVisible();
-  });
 });

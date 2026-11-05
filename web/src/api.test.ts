@@ -1,5 +1,13 @@
 import { describe, expect, it, vi } from 'vitest';
-import { canApprove, progressMessage, request, timestamp, upload } from './api';
+import {
+  canApprove,
+  progressMessage,
+  request,
+  timestamp,
+  upload,
+  allowanceLine,
+  limitReached,
+} from './api';
 import type { Fix } from './api';
 import { grouped } from './evidence';
 
@@ -126,5 +134,23 @@ describe('uploading in parts', () => {
     vi.unstubAllGlobals();
     expect(fetcher).toHaveBeenCalledTimes(1);
     expect(fetcher.mock.calls[0][0]).toBe('/uploads');
+  });
+});
+
+describe('rate limits', () => {
+  it('names the limit and the wait in minutes', () => {
+    expect(limitReached('screening', 3, 3000)).toBe(
+      "You have used this hour's 3 screenings. You can start another in 50 minutes.",
+    );
+    expect(limitReached('fix', 1, 30)).toBe(
+      "You have used this hour's 1 revision. You can start another in 1 minute.",
+    );
+  });
+
+  it('shows what is left before the limit', () => {
+    const full = { limit: 10, left: 10, resets_in: 0 };
+    expect(
+      allowanceLine({ upload: full, screening: { limit: 3, left: 2, resets_in: 900 }, fix: full }),
+    ).toBe('This hour you can start 2 more screenings (limit 3).');
   });
 });

@@ -18,7 +18,9 @@ from preflight.api.contracts import (
     ApprovalView,
     Code,
     FixView,
+    JobList,
     JobView,
+    Rename,
     SignIn,
     StartFix,
     StartScreening,
@@ -27,7 +29,7 @@ from preflight.api.contracts import (
 )
 from preflight.api.public import Public
 from preflight.api.service import Service
-from preflight.api.storage import TERMINAL, APIError, Settings
+from preflight.api.storage import OWNER, TERMINAL, APIError, Settings, mine
 from preflight.api.web import ROOT, install_web
 from preflight.ingest import MAX_SECONDS, probe, run
 from preflight.ingest.script import MAX_SCRIPT_BYTES, SCRIPT_TYPES, ScriptError, read_script
@@ -38,15 +40,22 @@ log = logging.getLogger(__name__)
 MEDIA = {
     **SCRIPT_TYPES,
     "image/png": ".png", "image/jpeg": ".jpg", "image/webp": ".webp",
-    "video/mp4": ".mp4", "video/webm": ".webm", "video/quicktime": ".mov",
+    # the Model API reads video only as MP4 or MOV, so WebM is refused at upload
+    "video/mp4": ".mp4", "video/quicktime": ".mov",
 }
 # Cloud Run refuses any request over 32 MiB, so larger files arrive in parts of at most this size
 PART_BYTES = 16 * 1024 * 1024
 PART_PATH = re.compile(r"^/uploads/[0-9a-f]{32}/parts$")
 MEDIA_INPUT_OPTIONS = (
     "-protocol_whitelist", "file,pipe",
-    "-format_whitelist", "mov,matroska,webm,png_pipe,jpeg_pipe,webp_pipe",
+    "-format_whitelist", "mov,png_pipe,jpeg_pipe,webp_pipe",
 )
+
+
+def media_kind(media_type: str | None) -> str | None:
+    if media_type is None:
+        return None
+    return "script" if media_type in SCRIPT_TYPES else media_type.split("/")[0]
 
 
 def validate_media(path, max_seconds: float = MAX_SECONDS):
@@ -146,11 +155,15 @@ def create_app(
         if auth.required(request.url.path) and request.state.user is None:
             return JSONResponse({"error": "login_required", "notice": NOTICE}, status_code=401,
                                 headers={"Cache-Control": "no-store"})
+        # storage checks every upload and job against this account (preflight.api.storage.mine)
+        OWNER.set(request.state.user.uid if request.state.user else None)
         return await call_next(request)
 
     @app.exception_handler(APIError)
     async def api_error(request, error):
-        return JSONResponse({"error": error.code, "notice": NOTICE}, status_code=error.status)
+        wait = error.detail.get("retry_after")
+        return JSONResponse({"error": error.code, **error.detail, "notice": NOTICE}, status_code=error.status,
+                            headers={"Retry-After": str(wait)} if wait else None)
 
     @app.exception_handler(RequestValidationError)
     async def invalid_request(request, error):
@@ -288,6 +301,9 @@ def create_app(
         if not meta.is_file():
             raise APIError(404, "upload_not_found")
         fields = json.loads(meta.read_text(encoding="utf-8"))
+        # another account's unfinished upload reads as missing, as finished ones do in storage.upload()
+        if not mine(fields):
+            raise APIError(404, "upload_not_found")
         if fields["stored"] or "expected" not in fields:
             raise APIError(409, "upload_already_complete")
         if fields["expires_at"] <= storage.clock():
@@ -352,7 +368,34 @@ def create_app(
     @app.post("/screenings", status_code=202, response_model=JobView)
     def start_screening(fields: StartScreening, request: Request):
         with public.admit(client(request), "screening"):
-            return view(service.start_screening(fields.upload_id, fields.align))
+            return view(service.start_screening(fields.upload_id, fields.align, fields.title))
+
+    @app.get("/ui/allowance")
+    def allowance(request: Request):
+        return {"allowance": public.allowance(client(request)), "notice": NOTICE}
+
+    @app.get("/jobs", response_model=JobList)
+    def jobs():
+        return {"jobs": [{"job_id": j["job_id"], "kind": j["kind"], "status": j["status"],
+                          "upload_id": j["upload_ids"][0], "media": media_kind(j.get("media_type")),
+                          "created_at": j.get("created_at"), "title": j.get("title")}
+                         for j in storage.owned_jobs()], "notice": NOTICE}
+
+    @app.post("/jobs/{job_id}/retry", status_code=202, response_model=JobView)
+    def retry(job_id: str, request: Request):
+        with storage.lock:
+            source = storage.job(job_id)
+        if source["kind"] != "screening":
+            raise APIError(409, "screening_required")
+        if source["status"] not in {"failed", "incomplete"}:
+            raise APIError(409, "nothing_to_retry")
+        # the upload's cache answers every stage that finished, so only the failed ones call a model again
+        with public.admit(client(request), "screening"):
+            return view(service.start_screening(source["upload_ids"][0], True, source.get("title")))
+
+    @app.patch("/jobs/{job_id}", response_model=JobView)
+    def rename(job_id: str, fields: Rename):
+        return view(storage.rename(job_id, fields.title))
 
     @app.get("/jobs/{job_id}", response_model=JobView)
     def job(job_id: str):

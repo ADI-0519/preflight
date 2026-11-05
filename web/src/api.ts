@@ -51,6 +51,12 @@ export interface Job {
   kind: 'screening' | 'fix';
   status: string;
 }
+export interface JobSummary extends Job {
+  upload_id: string;
+  media: 'script' | 'image' | 'video' | null;
+  created_at: number | null;
+  title: string | null;
+}
 export interface Progress {
   status: string;
   stage?: string;
@@ -123,7 +129,14 @@ export interface Scoreboard {
   git_sha?: string;
   split?: string;
   created_at?: string;
-  metrics: { name: string; hits: number; total: number; low: number | null; high: number | null }[];
+  baseline_id?: string | null;
+  metrics: (Count & { name: string; baseline: Count | null })[];
+}
+export interface Count {
+  hits: number;
+  total: number;
+  low: number | null;
+  high: number | null;
 }
 export interface FirebaseConfig {
   apiKey: string;
@@ -151,8 +164,8 @@ export interface Config {
   scoreboard: Scoreboard;
 }
 
-export const NOTICE =
-  'PreFlight screens ads against the dated sources named in this report. It is not legal advice, and it does not decide whether an ad may run: a person makes that call.';
+export const FORMATS =
+  'PreFlight takes PNG, JPEG or WebP images, MP4 or QuickTime video, and .txt or .md scripts.';
 
 export const PUBLIC_ERRORS: Record<string, string> = {
   empty_script: 'The script needs at least one nonblank line of ad copy.',
@@ -167,7 +180,41 @@ export const PUBLIC_ERRORS: Record<string, string> = {
   daily_cap_reached: 'Uploads are closed for today. The labelled demos still run.',
   uploads_paused: 'Uploads are paused. The labelled demos still run.',
   media_too_long: 'The video is too long. Choose a shorter one.',
+  unsupported_media_type: FORMATS,
+  unreadable_media:
+    'The file could not be decoded. It may be damaged, or its video codec may not be supported.',
+  media_type_mismatch: "The file's contents do not match its type, for example a video named .png.",
 };
+
+type Kind = 'upload' | 'screening' | 'fix';
+export type Allowance = Record<Kind, { limit: number; left: number; resets_in: number }>;
+
+const NOUN: Record<Kind, [string, string]> = {
+  upload: ['upload', 'uploads'],
+  screening: ['screening', 'screenings'],
+  fix: ['revision', 'revisions'],
+};
+
+const minutes = (seconds: number) => {
+  const n = Math.max(1, Math.ceil(seconds / 60));
+  return `${n} minute${n === 1 ? '' : 's'}`;
+};
+
+export function limitReached(kind: Kind, limit: number, wait: number): string {
+  return `You have used this hour's ${limit} ${NOUN[kind][limit === 1 ? 0 : 1]}. You can start another in ${minutes(wait)}.`;
+}
+
+// what is left before a limit is hit; the screening count matters most, so it always shows
+export function allowanceLine(a: Allowance): string {
+  const s = a.screening;
+  const line =
+    s.left > 0
+      ? `This hour you can start ${s.left} more ${NOUN.screening[s.left === 1 ? 0 : 1]} (limit ${s.limit}).`
+      : limitReached('screening', s.limit, s.resets_in);
+  return a.upload.left > 0
+    ? line
+    : `${line} ${limitReached('upload', a.upload.limit, a.upload.resets_in)}`;
+}
 
 export async function request<T>(url: string, init?: RequestInit): Promise<T> {
   const response = await fetch(url, { ...init, cache: 'no-store' });
@@ -178,10 +225,15 @@ export async function request<T>(url: string, init?: RequestInit): Promise<T> {
 // turns a refused response into the message the page shows
 async function refuse(response: Response): Promise<never> {
   const code = response.status;
-  const error = await response
-    .json()
-    .then((body: { error?: string }) => body.error)
-    .catch(() => undefined);
+  const body = (await response.json().catch(() => ({}))) as {
+    error?: string;
+    kind?: Kind;
+    limit?: number;
+    retry_after?: number;
+  };
+  const error = body.error;
+  if (error === 'rate_limited' && body.kind && body.limit && body.retry_after)
+    throw new Error(limitReached(body.kind, body.limit, body.retry_after));
   if (error === 'login_required') {
     // the session ended; the page reloads to the sign-in screen
     location.reload();

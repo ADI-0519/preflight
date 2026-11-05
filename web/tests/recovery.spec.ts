@@ -10,8 +10,8 @@ test('a missing ad preview keeps its claims usable and another demo recovers', a
   await page.getByRole('button', { name: 'Synthetic replay · flagged', exact: false }).click();
   await expect(page.getByText('Ad preview unavailable.', { exact: false })).toBeVisible();
   await expect(page.locator('.claim-row')).toHaveCount(4);
-  await page.locator('.claim-row').last().click();
-  await expect(page.locator('.claim-row').last()).toHaveAttribute('aria-pressed', 'true');
+  await page.locator('.claim-row:visible').last().click();
+  await expect(page.locator('.claim-row:visible').last()).toHaveAttribute('aria-pressed', 'true');
   await page.getByRole('button', { name: 'Synthetic replay · no flags', exact: false }).click();
   await expect(page.getByLabel('Ad video')).toBeVisible();
   await expect(page.getByText('Ad preview unavailable.', { exact: false })).toHaveCount(0);

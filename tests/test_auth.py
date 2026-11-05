@@ -234,3 +234,84 @@ def test_the_code_email_goes_over_tls(monkeypatch):
     assert sent[:3] == [("connect", "smtp.example.com", 587), ("starttls",), ("login", "bot@example.com")]
     assert sent[3][1:3] == ("founder@example.com", "123456 is your PreFlight code")
     assert "expires in 10 minutes" in sent[3][3]
+
+
+def test_an_account_sees_and_opens_only_its_own_uploads_and_jobs(signed):
+    with TestClient(signed) as founder, TestClient(signed) as stranger:
+        sign_in(founder)
+        sign_in(stranger, "stranger")
+        video = upload(founder, (MEDIA / "captions.mp4").read_bytes(), "video/mp4")
+        source = start(founder, video)
+        assert wait_for(founder, source) == "completed"
+        still = upload(founder)
+        draft = yaml.safe_load((AGENT / "draft.yaml").read_text(encoding="utf-8"))
+        draft["scenes"][0].pop("still")
+        draft["scenes"][0]["upload_id"] = still
+        fix = founder.post("/fixes", json={"screening_id": source, **draft}).json()["job_id"]
+        assert wait_for(founder, fix) == "completed"
+        reads = [
+            f"/jobs/{source}", f"/jobs/{source}/events", f"/screenings/{source}", f"/screenings/{source}/report",
+            f"/ui/jobs/{source}", f"/uploads/{video}/media", f"/uploads/{still}/media", f"/fixes/{fix}",
+            f"/fixes/{fix}/stills/0", f"/ui/fixes/{fix}/rounds",
+        ]
+        for path in reads:
+            assert founder.get(path).status_code == 200, path
+            assert stranger.get(path).json()["error"] in {"job_not_found", "upload_not_found"}, path
+        # these recordings render no draft, so only the refusal's reason shows the owner check ran first
+        media = founder.get(f"/ui/fixes/{fix}/rounds").json()[0]["media_url"]
+        assert stranger.get(media).json()["error"] == "job_not_found"
+        assert stranger.post("/screenings", json={"upload_id": video}).status_code == 404
+        assert stranger.post("/fixes", json={"screening_id": source, **draft}).status_code == 404
+        assert stranger.post(f"/fixes/{fix}/approve", json={"by": "x"}).status_code == 404
+        assert stranger.patch(f"/jobs/{source}", json={"title": "Mine now"}).status_code == 404
+        assert stranger.post(f"/jobs/{source}/retry").status_code == 404
+        assert [j["job_id"] for j in founder.get("/jobs").json()["jobs"]] == [fix, source]
+        assert stranger.get("/jobs").json()["jobs"] == []
+
+
+def test_the_job_list_needs_a_session(signed):
+    with TestClient(signed) as client:
+        assert client.get("/jobs").status_code == 401
+
+
+def test_a_screening_keeps_the_name_given_at_upload_and_can_be_renamed(signed):
+    with TestClient(signed) as client:
+        sign_in(client)
+        video = upload(client, (MEDIA / "captions.mp4").read_bytes(), "video/mp4")
+        response = client.post("/screenings", json={"upload_id": video, "title": "  Spring launch cut  "})
+        job_id = response.json()["job_id"]
+        assert wait_for(client, job_id) == "completed"
+        assert client.get("/jobs").json()["jobs"][0]["title"] == "Spring launch cut"
+        assert client.patch(f"/jobs/{job_id}", json={"title": "Final cut"}).status_code == 200
+        assert client.get("/jobs").json()["jobs"][0]["title"] == "Final cut"
+        assert client.patch(f"/jobs/{job_id}", json={"title": "   "}).status_code == 422
+        assert client.patch(f"/jobs/{job_id}", json={"title": "x" * 121}).status_code == 422
+
+
+def test_a_failed_screening_retries_on_its_upload_under_its_name(signed):
+    with TestClient(signed) as client:
+        sign_in(client)
+        video = upload(client, (MEDIA / "captions.mp4").read_bytes(), "video/mp4")
+        job_id = client.post("/screenings", json={"upload_id": video, "title": "Spring cut"}).json()["job_id"]
+        assert wait_for(client, job_id) == "completed"
+        assert client.post(f"/jobs/{job_id}/retry").json()["error"] == "nothing_to_retry"
+        signed.state.service.storage.jobs[job_id]["status"] = "failed"
+        again = client.post(f"/jobs/{job_id}/retry")
+        assert again.status_code == 202, again.text
+        assert wait_for(client, again.json()["job_id"]) == "completed"
+        listed = client.get("/jobs").json()["jobs"]
+        assert [(j["title"], j["upload_id"]) for j in listed] == [("Spring cut", video)] * 2
+
+
+def test_another_account_cannot_add_to_or_finish_an_upload_sent_in_parts(signed):
+    video = (MEDIA / "captions.mp4").read_bytes()
+    with TestClient(signed) as founder, TestClient(signed) as stranger:
+        sign_in(founder)
+        sign_in(stranger, "stranger")
+        upload_id = founder.post("/uploads/parts", json={"media_type": "video/mp4", "bytes": len(video)}).json()[
+            "upload_id"]
+        part = stranger.post(f"/uploads/{upload_id}/parts", params={"offset": 0}, content=video)
+        assert part.json()["error"] == "upload_not_found"
+        assert stranger.post(f"/uploads/{upload_id}/complete").json()["error"] == "upload_not_found"
+        assert founder.post(f"/uploads/{upload_id}/parts", params={"offset": 0}, content=video).status_code == 200
+        assert founder.post(f"/uploads/{upload_id}/complete").status_code == 201

@@ -6,6 +6,7 @@ The mode is read from PREFLIGHT_PUBLIC_MODE on every request, so changing it nee
 """
 
 import json
+import math
 import os
 import threading
 import time
@@ -78,6 +79,23 @@ class Public:
             return "daily_cap_reached"
         return None
 
+    def limits(self) -> dict[str, int]:
+        s = self.settings
+        return {"upload": s.public_uploads_per_hour, "screening": s.public_screenings_per_hour,
+                "fix": s.public_fixes_per_hour}
+
+    def allowance(self, client: str) -> dict | None:
+        if self.mode != "on":
+            return None
+        with self.lock:
+            now = self.clock()
+            left = {}
+            for kind, limit in self.limits().items():
+                recent = [t for t in self.starts.get((client, kind), []) if t > now - HOUR]
+                left[kind] = {"limit": limit, "left": max(0, limit - len(recent)),
+                              "resets_in": math.ceil(recent[0] + HOUR - now) if recent else 0}
+            return left
+
     @contextmanager
     def admit(self, client: str, kind: Literal["upload", "screening", "fix"]) -> Iterator[None]:
         if self.mode == "off":
@@ -85,16 +103,16 @@ class Public:
             return
         if reason := self.closed():
             raise APIError(503, reason)
-        s = self.settings
-        allowed = {"upload": s.public_uploads_per_hour, "screening": s.public_screenings_per_hour,
-                   "fix": s.public_fixes_per_hour}[kind]
+        allowed = self.limits()[kind]
         with self.lock:
             now = self.clock()
             # forget clients idle for an hour, so the table holds only the last hour's visitors
             self.starts = {key: times for key, times in self.starts.items() if times and times[-1] > now - HOUR}
             recent = [t for t in self.starts.get((client, kind), []) if t > now - HOUR]
             if len(recent) >= allowed:
-                raise APIError(429, "rate_limited")
+                # the oldest start in the window is the next to expire
+                raise APIError(429, "rate_limited", kind=kind, limit=allowed,
+                               retry_after=math.ceil(recent[0] + HOUR - now))
             self.starts[(client, kind)] = [*recent, now]
         try:
             yield

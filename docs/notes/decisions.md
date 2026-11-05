@@ -1,5 +1,22 @@
 # Decisions
 
+- **5 Nov 2026 (source dev integration).** Imported the original project's dev
+  changes from `2d1187d5055cd90dd596ec72f9e1d8d7419ffadb` through
+  `b8b2be48ec637cd8487ac0ad937c27fe6b033bba` as a new integration commit in this
+  repository. Its author records who performed the import, not authorship of each
+  upstream change. The 33 imported files were checked against that source revision,
+  preserving this repository's normalised identity labels and existing additions.
+  Changes include account-owned uploads/jobs, the screening dashboard and retries,
+  upload guidance, rate-limit details, default local word alignment where available,
+  and the registered baseline in the scoreboard. No dataset membership, labels,
+  prompts or registered metric values were changed. Verification: 89 focused
+  backend tests; 746 passed, 3 skipped and 7 deselected in the full non-live Python
+  suite; 12 frontend unit tests; 32 Playwright browser tests against Uvicorn with
+  synthetic replay; frontend build/type checks, formatting, Ruff and agent setup
+  all passed. These checks do not constitute a fresh real-model evaluation or
+  verification of a deployed public service. Research drafts remain outside this
+  integration commit.
+
 - **5 Nov 2026 (identity labels in this repository copy).** Historical contributor
   names, commit identities and reviewer labels were normalised to `NEESAY` at the
   repository owner's request. This is a display-label change, not evidence that

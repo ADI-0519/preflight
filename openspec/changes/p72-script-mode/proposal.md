@@ -2,7 +2,7 @@
 
 ## Why
 
-P72 ([issue #84](https://github.com/ADI-0519/preflight/issues/84)) lets an advertiser find possible claim issues
+P72 (historical issue #84 from the source project) lets an advertiser find possible claim issues
 in a script before paying to produce the ad. A separate check of the finished ad remains necessary because
 scripts cannot establish what the final pictures, captions or delivery imply.
 

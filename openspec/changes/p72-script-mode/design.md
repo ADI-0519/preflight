@@ -2,7 +2,7 @@
 
 ## Context
 
-See [proposal.md](proposal.md) and [issue #84](https://github.com/ADI-0519/preflight/issues/84).
+See [proposal.md](proposal.md) and historical issue #84 from the source project.
 This design is based on merged dev `ced06b7`, not the former P43 branch.
 
 Current `Ad` requires image dimensions, and extraction reads either a video or `frames[0]`. The pipeline

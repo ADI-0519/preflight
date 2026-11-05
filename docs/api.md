@@ -189,6 +189,8 @@ replay command; they are a contract test, not evidence of single-upload live acc
 Fix tests replay P41's recorded synthetic rounds through the real fix/approval logic.
 CI installs the API extra. Tests cover expiry, failed-deletion retries, active leases,
 restart, request limits, invalid media, private errors, forged wording and approval.
+<a id="script-input"></a>
+
 ## Script input (P72)
 
 Upload UTF-8 `.txt` or `.md` copy using `text/plain` or `text/markdown` on the existing upload endpoint,
